@@ -20,3 +20,14 @@ through all of them at once, and control each device independently.
 
 - Author: [abinaze](https://github.com/abinaze)
 - License: MIT
+
+## Building from source
+
+Requires Windows 10/11 and the .NET 8 SDK.
+
+    git clone https://github.com/abinaze/Audora.git
+    cd Audora
+    bash scripts/validate.sh
+    dotnet run --project src/Audora.App
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design.
