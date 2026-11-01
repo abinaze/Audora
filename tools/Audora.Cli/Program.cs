@@ -25,6 +25,9 @@ internal static class Program
             case "probe":
                 return ProbeCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
 
+            case "setdefault":
+                return SetDefaultCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
+
             case "dump":
                 foreach (var line in devices.DumpProperties())
                 {
@@ -33,7 +36,7 @@ internal static class Program
                 return 0;
 
             default:
-                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror <name>...] [--all]");
+                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror|probe|setdefault] [--all]");
                 return 1;
         }
     }
