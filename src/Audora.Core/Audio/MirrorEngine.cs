@@ -30,7 +30,7 @@ public sealed partial class MirrorEngine : IDisposable
     /// <summary>Raised if capturing stops unexpectedly (for example the default device changed or vanished).</summary>
     public event EventHandler<Exception?>? CaptureStopped;
 
-    public void Start()
+    public void Start(string? sourceDeviceId = null)
     {
         ThrowIfDisposed();
         if (_capture is not null)
@@ -38,7 +38,9 @@ public sealed partial class MirrorEngine : IDisposable
             return;
         }
 
-        _source = _devices.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        _source = sourceDeviceId is null
+            ? _devices.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia)
+            : _devices.GetDevice(sourceDeviceId);
         var capture = new WasapiLoopbackCapture(_source);
 
         if (capture.WaveFormat.BitsPerSample != 32)
