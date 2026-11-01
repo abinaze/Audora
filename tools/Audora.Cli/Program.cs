@@ -19,6 +19,9 @@ internal static class Program
             case "watch":
                 return Watch(devices, showAll);
 
+            case "mirror":
+                return MirrorCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
+
             case "dump":
                 foreach (var line in devices.DumpProperties())
                 {
@@ -27,7 +30,7 @@ internal static class Program
                 return 0;
 
             default:
-                Console.WriteLine("Usage: Audora.Cli [list|watch|dump] [--all]");
+                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror <name>...] [--all]");
                 return 1;
         }
     }
