@@ -22,6 +22,9 @@ internal static class Program
             case "mirror":
                 return MirrorCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
 
+            case "probe":
+                return ProbeCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
+
             case "dump":
                 foreach (var line in devices.DumpProperties())
                 {
