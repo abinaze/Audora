@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Audora.Core.Devices;
 
 namespace Audora.Core.Audio;
@@ -7,24 +8,32 @@ public sealed record MirrorTargetStatus(string DeviceId, string Name, string Sta
 
 /// <summary>
 /// Keeps the user's selected devices playing: starts and stops outputs as devices come and go,
-/// follows changes of the Windows default output, and restarts capture if it dies.
+/// follows changes of the Windows default output, restarts capture if it dies, and retries
+/// outputs that Windows stopped because of an error (with a limit, so a broken device cannot loop).
 /// Per-device settings are remembered and re-applied whenever a device returns.
 /// <see cref="Message"/> may be raised on any thread; UI code must marshal to its own thread.
 /// </summary>
 public sealed class MirrorController : IDisposable
 {
     private const int MaxConsecutiveFailures = 5;
+    private const int MaxRapidFailures = 3;
+    private const int RetryDelayMilliseconds = 2000;
+    private static readonly TimeSpan HealthyAfter = TimeSpan.FromSeconds(30);
 
     private readonly DeviceEnumerator _devices;
     private readonly object _gate = new();
     private readonly HashSet<string> _selected = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, DeviceSettings> _settings = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _names = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, byte> _suppressed = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DateTime> _blockedUntil = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, int> _failureCounts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DateTime> _addedAt = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, string> _faultReasons = new(StringComparer.OrdinalIgnoreCase);
     private readonly System.Threading.Timer _timer;
     private MirrorEngine? _engine;
     private volatile bool _restartNeeded;
     private volatile bool _disposed;
+    private int _devicesChanged;
     private int _failures;
 
     public MirrorController(DeviceEnumerator devices)
@@ -58,7 +67,8 @@ public sealed class MirrorController : IDisposable
         lock (_gate)
         {
             _selected.Add(deviceId);
-            _suppressed.TryRemove(deviceId, out _);
+            _blockedUntil.Remove(deviceId);
+            _failureCounts.Remove(deviceId);
         }
 
         Reconcile();
@@ -99,8 +109,9 @@ public sealed class MirrorController : IDisposable
         lock (_gate)
         {
             var devices = _devices.GetRenderDevices();
-            var running = (_engine?.Outputs.Select(o => o.DeviceId) ?? Enumerable.Empty<string>())
+            var running = (_engine?.Outputs.Where(o => !o.IsFaulted).Select(o => o.DeviceId) ?? Enumerable.Empty<string>())
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var now = DateTime.UtcNow;
             var result = new List<MirrorTargetStatus>();
 
             foreach (var id in _selected)
@@ -113,13 +124,15 @@ public sealed class MirrorController : IDisposable
                 {
                     state = "Mirroring";
                 }
-                else if (_suppressed.ContainsKey(id))
-                {
-                    state = "Stopped after an error";
-                }
                 else if (device is { IsDefault: true, Status: DeviceStatus.Active })
                 {
                     state = "Plays natively (Windows default)";
+                }
+                else if (_blockedUntil.TryGetValue(id, out var until))
+                {
+                    state = until == DateTime.MaxValue
+                        ? "Paused after repeated errors"
+                        : until > now ? "Recovering after an error" : "Starting";
                 }
                 else if (device is null || device.Status != DeviceStatus.Active)
                 {
@@ -197,9 +210,11 @@ public sealed class MirrorController : IDisposable
         _engine = null;
     }
 
+    // The three handlers below are deliberately lock-free: they can run on audio threads
+    // that Dispose may be waiting on. They only record what happened and ask for a reconcile.
     private void OnDevicesChanged(object? sender, EventArgs e)
     {
-        _suppressed.Clear(); // a device event is the cue to give failed devices another chance
+        Interlocked.Exchange(ref _devicesChanged, 1);
         Schedule(100);
     }
 
@@ -210,13 +225,11 @@ public sealed class MirrorController : IDisposable
         Schedule(500);
     }
 
-    // Deliberately lock-free: this runs on the audio thread, which Dispose may be waiting on.
     private void OnChannelFaulted(object? sender, Exception error)
     {
         if (sender is OutputChannel channel)
         {
-            _suppressed[channel.DeviceId] = 0;
-            Raise($"{channel.Name} stopped: {error.Message}");
+            _faultReasons[channel.DeviceId] = error.Message;
             Schedule(100);
         }
     }
@@ -261,6 +274,8 @@ public sealed class MirrorController : IDisposable
                 return;
             }
 
+            var retryMilliseconds = 0;
+
             try
             {
                 ReconcileLocked(messages);
@@ -274,12 +289,23 @@ public sealed class MirrorController : IDisposable
                 if (_failures < MaxConsecutiveFailures)
                 {
                     _restartNeeded = true;
-                    Schedule(1500);
+                    retryMilliseconds = 1500;
                 }
                 else
                 {
                     messages.Add("Giving up after repeated failures. Change a device or re-select targets to retry.");
                 }
+            }
+
+            var blockRetry = NextBlockRetryDelay();
+            if (blockRetry > 0 && (retryMilliseconds == 0 || blockRetry < retryMilliseconds))
+            {
+                retryMilliseconds = blockRetry;
+            }
+
+            if (retryMilliseconds > 0)
+            {
+                Schedule(retryMilliseconds);
             }
         }
 
@@ -289,16 +315,88 @@ public sealed class MirrorController : IDisposable
         }
     }
 
+    private int NextBlockRetryDelay()
+    {
+        var next = _blockedUntil.Values
+            .Where(v => v != DateTime.MaxValue)
+            .DefaultIfEmpty(DateTime.MaxValue)
+            .Min();
+
+        if (next == DateTime.MaxValue)
+        {
+            return 0;
+        }
+
+        return Math.Max(100, (int)(next - DateTime.UtcNow).TotalMilliseconds + 50);
+    }
+
+    private void RecordFailure(string deviceId, string name, DateTime now, List<string> messages, string? reason)
+    {
+        var healthy = _addedAt.TryGetValue(deviceId, out var added) && now - added > HealthyAfter;
+        _failureCounts.TryGetValue(deviceId, out var previous);
+        var count = (healthy ? 0 : previous) + 1;
+
+        _failureCounts[deviceId] = count;
+        _addedAt.Remove(deviceId);
+
+        var why = string.IsNullOrWhiteSpace(reason) ? "" : $" ({reason})";
+        if (count <= MaxRapidFailures)
+        {
+            _blockedUntil[deviceId] = now.AddMilliseconds(RetryDelayMilliseconds);
+            messages.Add($"{name} stopped{why}. Retrying shortly.");
+        }
+        else
+        {
+            _blockedUntil[deviceId] = DateTime.MaxValue;
+            messages.Add($"{name} keeps failing{why}. Paused until devices change or you re-select it.");
+        }
+    }
+
     private void ReconcileLocked(List<string> messages)
     {
+        var now = DateTime.UtcNow;
+
+        if (Interlocked.Exchange(ref _devicesChanged, 0) == 1)
+        {
+            // A device event is the cue to give paused devices one more chance.
+            foreach (var id in _blockedUntil.Where(p => p.Value == DateTime.MaxValue).Select(p => p.Key).ToList())
+            {
+                _blockedUntil.Remove(id);
+                _failureCounts[id] = MaxRapidFailures - 1;
+            }
+        }
+
         var devices = _devices.GetRenderDevices();
         foreach (var device in devices)
         {
             _names[device.Id] = device.Name;
         }
 
+        if (_engine is not null)
+        {
+            foreach (var dead in _engine.Outputs.Where(o => o.IsFaulted).ToList())
+            {
+                try
+                {
+                    _engine.RemoveOutput(dead.DeviceId);
+                }
+                catch
+                {
+                    // the device is already gone; nothing more to release
+                }
+
+                _faultReasons.TryRemove(dead.DeviceId, out var reason);
+                RecordFailure(dead.DeviceId, dead.Name, now, messages, reason);
+            }
+        }
+
+        foreach (var id in _blockedUntil.Where(p => p.Value <= now).Select(p => p.Key).ToList())
+        {
+            _blockedUntil.Remove(id);
+        }
+
         var forceRestart = _restartNeeded || _engine is null;
-        var wanted = _selected.Where(id => !_suppressed.ContainsKey(id)).ToList();
+        var wanted = _selected.Where(id => !_blockedUntil.ContainsKey(id)).ToList();
         var plan = MirrorPlanner.Plan(
             devices,
             wanted,
@@ -320,6 +418,7 @@ public sealed class MirrorController : IDisposable
         if (plan.RestartCapture)
         {
             DisposeEngine();
+            _addedAt.Clear();
             engine = new MirrorEngine();
             try
             {
@@ -342,23 +441,25 @@ public sealed class MirrorController : IDisposable
             foreach (var id in plan.Remove)
             {
                 engine.RemoveOutput(id);
+                _addedAt.Remove(id);
                 messages.Add($"Stopped mirroring to {NameOf(id)}.");
             }
         }
 
         foreach (var id in plan.Add)
         {
+            var timer = Stopwatch.StartNew();
             try
             {
                 var channel = engine.AddOutput(id, NameOf(id));
                 Apply(channel, GetOrCreate(id));
                 channel.Faulted += OnChannelFaulted;
-                messages.Add($"Mirroring to {channel.Name}.");
+                _addedAt[id] = DateTime.UtcNow;
+                messages.Add($"Mirroring to {channel.Name} (opened in {timer.ElapsedMilliseconds} ms).");
             }
             catch (Exception ex)
             {
-                _suppressed[id] = 0;
-                messages.Add($"Could not start {NameOf(id)}: {ex.Message}");
+                RecordFailure(id, NameOf(id), DateTime.UtcNow, messages, ex.Message);
             }
         }
     }
