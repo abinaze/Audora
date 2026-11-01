@@ -72,6 +72,7 @@ internal static class MirrorCommand
         Console.WriteLine("  l               list outputs");
         Console.WriteLine("  v <n> <0-100>   volume of output n");
         Console.WriteLine("  m <n>           mute/unmute output n");
+        Console.WriteLine("  d <n> <0-2000>  delay output n in milliseconds");
         Console.WriteLine("  b <n> <-100..100>  balance of output n (-100 left, 100 right)");
         Console.WriteLine("  q               quit");
         Console.WriteLine();
@@ -104,7 +105,7 @@ internal static class MirrorCommand
                 continue;
             }
 
-            if (cmd is "v" or "m" or "b"
+            if (cmd is "v" or "m" or "b" or "d"
                 && parts.Length >= 2
                 && int.TryParse(parts[1], out var n)
                 && n >= 1 && n <= channels.Count)
@@ -117,7 +118,11 @@ internal static class MirrorCommand
                 }
                 else if (parts.Length >= 3 && int.TryParse(parts[2], out var value))
                 {
-                    if (cmd == "v")
+                    if (cmd == "d")
+                    {
+                        channel.DelayMilliseconds = value;
+                    }
+                    else if (cmd == "v")
                     {
                         channel.Volume = Math.Clamp(value, 0, 100) / 100f;
                     }
@@ -148,7 +153,7 @@ internal static class MirrorCommand
         {
             var c = channels[i];
             var muted = c.IsMuted ? "MUTED" : "     ";
-            Console.WriteLine($"  {i + 1}. {c.Name,-44} vol {c.Volume * 100,3:0}%  {muted}  balance {c.Balance * 100:+0;-0;0}");
+            Console.WriteLine($"  {i + 1}. {c.Name,-44} vol {c.Volume * 100,3:0}%  {muted}  balance {c.Balance * 100:+0;-0;0}  delay {c.DelayMilliseconds} ms");
         }
     }
 }
