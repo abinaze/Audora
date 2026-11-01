@@ -8,7 +8,7 @@ namespace Audora.Core.Audio;
 /// and copies it to any number of additional output devices.
 /// The default device keeps playing natively, so it is never a mirror target.
 /// </summary>
-public sealed class MirrorEngine : IDisposable
+public sealed partial class MirrorEngine : IDisposable
 {
     private readonly MMDeviceEnumerator _devices = new();
     private readonly object _gate = new();
@@ -143,6 +143,7 @@ public sealed class MirrorEngine : IDisposable
 
     private void OnDataAvailable(object? sender, WaveInEventArgs e)
     {
+        RecordStats(e.Buffer, e.BytesRecorded);
         foreach (var output in Volatile.Read(ref _outputs))
         {
             output.Write(e.Buffer, 0, e.BytesRecorded);
