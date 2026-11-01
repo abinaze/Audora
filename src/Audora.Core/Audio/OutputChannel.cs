@@ -7,11 +7,12 @@ namespace Audora.Core.Audio;
 /// One output device receiving mirrored audio, with its own buffer, volume,
 /// mute and balance. Changing one channel never affects another.
 /// </summary>
-public sealed class OutputChannel : IDisposable
+public sealed partial class OutputChannel : IDisposable
 {
     private readonly MMDevice _device;
     private readonly BufferedWaveProvider _buffer;
     private readonly GainBalanceSampleProvider _gain;
+    private readonly DelaySampleProvider _delay;
     private readonly WasapiOut _out;
     private bool _disposed;
 
@@ -29,9 +30,10 @@ public sealed class OutputChannel : IDisposable
         };
 
         _gain = new GainBalanceSampleProvider(_buffer.ToSampleProvider());
+        _delay = new DelaySampleProvider(_gain);
         _out = new WasapiOut(device, AudioClientShareMode.Shared, true, 100);
         _out.PlaybackStopped += OnPlaybackStopped;
-        _out.Init(_gain.ToWaveProvider());
+        _out.Init(_delay.ToWaveProvider());
         _out.Play();
     }
 
