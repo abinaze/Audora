@@ -8,7 +8,7 @@ namespace Audora.Core.Devices;
 /// when devices are added, removed, connected, disconnected or the default changes.
 /// Events can arrive on any thread; UI code must marshal to its own thread.
 /// </summary>
-public sealed class DeviceEnumerator : IDisposable
+public sealed partial class DeviceEnumerator : IDisposable
 {
     private static readonly Guid FormFactorFormat = new("1da5d803-d492-4edd-8c23-e0c0ffee7f0e");
     private const int FormFactorPid = 0;
@@ -17,6 +17,8 @@ public sealed class DeviceEnumerator : IDisposable
     private readonly MMDeviceEnumerator _enumerator = new();
     private readonly NotificationClient _client;
     private readonly System.Threading.Timer _debounce;
+    private readonly object _sync = new();
+    private readonly object _raiseLock = new();
     private bool _disposed;
 
     public event EventHandler? DevicesChanged;
@@ -27,7 +29,7 @@ public sealed class DeviceEnumerator : IDisposable
         {
             if (!_disposed)
             {
-                DevicesChanged?.Invoke(this, EventArgs.Empty);
+                lock (_raiseLock) { DevicesChanged?.Invoke(this, EventArgs.Empty); }
             }
         });
         _client = new NotificationClient(() =>
@@ -40,7 +42,7 @@ public sealed class DeviceEnumerator : IDisposable
         _enumerator.RegisterEndpointNotificationCallback(_client);
     }
 
-    public IReadOnlyList<AudioDeviceInfo> GetRenderDevices()
+    private IReadOnlyList<AudioDeviceInfo> ReadRenderDevices()
     {
         var defaultId = GetDefaultRenderId();
         var result = new List<AudioDeviceInfo>();
