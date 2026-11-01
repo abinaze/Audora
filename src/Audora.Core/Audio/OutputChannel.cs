@@ -90,6 +90,7 @@ public sealed partial class OutputChannel : IDisposable
     {
         if (e.Exception is not null && !_disposed)
         {
+            IsFaulted = true;
             Faulted?.Invoke(this, e.Exception);
         }
     }
