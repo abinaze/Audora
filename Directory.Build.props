@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Product>Audora</Product>
+    <Authors>abinaze</Authors>
+    <Copyright>Copyright (c) 2026 abinaze</Copyright>
+    <RepositoryUrl>https://github.com/abinaze/Audora</RepositoryUrl>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>
