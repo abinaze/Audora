@@ -5,23 +5,57 @@ namespace Audora.Cli;
 
 internal static class MirrorCommand
 {
-    public static int Run(DeviceEnumerator devices, string[] terms)
+    private const string FromPrefix = "from:";
+
+    public static int Run(DeviceEnumerator devices, string[] args)
     {
+        var sourceTerm = args
+            .Where(a => a.StartsWith(FromPrefix, StringComparison.OrdinalIgnoreCase))
+            .Select(a => a[FromPrefix.Length..].Trim())
+            .FirstOrDefault();
+        var terms = args
+            .Where(a => !a.StartsWith(FromPrefix, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
         if (terms.Length == 0)
         {
-            Console.WriteLine("Usage: Audora.Cli mirror <part of device name> [more names...]");
-            Console.WriteLine("Example: Audora.Cli mirror \"Headphones (MT)\" Chu2");
+            Console.WriteLine("Usage: Audora.Cli mirror [from:<source name>] <target name> [more targets...]");
+            Console.WriteLine("  Source = the device your apps play to (default: the Windows default output).");
+            Console.WriteLine("  Targets = the other devices that should play the same audio.");
+            Console.WriteLine("Example: Audora.Cli mirror \"from:Headphones (MT)\" Chu2 \"Headphones (Realtek\"");
             return 1;
         }
 
-        var all = devices.GetRenderDevices();
-        if (!all.Any(d => d.IsDefault))
+        var active = devices.GetRenderDevices().Where(d => d.Status == DeviceStatus.Active).ToList();
+
+        AudioDeviceInfo? source;
+        if (string.IsNullOrWhiteSpace(sourceTerm))
         {
-            Console.WriteLine("No default output device found.");
-            return 1;
+            source = active.FirstOrDefault(d => d.IsDefault);
+            if (source is null)
+            {
+                Console.WriteLine("No default output device found.");
+                return 1;
+            }
+        }
+        else
+        {
+            var sourceMatches = active
+                .Where(d => d.Name.Contains(sourceTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (sourceMatches.Count != 1)
+            {
+                PrintMatchProblem("source", sourceTerm, sourceMatches, active);
+                return 1;
+            }
+
+            source = sourceMatches[0];
         }
 
-        var candidates = all.Where(d => d.Status == DeviceStatus.Active && !d.IsDefault).ToList();
+        var candidates = active
+            .Where(d => !string.Equals(d.Id, source.Id, StringComparison.OrdinalIgnoreCase))
+            .ToList();
         var targets = new List<AudioDeviceInfo>();
 
         foreach (var term in terms)
@@ -30,19 +64,9 @@ internal static class MirrorCommand
                 .Where(d => d.Name.Contains(term, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            if (matches.Count == 0)
+            if (matches.Count != 1)
             {
-                Console.WriteLine($"No active, non-default device matches \"{term}\".");
-                return 1;
-            }
-
-            if (matches.Count > 1)
-            {
-                Console.WriteLine($"\"{term}\" matches several devices; be more specific:");
-                foreach (var m in matches)
-                {
-                    Console.WriteLine($"  {m.Name}");
-                }
+                PrintMatchProblem("target", term, matches, candidates);
                 return 1;
             }
 
@@ -53,11 +77,16 @@ internal static class MirrorCommand
         }
 
         using var engine = new MirrorEngine();
-        engine.Start();
-        Console.WriteLine($"Capturing the default output: {engine.SourceName}");
+        engine.Start(source.Id);
+        Console.WriteLine($"Capturing from: {engine.SourceName}{(source.IsDefault ? " (Windows default)" : "")}");
+        if (!source.IsDefault)
+        {
+            Console.WriteLine("Only audio playing to that device is captured. Route your app to it in Windows:");
+            Console.WriteLine("  Settings > System > Sound > Volume mixer > your app > Output device.");
+        }
         Console.WriteLine($"Capture format: {engine.CaptureFormat}");
         engine.CaptureStopped += (_, ex) =>
-            Console.WriteLine($"[!] Capture stopped: {ex?.Message ?? "default device changed or went away"}");
+            Console.WriteLine($"[!] Capture stopped: {ex?.Message ?? "device changed or went away"}");
 
         var channels = new List<OutputChannel>();
         foreach (var target in targets)
@@ -69,12 +98,12 @@ internal static class MirrorCommand
 
         Console.WriteLine();
         Console.WriteLine("Play some audio (music or a video). Commands:");
-        Console.WriteLine("  l               list outputs");
-        Console.WriteLine("  v <n> <0-100>   volume of output n");
-        Console.WriteLine("  m <n>           mute/unmute output n");
-        Console.WriteLine("  d <n> <0-2000>  delay output n in milliseconds");
+        Console.WriteLine("  l                  list outputs");
+        Console.WriteLine("  v <n> <0-100>      volume of output n");
+        Console.WriteLine("  m <n>              mute/unmute output n");
         Console.WriteLine("  b <n> <-100..100>  balance of output n (-100 left, 100 right)");
-        Console.WriteLine("  q               quit");
+        Console.WriteLine("  d <n> <0-2000>     delay output n in milliseconds");
+        Console.WriteLine("  q                  quit");
         Console.WriteLine();
         PrintChannels(channels);
 
@@ -110,25 +139,25 @@ internal static class MirrorCommand
                 && int.TryParse(parts[1], out var n)
                 && n >= 1 && n <= channels.Count)
             {
-                var channel = channels[n - 1];
+                var selected = channels[n - 1];
 
                 if (cmd == "m")
                 {
-                    channel.IsMuted = !channel.IsMuted;
+                    selected.IsMuted = !selected.IsMuted;
                 }
                 else if (parts.Length >= 3 && int.TryParse(parts[2], out var value))
                 {
                     if (cmd == "d")
                     {
-                        channel.DelayMilliseconds = value;
+                        selected.DelayMilliseconds = value;
                     }
                     else if (cmd == "v")
                     {
-                        channel.Volume = Math.Clamp(value, 0, 100) / 100f;
+                        selected.Volume = Math.Clamp(value, 0, 100) / 100f;
                     }
                     else
                     {
-                        channel.Balance = Math.Clamp(value, -100, 100) / 100f;
+                        selected.Balance = Math.Clamp(value, -100, 100) / 100f;
                     }
                 }
                 else
@@ -145,6 +174,31 @@ internal static class MirrorCommand
         }
 
         return 0;
+    }
+
+    private static void PrintMatchProblem(string role, string term, List<AudioDeviceInfo> matches, List<AudioDeviceInfo> pool)
+    {
+        if (matches.Count == 0)
+        {
+            Console.WriteLine($"No active device matches {role} \"{term}\". Devices you can use here:");
+            foreach (var d in pool)
+            {
+                Console.WriteLine($"  {d.Name}");
+            }
+
+            if (role == "target")
+            {
+                Console.WriteLine("  (The source device is excluded: it cannot also be a target.)");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"\"{term}\" matches several devices; be more specific:");
+            foreach (var d in matches)
+            {
+                Console.WriteLine($"  {d.Name}");
+            }
+        }
     }
 
     private static void PrintChannels(List<OutputChannel> channels)
