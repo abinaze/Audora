@@ -108,7 +108,7 @@ public sealed class MirrorController : IDisposable
     {
         lock (_gate)
         {
-            var devices = _devices.GetRenderDevices();
+            var devices = _devices.GetActiveRenderDevices();
             var running = (_engine?.Outputs.Where(o => !o.IsFaulted).Select(o => o.DeviceId) ?? Enumerable.Empty<string>())
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
             var now = DateTime.UtcNow;
@@ -366,7 +366,12 @@ public sealed class MirrorController : IDisposable
             }
         }
 
-        var devices = _devices.GetRenderDevices();
+        var scanTimer = Stopwatch.StartNew();
+        var devices = _devices.GetActiveRenderDevices();
+        if (scanTimer.ElapsedMilliseconds > 750)
+        {
+            messages.Add($"Device scan took {scanTimer.ElapsedMilliseconds} ms.");
+        }
         foreach (var device in devices)
         {
             _names[device.Id] = device.Name;
