@@ -42,12 +42,12 @@ public sealed partial class DeviceEnumerator : IDisposable
         _enumerator.RegisterEndpointNotificationCallback(_client);
     }
 
-    private IReadOnlyList<AudioDeviceInfo> ReadRenderDevices()
+    private IReadOnlyList<AudioDeviceInfo> ReadRenderDevices(DeviceState states)
     {
         var defaultId = GetDefaultRenderId();
         var result = new List<AudioDeviceInfo>();
 
-        foreach (var device in _enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.All))
+        foreach (var device in _enumerator.EnumerateAudioEndPoints(DataFlow.Render, states))
         {
             using (device)
             {
