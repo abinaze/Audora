@@ -1,27 +1,41 @@
-# Audora architecture
+# How Audora works
 
-## Approach
+## The idea
 
-Windows cannot route one app's audio to several devices by itself, so Audora:
+Windows cannot send one app's sound to two devices by itself. Audora:
 
-1. Captures the default output with WASAPI loopback.
-2. Re-renders the stream to every additional selected device, each with its own
-   gain, balance and delay buffer.
+1. **Listens** to everything playing on the default output (WASAPI loopback capture).
+2. **Copies** it to every other device you choose, each with its own volume, mute,
+   left/right balance and delay.
 
-The default Windows device keeps playing natively. Additional devices are
-delayed by their own buffers, so per-device delay is used to line up devices
-with different latency (for example Bluetooth versus wired).
+The default device keeps playing directly. The others are delayed by their own buffers,
+so Audora's per-device delay lines up devices that have different latency, such as
+Bluetooth and wired.
 
-## Projects
+## Parts
+
+| Part | Job |
+|---|---|
+| `DeviceEnumerator` | Lists audio outputs, says how each is connected, reports plug and unplug |
+| `MirrorEngine` | Captures the source and feeds each output |
+| `OutputChannel` | One target device with its own volume, mute, balance and delay |
+| `MirrorPlanner` | Decides which outputs to start or stop (pure logic, fully tested) |
+| `MirrorController` | Keeps your selection playing when devices come and go or the default changes |
+| `DefaultDeviceSwitcher` | Changes the Windows default output |
+
+## Folders
 
 | Project | Purpose |
 |---|---|
-| `src/Audora.Core` | Device detection, audio engine, settings (no UI) |
-| `src/Audora.App` | WPF user interface, tray, themes |
-| `tests/Audora.Tests` | Unit tests for Core |
+| `src/Audora.Core` | The engine, with no user interface |
+| `src/Audora.App` | The desktop app (WPF) |
+| `tests/Audora.Tests` | Unit tests |
+| `tools/Audora.Cli` | Command-line tool for testing the engine |
+| `tools/Audora.IconGen` | Builds the app icon from the logo |
 
-## Known limitations
+## Known limits
 
-- Delaying the default device itself would need a virtual audio driver (not in v1).
-- Bluetooth latency varies by device; sync is manual per-device delay at first.
-- Some DRM-protected audio cannot be captured.
+- The default device itself cannot be delayed without a virtual audio driver. To line up
+  a slow device, make it the default and delay the others.
+- Bluetooth delay varies by device, so lining up is manual for now.
+- Some copy-protected audio cannot be captured.
