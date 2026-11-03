@@ -17,3 +17,6 @@ All notable changes are listed here. The format follows
 
 ### Changed
 - License changed from MIT to PolyForm Noncommercial 1.0.0: free for personal and noncommercial use, commercial use needs permission
+
+### Changed
+- License changed from MIT to PolyForm Noncommercial 1.0.0: free for personal and noncommercial use, commercial use needs permission
