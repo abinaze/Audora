@@ -1,6 +1,6 @@
 # Contributing to Audora
 
-Thank you for helping! Audora is free and open source (MIT). You do not need to be an
+Thank you for helping! Audora is free for personal and noncommercial use (PolyForm Noncommercial 1.0.0). You do not need to be an
 expert: testing on your own devices is one of the most useful things you can do.
 
 ## Ways to help
@@ -48,4 +48,4 @@ bash scripts/validate.sh      # restore, build and run the tests
 
 - Audora stays local: **no accounts, no telemetry, no cloud services.** Changes that add them will not be merged.
 - Be kind. See the [Code of Conduct](CODE_OF_CONDUCT.md).
-- By contributing you agree your work is released under the [MIT license](LICENSE).
+- By contributing you agree your work may be released under the project [license](LICENSE), and that the maintainer may also offer it under other licenses, including commercial ones.

@@ -7,12 +7,12 @@
 
 <p align="center">
   <b>Play your Windows audio on many speakers and headphones at once.</b><br>
-  Free, open source and private.
+  Free for personal use. Private by design.
 </p>
 
 <p align="center">
   <a href="https://github.com/abinaze/Audora/actions/workflows/build.yml"><img alt="Build" src="https://github.com/abinaze/Audora/actions/workflows/build.yml/badge.svg"></a>
-  <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue">
+  <img alt="License: PolyForm Noncommercial" src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue">
   <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%2F%2011-0078D6">
   <img alt="Status: early development" src="https://img.shields.io/badge/status-early%20development-orange">
 </p>
@@ -85,4 +85,4 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE). Built with [NAudio](https://github.com/naudio/NAudio).
+Free for personal and other noncommercial use under the [PolyForm Noncommercial License 1.0.0](LICENSE). Selling Audora, or using it in a paid product or service, needs permission from the author. Built with [NAudio](https://github.com/naudio/NAudio).

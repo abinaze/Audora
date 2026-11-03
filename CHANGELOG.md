@@ -14,3 +14,6 @@ All notable changes are listed here. The format follows
 - Command-line tool for trying and debugging the engine
 - Audora logo, brand files and Windows app icon
 - Project documentation, contribution guide, issue forms and security policy
+
+### Changed
+- License changed from MIT to PolyForm Noncommercial 1.0.0: free for personal and noncommercial use, commercial use needs permission
