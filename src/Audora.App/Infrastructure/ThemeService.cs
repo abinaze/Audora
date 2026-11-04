@@ -8,5 +8,10 @@ public static class ThemeService
     {
         var source = new Uri(dark ? "Themes/Dark.xaml" : "Themes/Light.xaml", UriKind.Relative);
         Application.Current.Resources.MergedDictionaries[0] = new ResourceDictionary { Source = source };
+
+        foreach (Window window in Application.Current.Windows)
+        {
+            TitleBar.Apply(window, dark);
+        }
     }
 }

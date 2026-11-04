@@ -10,6 +10,7 @@
         <ResourceDictionary Source="Themes/Brand.xaml"/>
         <ResourceDictionary Source="Themes/Controls.xaml"/>
         <ResourceDictionary Source="Themes/Controls2.xaml"/>
+        <ResourceDictionary Source="Themes/Controls3.xaml"/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>
