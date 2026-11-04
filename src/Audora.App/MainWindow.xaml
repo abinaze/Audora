@@ -60,7 +60,7 @@
 
           <TextBlock Margin="0,16,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
                      Visibility="{Binding ShowDefaultNote, Converter={StaticResource BoolToVis}}"
-                     Text="This is your Windows default device, so it plays directly. Its volume is the master volume above. Equalizer, balance, delay and boost work on the other devices."/>
+                     Text="{Binding DefaultNote}"/>
 
           <Grid Margin="0,14,0,0" Visibility="{Binding ShowMirrorControls, Converter={StaticResource BoolToVis}}">
             <Button Content="Fine tune" HorizontalAlignment="Left" Style="{StaticResource AudoraButton}"
@@ -93,7 +93,7 @@
                          HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
             </Grid>
             <TextBlock Margin="0,10,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                       Text="Delay lines this device up with a slower one. Bluetooth is usually the slowest: make it the Windows default and delay the others."/>
+                       Text="Delay lines this device up with a slower one. Bluetooth is usually the slowest. Give it no delay and add delay to the others. Sound (equalizer) for this device is on the Sound tab."/>
           </StackPanel>
         </StackPanel>
       </Border>
@@ -115,6 +115,13 @@
     <DataTemplate x:Key="PresetTemplate">
       <Button Content="{Binding Name}" Style="{StaticResource PresetChip}"
               Command="{Binding DataContext.ChoosePresetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+              CommandParameter="{Binding}"/>
+    </DataTemplate>
+
+    <!-- One "edit sound for" chip -->
+    <DataTemplate x:Key="TargetTemplate">
+      <Button Content="{Binding Label}" Style="{StaticResource PresetChip}"
+              Command="{Binding DataContext.ChooseTargetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
               CommandParameter="{Binding}"/>
     </DataTemplate>
   </Window.Resources>
@@ -180,7 +187,7 @@
                    Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" MaxWidth="560"/>
       </DockPanel>
 
-      <!-- Master volume (the Windows volume bar) -->
+      <!-- Master volume (the Windows volume bar, and every other device) -->
       <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,0,18">
         <Grid>
           <Grid.ColumnDefinitions>
@@ -193,7 +200,8 @@
                           IsChecked="{Binding IsMasterMuted, Mode=TwoWay}"/>
             <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
               <TextBlock Text="Master volume" FontSize="16" FontWeight="SemiBold"/>
-              <TextBlock Text="Same as the Windows volume bar" FontSize="12" Foreground="{DynamicResource MutedBrush}"/>
+              <TextBlock Text="Windows volume bar, and all your other devices" FontSize="12"
+                         Foreground="{DynamicResource MutedBrush}"/>
             </StackPanel>
           </StackPanel>
           <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Margin="26,0"
@@ -255,8 +263,20 @@
             <StackPanel DataContext="{Binding Sound}">
               <TextBlock Text="Sound" FontSize="22" FontWeight="SemiBold"/>
               <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
-                         Text="Shape the sound of the devices Audora plays on. Your Windows default device plays directly, so it cannot be processed. Original means no changes."/>
+                         Text="Shape the sound of the devices Audora plays on. Your Windows default device plays directly, so it cannot be processed (turn on Full control in Settings to change that). Original means no changes."/>
 
+              <TextBlock Text="Edit sound for" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,8"/>
+              <ItemsControl ItemsSource="{Binding Targets}" ItemTemplate="{StaticResource TargetTemplate}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
+              <TextBlock Text="{Binding ScopeNote}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,14"
+                         Foreground="{DynamicResource MutedBrush}"/>
+
+              <TextBlock Text="Presets" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,8"/>
               <ItemsControl ItemsSource="{Binding Presets}" ItemTemplate="{StaticResource PresetTemplate}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
@@ -301,7 +321,8 @@
 
                   <!-- Tone -->
                   <StackPanel Grid.Column="2" Width="250" Margin="18,0,0,0">
-                    <TextBlock Text="{Binding Summary}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,14"/>
+                    <TextBlock Text="{Binding TargetTitle}" FontSize="12" Foreground="{DynamicResource MutedBrush}"/>
+                    <TextBlock Text="{Binding Summary}" FontSize="16" FontWeight="SemiBold" Margin="0,2,0,14"/>
 
                     <Grid>
                       <TextBlock Text="Bass" Foreground="{DynamicResource MutedBrush}"/>
@@ -327,6 +348,9 @@
                             Value="{Binding Width, Mode=TwoWay}" AutomationProperties.Name="Stereo width"/>
 
                     <Button Content="Back to Original" Style="{StaticResource AudoraButton}" Command="{Binding ResetCommand}"/>
+                    <Button Content="Use the All devices sound" Style="{StaticResource AudoraButton}" Margin="0,8,0,0"
+                            Command="{Binding FollowAllCommand}"
+                            Visibility="{Binding ShowFollowAll, Converter={StaticResource BoolToVis}}"/>
                   </StackPanel>
                 </Grid>
               </Border>
@@ -350,22 +374,24 @@
 
               <Border Style="{StaticResource Card}" Margin="0,0,0,14">
                 <StackPanel>
-                  <TextBlock Text="Volume" FontSize="16" FontWeight="SemiBold"/>
-                  <CheckBox Margin="0,12,0,0" Foreground="{DynamicResource TextBrush}"
-                            Content="Master volume also changes the devices Audora plays on"
-                            IsChecked="{Binding MasterAffectsMirrors, Mode=TwoWay}"/>
+                  <TextBlock Text="Full control" FontSize="16" FontWeight="SemiBold"/>
                   <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                             Text="Off by default. On some sound cards the Windows volume already changes what Audora hears, so the other devices follow it without this. If they do not follow the master volume on your PC, turn this on."/>
-                </StackPanel>
-              </Border>
-
-              <Border Style="{StaticResource Card}" Margin="0,0,0,14">
-                <StackPanel>
-                  <TextBlock Text="Troubleshooting" FontSize="16" FontWeight="SemiBold"/>
-                  <TextBlock Text="{Binding LogPath}" Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap"
-                             Foreground="{DynamicResource MutedBrush}"/>
-                  <Button Content="Open log folder" Command="{Binding OpenLogsCommand}"
-                          Style="{StaticResource AudoraButton}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+                             Text="Windows plays your default device directly, so Audora cannot change its sound. With a free virtual audio cable, Audora plays every device itself: the equalizer, boost, balance and delay then work on all of them, and you can line up Bluetooth with the rest."/>
+                  <TextBlock Text="{Binding FullControlStatus}" Margin="0,10,0,0" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                  <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <Button Content="Get the free virtual cable" Style="{StaticResource AudoraButton}" Margin="0,0,8,0"
+                            Command="{Binding GetCableCommand}"
+                            Visibility="{Binding CableMissing, Converter={StaticResource BoolToVis}}"/>
+                    <Button Content="Turn on full control" Style="{StaticResource AudoraButton}" Margin="0,0,8,0"
+                            Command="{Binding TurnOnFullControlCommand}"
+                            Visibility="{Binding CanTurnOnFullControl, Converter={StaticResource BoolToVis}}"/>
+                    <Button Content="Turn off full control" Style="{StaticResource AudoraButton}"
+                            Command="{Binding TurnOffFullControlCommand}"
+                            Visibility="{Binding FullControlOn, Converter={StaticResource BoolToVis}}"/>
+                  </StackPanel>
+                  <TextBlock Margin="0,10,0,0" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                             Visibility="{Binding CableMissing, Converter={StaticResource BoolToVis}}"
+                             Text="The virtual cable (VB-CABLE by VB-Audio) is separate software with its own license, so check its terms. Audora does not include it. Installing it needs administrator rights and a restart."/>
                 </StackPanel>
               </Border>
 
