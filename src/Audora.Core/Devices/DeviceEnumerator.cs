@@ -39,6 +39,7 @@ public sealed partial class DeviceEnumerator : IDisposable
                 _debounce.Change(DebounceMilliseconds, Timeout.Infinite);
             }
         });
+        _client.Touched = ForgetName;
         _enumerator.RegisterEndpointNotificationCallback(_client);
     }
 
@@ -51,7 +52,7 @@ public sealed partial class DeviceEnumerator : IDisposable
         {
             using (device)
             {
-                var name = SafeName(device);
+                var name = NameFor(device);
                 var type = TypeFor(device, name, classify);
                 result.Add(new AudioDeviceInfo(
                     device.ID,
@@ -210,12 +211,13 @@ public sealed partial class DeviceEnumerator : IDisposable
     private sealed class NotificationClient : IMMNotificationClient
     {
         private readonly Action _onChange;
+        public Action<string>? Touched { get; set; }
 
         public NotificationClient(Action onChange) => _onChange = onChange;
 
-        public void OnDeviceStateChanged(string deviceId, DeviceState newState) => _onChange();
-        public void OnDeviceAdded(string pwstrDeviceId) => _onChange();
-        public void OnDeviceRemoved(string deviceId) => _onChange();
+        public void OnDeviceStateChanged(string deviceId, DeviceState newState) { Touched?.Invoke(deviceId); _onChange(); }
+        public void OnDeviceAdded(string pwstrDeviceId) { Touched?.Invoke(pwstrDeviceId); _onChange(); }
+        public void OnDeviceRemoved(string deviceId) { Touched?.Invoke(deviceId); _onChange(); }
         public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId) => _onChange();
         public void OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key) { } // too noisy; ignored
     }
