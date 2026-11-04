@@ -1,0 +1,245 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Data;
+using System.Windows.Threading;
+using Audora.App.Infrastructure;
+using Audora.Core.Audio;
+using Audora.Core.Devices;
+
+namespace Audora.App.ViewModels;
+
+public sealed class MainViewModel : ObservableObject, IDisposable
+{
+    private readonly Dispatcher _ui;
+    private readonly DeviceEnumerator _devices;
+    private readonly MirrorController _controller;
+    private readonly Dictionary<string, DeviceViewModel> _byId = new(StringComparer.OrdinalIgnoreCase);
+
+    private double _master = 100;
+    private string _search = string.Empty;
+    private bool _showAll;
+    private bool _isDark = true;
+    private string _status = "Starting...";
+    private string _routingText = "Looking for audio devices...";
+    private int _refreshing;
+    private volatile bool _again;
+    private bool _disposed;
+
+    public MainViewModel(Dispatcher ui)
+    {
+        _ui = ui;
+        // Created on a background thread so Windows audio calls never depend on the UI thread.
+        _devices = Task.Run(() => new DeviceEnumerator()).GetAwaiter().GetResult();
+        _controller = new MirrorController(_devices);
+
+        View = CollectionViewSource.GetDefaultView(Devices);
+        View.Filter = Filter;
+        View.SortDescriptions.Add(new SortDescription(nameof(DeviceViewModel.IsDefault), ListSortDirection.Descending));
+        View.SortDescriptions.Add(new SortDescription(nameof(DeviceViewModel.IsAvailable), ListSortDirection.Descending));
+        View.SortDescriptions.Add(new SortDescription(nameof(DeviceViewModel.Name), ListSortDirection.Ascending));
+
+        RefreshCommand = new RelayCommand(() => _ = RefreshAsync());
+        SelectAllCommand = new RelayCommand(() => SetAll(d => d.CanSelect, d => d.IsSelected = true));
+        DeselectAllCommand = new RelayCommand(() => SetAll(d => d.CanSelect, d => d.IsSelected = false));
+        MuteAllCommand = new RelayCommand(() => SetAll(d => d.IsAvailable, d => d.IsMuted = true));
+        UnmuteAllCommand = new RelayCommand(() => SetAll(d => d.IsAvailable, d => d.IsMuted = false));
+        ToggleThemeCommand = new RelayCommand(() =>
+        {
+            IsDark = !IsDark;
+            ThemeService.Apply(IsDark);
+            Raise(nameof(ThemeButtonText));
+        });
+
+        _devices.DevicesChanged += OnDevicesChanged;
+        _controller.Message += OnMessage;
+
+        SerialWorker.Run(() => _controller.Start());
+        _ = RefreshAsync();
+    }
+
+    public ObservableCollection<DeviceViewModel> Devices { get; } = new();
+
+    public ICollectionView View { get; }
+
+    public RelayCommand RefreshCommand { get; }
+
+    public RelayCommand SelectAllCommand { get; }
+
+    public RelayCommand DeselectAllCommand { get; }
+
+    public RelayCommand MuteAllCommand { get; }
+
+    public RelayCommand UnmuteAllCommand { get; }
+
+    public RelayCommand ToggleThemeCommand { get; }
+
+    public bool IsDark
+    {
+        get => _isDark;
+        private set => Set(ref _isDark, value);
+    }
+
+    public string ThemeButtonText => _isDark ? "Light theme" : "Dark theme";
+
+    /// <summary>Master volume, 0 to 100. Multiplies every device's own volume.</summary>
+    public double Master
+    {
+        get => _master;
+        set
+        {
+            if (Set(ref _master, Math.Clamp(value, 0, 100)))
+            {
+                foreach (var device in Devices)
+                {
+                    device.ApplyAudio();
+                }
+            }
+        }
+    }
+
+    public string Search
+    {
+        get => _search;
+        set
+        {
+            if (Set(ref _search, value ?? string.Empty))
+            {
+                View.Refresh();
+            }
+        }
+    }
+
+    public bool ShowAll
+    {
+        get => _showAll;
+        set
+        {
+            if (Set(ref _showAll, value))
+            {
+                View.Refresh();
+            }
+        }
+    }
+
+    public string Status
+    {
+        get => _status;
+        private set => Set(ref _status, value);
+    }
+
+    public string RoutingText
+    {
+        get => _routingText;
+        private set => Set(ref _routingText, value);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _devices.DevicesChanged -= OnDevicesChanged;
+        _controller.Message -= OnMessage;
+        _controller.Dispose();
+        _devices.Dispose();
+    }
+
+    private double CurrentMaster() => _master / 100.0;
+
+    private bool Filter(object item)
+    {
+        var device = (DeviceViewModel)item;
+        if (!_showAll && !device.IsAvailable && !device.IsSelected)
+        {
+            return false;
+        }
+
+        return string.IsNullOrWhiteSpace(_search)
+            || device.Name.Contains(_search.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void SetAll(Func<DeviceViewModel, bool> include, Action<DeviceViewModel> change)
+    {
+        foreach (var device in Devices.Where(include).ToList())
+        {
+            change(device);
+        }
+    }
+
+    private void OnDevicesChanged(object? sender, EventArgs e) => _ = RefreshAsync();
+
+    private void OnMessage(object? sender, string text)
+    {
+        _ui.BeginInvoke(() => Status = text);
+        _ = RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (Interlocked.Exchange(ref _refreshing, 1) == 1)
+        {
+            _again = true;
+            return;
+        }
+
+        try
+        {
+            do
+            {
+                _again = false;
+                var snapshot = await Task.Run(() =>
+                    (Devices: _devices.GetRenderDevices(), State: _controller.GetStatus(), Source: _controller.SourceName));
+                await _ui.InvokeAsync(() => Apply(snapshot.Devices, snapshot.State, snapshot.Source));
+            }
+            while (_again && !_disposed);
+        }
+        catch (Exception ex)
+        {
+            _ = _ui.BeginInvoke(() => Status = $"Could not refresh devices: {ex.Message}");
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _refreshing, 0);
+        }
+    }
+
+    private void Apply(IReadOnlyList<AudioDeviceInfo> devices, IReadOnlyList<MirrorTargetStatus> state, string? source)
+    {
+        var states = state.ToDictionary(s => s.DeviceId, s => s.State, StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var info in devices)
+        {
+            seen.Add(info.Id);
+            if (!_byId.TryGetValue(info.Id, out var vm))
+            {
+                vm = new DeviceViewModel(info, _controller, CurrentMaster);
+                _byId[info.Id] = vm;
+                Devices.Add(vm);
+            }
+
+            states.TryGetValue(info.Id, out var mirrorState);
+            vm.Update(info, mirrorState);
+        }
+
+        foreach (var vm in _byId.Values.Where(v => !seen.Contains(v.Id)))
+        {
+            vm.MarkGone();
+        }
+
+        var playing = Devices.Count(d => d.IsAvailable && d.IsSelected);
+        RoutingText = source is null
+            ? "Audio routing is paused: no active default output."
+            : $"Listening to {source}  -  playing on {playing} device{(playing == 1 ? "" : "s")}";
+
+        View.Refresh();
+    }
+}

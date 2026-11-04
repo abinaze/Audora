@@ -7,8 +7,13 @@ public sealed class RelayCommand : ICommand
     private readonly Action<object?> _run;
     private readonly Func<object?, bool>? _canRun;
 
-    public RelayCommand(Action run) : this(_ => run(), null)
+    public RelayCommand(Action run, Func<bool>? canRun = null)
     {
+        _run = _ => run();
+        if (canRun is not null)
+        {
+            _canRun = _ => canRun();
+        }
     }
 
     public RelayCommand(Action<object?> run, Func<object?, bool>? canRun = null)
