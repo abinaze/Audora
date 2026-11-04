@@ -9,7 +9,7 @@ namespace Audora.App.ViewModels;
 /// gain and delay. The Windows default device plays directly, so its volume and mute
 /// control the real Windows volume of that device instead.
 /// </summary>
-public sealed class DeviceViewModel : ObservableObject
+public sealed partial class DeviceViewModel : ObservableObject
 {
     private readonly MirrorController _controller;
     private readonly Func<double> _master;
@@ -239,7 +239,7 @@ public sealed class DeviceViewModel : ObservableObject
 
             StateText = !IsAvailable ? (mirrorState ?? "Not connected")
                 : nowDefault ? "Playing directly (Windows default)"
-                : mirrorState ?? "Ready";
+                : (mirrorState == "Mirroring" ? "Playing" : mirrorState) ?? "Ready";
 
             Raise(nameof(CanSelect));
             Raise(nameof(CanMakeDefault));

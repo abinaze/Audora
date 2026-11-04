@@ -161,8 +161,6 @@
         <Button Content="Deselect all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding DeselectAllCommand}"/>
         <Button Content="Mute all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding MuteAllCommand}"/>
         <Button Content="Unmute all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding UnmuteAllCommand}"/>
-        <CheckBox Content="Show disconnected" Margin="16,0,0,0" VerticalAlignment="Center"
-                  Foreground="{DynamicResource MutedBrush}" IsChecked="{Binding ShowAll, Mode=TwoWay}"/>
       </StackPanel>
     </Grid>
 

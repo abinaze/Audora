@@ -14,20 +14,21 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private readonly DeviceEnumerator _devices;
     private readonly MirrorController _controller;
     private readonly Dictionary<string, DeviceViewModel> _byId = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, DeviceMemory> _memory = new(StringComparer.OrdinalIgnoreCase);
 
     private double _master = 100;
     private string _search = string.Empty;
-    private bool _showAll;
     private bool _isDark = true;
     private string _status = "Starting...";
     private string _routingText = "Looking for audio devices...";
     private int _refreshing;
     private volatile bool _again;
-    private bool _disposed;
+    private volatile bool _disposed;
 
     public MainViewModel(Dispatcher ui)
     {
         _ui = ui;
+
         // Created on a background thread so Windows audio calls never depend on the UI thread.
         _devices = Task.Run(() => new DeviceEnumerator()).GetAwaiter().GetResult();
         _controller = new MirrorController(_devices);
@@ -35,7 +36,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         View = CollectionViewSource.GetDefaultView(Devices);
         View.Filter = Filter;
         View.SortDescriptions.Add(new SortDescription(nameof(DeviceViewModel.IsDefault), ListSortDirection.Descending));
-        View.SortDescriptions.Add(new SortDescription(nameof(DeviceViewModel.IsAvailable), ListSortDirection.Descending));
         View.SortDescriptions.Add(new SortDescription(nameof(DeviceViewModel.Name), ListSortDirection.Ascending));
 
         RefreshCommand = new RelayCommand(() => _ = RefreshAsync());
@@ -109,18 +109,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    public bool ShowAll
-    {
-        get => _showAll;
-        set
-        {
-            if (Set(ref _showAll, value))
-            {
-                View.Refresh();
-            }
-        }
-    }
-
     public string Status
     {
         get => _status;
@@ -143,23 +131,22 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _disposed = true;
         _devices.DevicesChanged -= OnDevicesChanged;
         _controller.Message -= OnMessage;
-        _controller.Dispose();
-        _devices.Dispose();
+
+        // Let queued audio changes finish, then release everything off the UI thread.
+        SerialWorker.Shutdown(TimeSpan.FromSeconds(2));
+        var cleanup = Task.Run(() =>
+        {
+            try { _controller.Dispose(); } catch (Exception ex) { Log.Error("Stopping audio failed", ex); }
+            try { _devices.Dispose(); } catch (Exception ex) { Log.Error("Releasing audio devices failed", ex); }
+        });
+        cleanup.Wait(TimeSpan.FromSeconds(4));
     }
 
     private double CurrentMaster() => _master / 100.0;
 
-    private bool Filter(object item)
-    {
-        var device = (DeviceViewModel)item;
-        if (!_showAll && !device.IsAvailable && !device.IsSelected)
-        {
-            return false;
-        }
-
-        return string.IsNullOrWhiteSpace(_search)
-            || device.Name.Contains(_search.Trim(), StringComparison.OrdinalIgnoreCase);
-    }
+    private bool Filter(object item) =>
+        string.IsNullOrWhiteSpace(_search)
+        || ((DeviceViewModel)item).Name.Contains(_search.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private void SetAll(Func<DeviceViewModel, bool> include, Action<DeviceViewModel> change)
     {
@@ -169,10 +156,22 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void OnDevicesChanged(object? sender, EventArgs e) => _ = RefreshAsync();
+    private void OnDevicesChanged(object? sender, EventArgs e)
+    {
+        if (!_disposed)
+        {
+            _ = RefreshAsync();
+        }
+    }
 
     private void OnMessage(object? sender, string text)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        Log.Info(text);
         _ui.BeginInvoke(() => Status = text);
         _ = RefreshAsync();
     }
@@ -195,6 +194,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             do
             {
                 _again = false;
+
+                // Windows sends a burst of events for one change; wait for it to settle so the
+                // window never shows a half-updated picture.
+                await Task.Delay(250);
+                if (_disposed)
+                {
+                    return;
+                }
+
                 var snapshot = await Task.Run(() =>
                     (Devices: _devices.GetRenderDevices(), State: _controller.GetStatus(), Source: _controller.SourceName));
                 await _ui.InvokeAsync(() => Apply(snapshot.Devices, snapshot.State, snapshot.Source));
@@ -203,7 +211,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            _ = _ui.BeginInvoke(() => Status = $"Could not refresh devices: {ex.Message}");
+            if (!_disposed)
+            {
+                Log.Error("Could not refresh devices", ex);
+                _ = _ui.BeginInvoke(() => Status = $"Could not refresh devices: {ex.Message}");
+            }
         }
         finally
         {
@@ -213,15 +225,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void Apply(IReadOnlyList<AudioDeviceInfo> devices, IReadOnlyList<MirrorTargetStatus> state, string? source)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        var visible = DeviceCatalog.Visible(devices);
         var states = state.ToDictionary(s => s.DeviceId, s => s.State, StringComparer.OrdinalIgnoreCase);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var info in devices)
+        foreach (var info in visible)
         {
             seen.Add(info.Id);
             if (!_byId.TryGetValue(info.Id, out var vm))
             {
                 vm = new DeviceViewModel(info, _controller, CurrentMaster);
+                if (_memory.TryGetValue(info.Id, out var memory))
+                {
+                    vm.Restore(memory);
+                }
+
                 _byId[info.Id] = vm;
                 Devices.Add(vm);
             }
@@ -230,16 +253,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             vm.Update(info, mirrorState);
         }
 
-        foreach (var vm in _byId.Values.Where(v => !seen.Contains(v.Id)))
+        // A device that is no longer connected disappears from the list. Its settings are kept.
+        foreach (var gone in _byId.Values.Where(v => !seen.Contains(v.Id)).ToList())
         {
-            vm.MarkGone();
+            _memory[gone.Id] = gone.Snapshot();
+            _byId.Remove(gone.Id);
+            Devices.Remove(gone);
         }
 
-        var playing = Devices.Count(d => d.IsAvailable && d.IsSelected);
-        RoutingText = source is null
+        var waiting = state.Where(s => !seen.Contains(s.DeviceId)).Select(s => s.Name).ToList();
+        var playing = Devices.Count(d => d.IsSelected);
+
+        var text = source is null
             ? "Audio routing is paused: no active default output."
             : $"Listening to {source}  -  playing on {playing} device{(playing == 1 ? "" : "s")}";
+        if (waiting.Count > 0)
+        {
+            text += $"  -  waiting for {string.Join(", ", waiting)}";
+        }
 
+        RoutingText = text;
         View.Refresh();
     }
 }
