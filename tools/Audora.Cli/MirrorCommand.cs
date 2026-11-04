@@ -26,7 +26,7 @@ internal static class MirrorCommand
             return 1;
         }
 
-        var active = devices.GetRenderDevices().Where(d => d.Status == DeviceStatus.Active).ToList();
+        var active = devices.GetActiveRenderDevices().ToList();
 
         AudioDeviceInfo? source;
         if (string.IsNullOrWhiteSpace(sourceTerm))

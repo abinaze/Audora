@@ -16,7 +16,7 @@ internal static class RunCommand
             return 1;
         }
 
-        var active = devices.GetRenderDevices().Where(d => d.Status == DeviceStatus.Active).ToList();
+        var active = devices.GetActiveRenderDevices().ToList();
         var targets = new List<AudioDeviceInfo>();
 
         foreach (var term in terms)

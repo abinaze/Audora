@@ -7,7 +7,7 @@ internal static class SetDefaultCommand
     public static int Run(DeviceEnumerator devices, string[] terms)
     {
         var term = string.Join(' ', terms).Trim();
-        var active = devices.GetRenderDevices().Where(d => d.Status == DeviceStatus.Active).ToList();
+        var active = devices.GetActiveRenderDevices().ToList();
 
         if (term.Length == 0)
         {

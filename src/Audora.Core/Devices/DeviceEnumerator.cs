@@ -42,7 +42,7 @@ public sealed partial class DeviceEnumerator : IDisposable
         _enumerator.RegisterEndpointNotificationCallback(_client);
     }
 
-    private IReadOnlyList<AudioDeviceInfo> ReadRenderDevices(DeviceState states)
+    private IReadOnlyList<AudioDeviceInfo> ReadRenderDevices(DeviceState states, bool classify)
     {
         var defaultId = GetDefaultRenderId();
         var result = new List<AudioDeviceInfo>();
@@ -52,7 +52,7 @@ public sealed partial class DeviceEnumerator : IDisposable
             using (device)
             {
                 var name = SafeName(device);
-                var type = DeviceClassifier.Classify(ReadFormFactor(device), name, ReadStringProperties(device));
+                var type = TypeFor(device, name, classify);
                 result.Add(new AudioDeviceInfo(
                     device.ID,
                     name,

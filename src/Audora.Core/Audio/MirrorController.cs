@@ -4,7 +4,7 @@ using Audora.Core.Devices;
 
 namespace Audora.Core.Audio;
 
-public sealed record MirrorTargetStatus(string DeviceId, string Name, string State);
+public sealed record MirrorTargetStatus(string DeviceId, string Name, string State, string? Detail = null);
 
 /// <summary>
 /// Keeps the user's selected devices playing: starts and stops outputs as devices come and go,
@@ -28,6 +28,8 @@ public sealed class MirrorController : IDisposable
     private readonly Dictionary<string, DateTime> _blockedUntil = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, int> _failureCounts = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, DateTime> _addedAt = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _lastErrors = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<AudioDeviceInfo> _lastDevices = Array.Empty<AudioDeviceInfo>();
     private readonly ConcurrentDictionary<string, string> _faultReasons = new(StringComparer.OrdinalIgnoreCase);
     private readonly System.Threading.Timer _timer;
     private MirrorEngine? _engine;
@@ -108,7 +110,7 @@ public sealed class MirrorController : IDisposable
     {
         lock (_gate)
         {
-            var devices = _devices.GetActiveRenderDevices();
+            var devices = _lastDevices;
             var running = (_engine?.Outputs.Where(o => !o.IsFaulted).Select(o => o.DeviceId) ?? Enumerable.Empty<string>())
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
             var now = DateTime.UtcNow;
@@ -143,7 +145,8 @@ public sealed class MirrorController : IDisposable
                     state = "Starting";
                 }
 
-                result.Add(new MirrorTargetStatus(id, name, state));
+                _lastErrors.TryGetValue(id, out var detail);
+                result.Add(new MirrorTargetStatus(id, name, state, detail));
             }
 
             return result;
@@ -337,6 +340,7 @@ public sealed class MirrorController : IDisposable
         var count = (healthy ? 0 : previous) + 1;
 
         _failureCounts[deviceId] = count;
+        _lastErrors[deviceId] = string.IsNullOrWhiteSpace(reason) ? "Windows stopped the output" : reason;
         _addedAt.Remove(deviceId);
 
         var why = string.IsNullOrWhiteSpace(reason) ? "" : $" ({reason})";
@@ -368,6 +372,7 @@ public sealed class MirrorController : IDisposable
 
         var scanTimer = Stopwatch.StartNew();
         var devices = _devices.GetActiveRenderDevices();
+        _lastDevices = devices;
         if (scanTimer.ElapsedMilliseconds > 750)
         {
             messages.Add($"Device scan took {scanTimer.ElapsedMilliseconds} ms.");
@@ -460,6 +465,7 @@ public sealed class MirrorController : IDisposable
                 Apply(channel, GetOrCreate(id));
                 channel.Faulted += OnChannelFaulted;
                 _addedAt[id] = DateTime.UtcNow;
+                _lastErrors.Remove(id);
                 messages.Add($"Mirroring to {channel.Name} (opened in {timer.ElapsedMilliseconds} ms).");
             }
             catch (Exception ex)
