@@ -124,7 +124,7 @@ public sealed partial class MirrorEngine : IDisposable
             _capture.DataAvailable -= OnDataAvailable;
             _capture.RecordingStopped -= OnRecordingStopped;
             try { _capture.StopRecording(); } catch { }
-            _capture.Dispose();
+            try { _capture.Dispose(); } catch { }
         }
 
         OutputChannel[] outputs;
@@ -136,11 +136,11 @@ public sealed partial class MirrorEngine : IDisposable
 
         foreach (var output in outputs)
         {
-            output.Dispose();
+            try { output.Dispose(); } catch { }
         }
 
-        _source?.Dispose();
-        _devices.Dispose();
+        try { _source?.Dispose(); } catch { }
+        try { _devices.Dispose(); } catch { }
     }
 
     private void OnDataAvailable(object? sender, WaveInEventArgs e)

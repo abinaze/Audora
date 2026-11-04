@@ -114,8 +114,8 @@ public sealed partial class DeviceEnumerator : IDisposable
 
         _disposed = true;
         try { _enumerator.UnregisterEndpointNotificationCallback(_client); } catch { }
-        _debounce.Dispose();
-        _enumerator.Dispose();
+        try { _debounce.Dispose(); } catch { }
+        try { _enumerator.Dispose(); } catch { }
     }
 
     private string? GetDefaultRenderId()

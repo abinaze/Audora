@@ -82,8 +82,8 @@ public sealed partial class OutputChannel : IDisposable
         _disposed = true;
         _out.PlaybackStopped -= OnPlaybackStopped;
         try { _out.Stop(); } catch { }
-        _out.Dispose();
-        _device.Dispose();
+        try { _out.Dispose(); } catch { }
+        try { _device.Dispose(); } catch { }
     }
 
     private void OnPlaybackStopped(object? sender, StoppedEventArgs e)
