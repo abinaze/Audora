@@ -95,7 +95,7 @@ public sealed class MirrorController : IDisposable
     }
 
     public void SetVolume(string deviceId, float volume) =>
-        Update(deviceId, s => s.Volume = Math.Clamp(volume, 0f, 1f));
+        Update(deviceId, s => s.Volume = Math.Clamp(volume, 0f, 2f));
 
     public void SetMuted(string deviceId, bool muted) =>
         Update(deviceId, s => s.Muted = muted);

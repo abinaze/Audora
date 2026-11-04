@@ -48,7 +48,7 @@ public sealed partial class OutputChannel : IDisposable
     public float Volume
     {
         get => _gain.Volume;
-        set => _gain.Volume = Math.Clamp(value, 0f, 1f);
+        set => _gain.Volume = Math.Clamp(value, 0f, 2f);
     }
 
     public bool IsMuted
