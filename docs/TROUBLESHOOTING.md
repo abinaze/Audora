@@ -41,3 +41,8 @@ dotnet run --project tools/Audora.Cli -- dump
 ```
 
 Remove any device names you would rather not share before pasting.
+
+## Where is the log file?
+
+`%LOCALAPPDATA%\Audora\logs\audora.log` (paste that into the Windows Explorer address bar).
+It holds device names and error messages. When you report a bug, attach the last 40 lines.

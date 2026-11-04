@@ -28,22 +28,26 @@ never changes the others.
 
 ## Status
 
-**Early development.** The audio engine already works on real hardware and you can try it
-from the command line. The desktop app window, the installer and the website are still
-being built, so Audora is not ready for everyday use yet.
+**Early development.** The app already works on real hardware. The installer and the
+download website are still being built, so for now you run it from source.
 
 ## What works today
 
-- Finds every Windows audio output and tells you if it is Bluetooth, USB, HDMI or wired
-- Plays your system audio on several devices at the same time
-- Separate volume, mute, left/right balance and delay for each device
-- Keeps playing when one device disconnects, and brings it back when it returns
-- Follows the Windows default output when you change it
+- One window with a card for every connected audio device
+- Play on as many devices as you like, switch them on and off at any time
+- Master volume that follows the Windows volume bar and also controls your other devices
+- Per device: volume up to 200%, mute, left/right balance and delay
+- Sound tab: 10-band equalizer, presets, bass, treble and stereo width, for all devices
+  together or for each device on its own, with an Original setting that changes nothing
+- Keeps playing when a device disconnects, and brings it back when it returns
+- Dark and light themes
+- Optional **Full control** mode (with a free virtual audio cable) so the equalizer and
+  delay also work on the device that Windows uses by default
 
 ## Coming next
 
-- A simple desktop app with a card and sliders for every device
-- Saved device groups, a system tray icon, dark and light themes
+- Saved settings and saved device groups
+- System tray icon and start with Windows
 - An installer and a portable download
 
 ## Try it
@@ -53,18 +57,11 @@ You need Windows 10 or 11, [Git](https://git-scm.com/) and the [.NET 8 SDK](http
 ```bash
 git clone https://github.com/abinaze/Audora.git
 cd Audora
-bash scripts/validate.sh
-
-# see your audio devices
-dotnet run --project tools/Audora.Cli -- list
-
-# play your audio on several devices (use part of each name shown by "list")
-dotnet run --project tools/Audora.Cli -- run "<device name>" "<another device name>"
+dotnet run --project src/Audora.App
 ```
 
-Start some music first. While it runs, type `s` to see each device, `v 1 40` to set the
-volume of device 1 to 40%, and `q` to quit. Having trouble? See
-[Troubleshooting](docs/TROUBLESHOOTING.md).
+Start some music, then turn on the devices you want to play on. A command-line tool for
+developers is in `tools/Audora.Cli`. Having trouble? See [Troubleshooting](docs/TROUBLESHOOTING.md).
 
 ## How it works
 
