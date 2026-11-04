@@ -1,8 +1,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Audora.App.Infrastructure;
+using Audora.Core;
 using Audora.Core.Audio;
 using Audora.Core.Devices;
 
@@ -12,11 +15,17 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 {
     private readonly Dispatcher _ui;
     private readonly DeviceEnumerator _devices;
+    private readonly DefaultVolumeWatcher _watcher;
     private readonly MirrorController _controller;
     private readonly Dictionary<string, DeviceViewModel> _byId = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, DeviceMemory> _memory = new(StringComparer.OrdinalIgnoreCase);
 
     private double _master = 100;
+    private bool _masterMuted;
+    private bool _masterAffectsMirrors;
+    private bool _applyingMaster;
+    private string? _watchedDefault;
+    private int _tab;
     private string _search = string.Empty;
     private bool _isDark = true;
     private string _status = "Starting...";
@@ -30,8 +39,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _ui = ui;
 
         // Created on a background thread so Windows audio calls never depend on the UI thread.
-        _devices = Task.Run(() => new DeviceEnumerator()).GetAwaiter().GetResult();
+        (_devices, _watcher) = Task.Run(() => (new DeviceEnumerator(), new DefaultVolumeWatcher())).GetAwaiter().GetResult();
         _controller = new MirrorController(_devices);
+        Sound = new SoundViewModel(_controller);
 
         View = CollectionViewSource.GetDefaultView(Devices);
         View.Filter = Filter;
@@ -41,17 +51,38 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         RefreshCommand = new RelayCommand(() => _ = RefreshAsync());
         SelectAllCommand = new RelayCommand(() => SetAll(d => d.CanSelect, d => d.IsSelected = true));
         DeselectAllCommand = new RelayCommand(() => SetAll(d => d.CanSelect, d => d.IsSelected = false));
-        MuteAllCommand = new RelayCommand(() => SetAll(d => d.IsAvailable, d => d.IsMuted = true));
-        UnmuteAllCommand = new RelayCommand(() => SetAll(d => d.IsAvailable, d => d.IsMuted = false));
+        MuteAllCommand = new RelayCommand(() =>
+        {
+            SetAll(d => d.ShowMirrorControls, d => d.IsMuted = true);
+            IsMasterMuted = true;
+        });
+        UnmuteAllCommand = new RelayCommand(() =>
+        {
+            SetAll(d => d.ShowMirrorControls, d => d.IsMuted = false);
+            IsMasterMuted = false;
+        });
         ToggleThemeCommand = new RelayCommand(() =>
         {
             IsDark = !IsDark;
             ThemeService.Apply(IsDark);
             Raise(nameof(ThemeButtonText));
         });
+        OpenLogsCommand = new RelayCommand(() =>
+        {
+            try
+            {
+                Directory.CreateDirectory(Log.Folder);
+                Process.Start(new ProcessStartInfo("explorer.exe", $"\"{Log.Folder}\"") { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Could not open the log folder", ex);
+            }
+        });
 
         _devices.DevicesChanged += OnDevicesChanged;
         _controller.Message += OnMessage;
+        _watcher.Changed += OnWindowsVolumeChanged;
 
         SerialWorker.Run(() => _controller.Start());
         _ = RefreshAsync();
@@ -60,6 +91,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<DeviceViewModel> Devices { get; } = new();
 
     public ICollectionView View { get; }
+
+    public SoundViewModel Sound { get; }
 
     public RelayCommand RefreshCommand { get; }
 
@@ -73,26 +106,96 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public RelayCommand ToggleThemeCommand { get; }
 
+    public RelayCommand OpenLogsCommand { get; }
+
+    public string AppVersion => AppInfo.Version;
+
+    public string LogPath => Log.FilePath;
+
     public bool IsDark
     {
         get => _isDark;
         private set => Set(ref _isDark, value);
     }
 
-    public string ThemeButtonText => _isDark ? "Light theme" : "Dark theme";
+    public string ThemeButtonText => _isDark ? "Switch to light theme" : "Switch to dark theme";
 
-    /// <summary>Master volume, 0 to 100. Multiplies every device's own volume.</summary>
+    // Navigation
+    public bool IsDevicesTab
+    {
+        get => _tab == 0;
+        set => SelectTab(0, value);
+    }
+
+    public bool IsSoundTab
+    {
+        get => _tab == 1;
+        set => SelectTab(1, value);
+    }
+
+    public bool IsSettingsTab
+    {
+        get => _tab == 2;
+        set => SelectTab(2, value);
+    }
+
+    private void SelectTab(int tab, bool selected)
+    {
+        if (!selected || _tab == tab)
+        {
+            return;
+        }
+
+        _tab = tab;
+        Raise(nameof(IsDevicesTab));
+        Raise(nameof(IsSoundTab));
+        Raise(nameof(IsSettingsTab));
+    }
+
+    /// <summary>The Windows volume of the default output, 0 to 100. Moves when you use the Windows volume bar.</summary>
     public double Master
     {
         get => _master;
         set
         {
-            if (Set(ref _master, Math.Clamp(value, 0, 100)))
+            if (Set(ref _master, Math.Clamp(Math.Round(value), 0, 100)))
             {
-                foreach (var device in Devices)
+                Raise(nameof(MasterText));
+                if (!_applyingMaster)
                 {
-                    device.ApplyAudio();
+                    var volume = (float)(_master / 100.0);
+                    SerialWorker.Run(() => _watcher.SetVolume(volume));
+                    ApplyMasterToDevices();
                 }
+            }
+        }
+    }
+
+    public string MasterText => $"{_master:0}%";
+
+    public bool IsMasterMuted
+    {
+        get => _masterMuted;
+        set
+        {
+            if (Set(ref _masterMuted, value) && !_applyingMaster)
+            {
+                var muted = value;
+                SerialWorker.Run(() => _watcher.SetMuted(muted));
+                ApplyMasterToDevices();
+            }
+        }
+    }
+
+    /// <summary>When on, the master volume also scales the devices Audora plays on.</summary>
+    public bool MasterAffectsMirrors
+    {
+        get => _masterAffectsMirrors;
+        set
+        {
+            if (Set(ref _masterAffectsMirrors, value))
+            {
+                ApplyMasterToDevices();
             }
         }
     }
@@ -121,6 +224,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         private set => Set(ref _routingText, value);
     }
 
+    public bool HasNoDevices => Devices.Count == 0;
+
     public void Dispose()
     {
         if (_disposed)
@@ -131,18 +236,53 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _disposed = true;
         _devices.DevicesChanged -= OnDevicesChanged;
         _controller.Message -= OnMessage;
+        _watcher.Changed -= OnWindowsVolumeChanged;
 
         // Let queued audio changes finish, then release everything off the UI thread.
         SerialWorker.Shutdown(TimeSpan.FromSeconds(2));
         var cleanup = Task.Run(() =>
         {
             try { _controller.Dispose(); } catch (Exception ex) { Log.Error("Stopping audio failed", ex); }
+            try { _watcher.Dispose(); } catch (Exception ex) { Log.Error("Releasing the volume watcher failed", ex); }
             try { _devices.Dispose(); } catch (Exception ex) { Log.Error("Releasing audio devices failed", ex); }
         });
         cleanup.Wait(TimeSpan.FromSeconds(4));
     }
 
-    private double CurrentMaster() => _master / 100.0;
+    private double CurrentMaster() =>
+        _masterAffectsMirrors ? (_masterMuted ? 0.0 : _master / 100.0) : 1.0;
+
+    private void ApplyMasterToDevices()
+    {
+        foreach (var device in Devices)
+        {
+            device.ApplyAudio();
+        }
+    }
+
+    private void OnWindowsVolumeChanged(object? sender, VolumeState state)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _ui.BeginInvoke(() =>
+        {
+            _applyingMaster = true;
+            try
+            {
+                Master = state.Volume * 100;
+                IsMasterMuted = state.Muted;
+            }
+            finally
+            {
+                _applyingMaster = false;
+            }
+
+            ApplyMasterToDevices();
+        });
+    }
 
     private bool Filter(object item) =>
         string.IsNullOrWhiteSpace(_search)
@@ -204,7 +344,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 }
 
                 var snapshot = await Task.Run(() =>
-                    (Devices: _devices.GetRenderDevices(), State: _controller.GetStatus(), Source: _controller.SourceName));
+                    (Devices: _devices.GetActiveRenderDevicesWithTypes(), State: _controller.GetStatus(), Source: _controller.SourceName));
                 await _ui.InvokeAsync(() => Apply(snapshot.Devices, snapshot.State, snapshot.Source));
             }
             while (_again && !_disposed);
@@ -232,6 +372,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         var visible = DeviceCatalog.Visible(devices);
         var states = state.ToDictionary(s => s.DeviceId, s => s.State, StringComparer.OrdinalIgnoreCase);
+        var details = state.ToDictionary(s => s.DeviceId, s => s.Detail, StringComparer.OrdinalIgnoreCase);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var info in visible)
@@ -250,7 +391,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             }
 
             states.TryGetValue(info.Id, out var mirrorState);
-            vm.Update(info, mirrorState);
+            details.TryGetValue(info.Id, out var detail);
+            vm.Update(info, mirrorState, detail);
         }
 
         // A device that is no longer connected disappears from the list. Its settings are kept.
@@ -259,6 +401,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _memory[gone.Id] = gone.Snapshot();
             _byId.Remove(gone.Id);
             Devices.Remove(gone);
+        }
+
+        // Follow the Windows volume of whichever device is the default.
+        var defaultId = visible.FirstOrDefault(d => d.IsDefault)?.Id;
+        if (!string.Equals(defaultId, _watchedDefault, StringComparison.OrdinalIgnoreCase))
+        {
+            _watchedDefault = defaultId;
+            SerialWorker.Run(() => _watcher.Attach(defaultId));
         }
 
         var waiting = state.Where(s => !seen.Contains(s.DeviceId)).Select(s => s.Name).ToList();
@@ -273,6 +423,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         RoutingText = text;
+        Raise(nameof(HasNoDevices));
         View.Refresh();
     }
 }

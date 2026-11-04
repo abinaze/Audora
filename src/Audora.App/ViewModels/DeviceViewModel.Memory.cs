@@ -9,7 +9,7 @@ public sealed partial class DeviceViewModel
 
     /// <summary>
     /// Shows the values the user had before the device went away. The audio engine still holds
-    /// them, so nothing is re-applied. The Windows default device always shows its real volume instead.
+    /// them, so nothing is re-applied.
     /// </summary>
     public void Restore(DeviceMemory memory)
     {
@@ -22,6 +22,7 @@ public sealed partial class DeviceViewModel
         try
         {
             Set(ref _volume, memory.Volume, nameof(Volume));
+            Raise(nameof(VolumeText));
             Set(ref _isMuted, memory.Muted, nameof(IsMuted));
             Set(ref _balance, memory.Balance, nameof(Balance));
             Set(ref _delay, memory.Delay, nameof(Delay));

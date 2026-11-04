@@ -5,19 +5,20 @@ using Audora.Core.Devices;
 namespace Audora.App.ViewModels;
 
 /// <summary>
-/// One audio device on the dashboard. Mirrored devices are controlled through Audora's own
-/// gain and delay. The Windows default device plays directly, so its volume and mute
-/// control the real Windows volume of that device instead.
+/// One audio device on the dashboard. The Windows default device plays directly and its volume is
+/// the master volume. Every other device is played by Audora, with its own volume (up to 200%),
+/// mute, balance and delay.
 /// </summary>
 public sealed partial class DeviceViewModel : ObservableObject
 {
     private readonly MirrorController _controller;
     private readonly Func<double> _master;
     private bool _applying;
+    private bool _pendingValue;
+    private DateTime _pendingUntil = DateTime.MinValue;
 
     private string _name;
     private ConnectionType _type;
-    private DeviceStatus _status;
     private bool _isDefault;
     private bool _isSelected;
     private double _volume = 100;
@@ -25,6 +26,7 @@ public sealed partial class DeviceViewModel : ObservableObject
     private double _balance;
     private double _delay;
     private string _stateText = string.Empty;
+    private string? _detail;
     private bool _isExpanded;
 
     public DeviceViewModel(AudioDeviceInfo info, MirrorController controller, Func<double> master)
@@ -41,7 +43,7 @@ public sealed partial class DeviceViewModel : ObservableObject
         }, () => CanMakeDefault);
 
         ToggleDetailsCommand = new RelayCommand(() => IsExpanded = !IsExpanded);
-        Update(info, null);
+        Update(info, null, null);
     }
 
     public string Id { get; }
@@ -62,9 +64,28 @@ public sealed partial class DeviceViewModel : ObservableObject
         _ => "Audio output"
     };
 
-    public bool IsAvailable => _status == DeviceStatus.Active;
+    public string IconGlyph => _type switch
+    {
+        ConnectionType.Bluetooth => "\uE702",
+        ConnectionType.Usb => "\uE88E",
+        ConnectionType.Hdmi => "\uE7F4",
+        _ => _name.Contains("Headphone", StringComparison.OrdinalIgnoreCase)
+             || _name.Contains("Headset", StringComparison.OrdinalIgnoreCase) ? "\uE7F6" : "\uE767"
+    };
+
+    public bool IsAvailable => true;
 
     public bool IsDefault => _isDefault;
+
+    public bool CanSelect => !_isDefault;
+
+    public bool CanMakeDefault => !_isDefault;
+
+    public bool ShowMirrorControls => !_isDefault;
+
+    public bool ShowDefaultNote => _isDefault;
+
+    public string SwitchLabel => _isDefault ? "Always on" : _isSelected ? "Playing here" : "Off";
 
     public string StateText
     {
@@ -72,13 +93,19 @@ public sealed partial class DeviceViewModel : ObservableObject
         private set => Set(ref _stateText, value);
     }
 
-    public bool CanSelect => IsAvailable && !_isDefault;
+    public string? DetailText
+    {
+        get => _detail;
+        private set
+        {
+            if (Set(ref _detail, value))
+            {
+                Raise(nameof(HasDetail));
+            }
+        }
+    }
 
-    public bool CanMakeDefault => IsAvailable && !_isDefault;
-
-    public bool CanAdjustMirror => !_isDefault;
-
-    public bool ShowDefaultNote => _isDefault;
+    public bool HasDetail => !string.IsNullOrWhiteSpace(_detail);
 
     public bool IsExpanded
     {
@@ -90,57 +117,75 @@ public sealed partial class DeviceViewModel : ObservableObject
 
     public RelayCommand ToggleDetailsCommand { get; }
 
-    /// <summary>Play on this device (mirror to it). The Windows default device always plays.</summary>
+    /// <summary>Play on this device. The Windows default device always plays.</summary>
     public bool IsSelected
     {
         get => _isSelected;
         set
         {
-            if (Set(ref _isSelected, value) && !_applying)
+            if (!Set(ref _isSelected, value))
             {
-                var id = Id;
-                var selected = value;
-                SerialWorker.Run(() =>
-                {
-                    if (selected)
-                    {
-                        _controller.Select(id);
-                    }
-                    else
-                    {
-                        _controller.Deselect(id);
-                    }
-                });
+                return;
             }
+
+            Raise(nameof(SwitchLabel));
+            if (_applying)
+            {
+                return;
+            }
+
+            // Hold the switch where the user put it until the engine confirms (or a few seconds pass).
+            _pendingValue = value;
+            _pendingUntil = DateTime.UtcNow.AddSeconds(6);
+
+            var id = Id;
+            var selected = value;
+            SerialWorker.Run(() =>
+            {
+                if (selected)
+                {
+                    _controller.Select(id);
+                }
+                else
+                {
+                    _controller.Deselect(id);
+                }
+            });
         }
     }
 
-    /// <summary>Volume slider, 0 to 100.</summary>
+    /// <summary>Volume, 0 to 200 (above 100 is a boost).</summary>
     public double Volume
     {
         get => _volume;
         set
         {
-            if (Set(ref _volume, Math.Clamp(value, 0, 100)) && !_applying)
+            if (Set(ref _volume, Math.Clamp(value, 0, 200)))
             {
-                ApplyAudio();
+                Raise(nameof(VolumeText));
+                if (!_applying)
+                {
+                    ApplyAudio();
+                }
             }
         }
     }
+
+    public string VolumeText => _volume > 100 ? $"{_volume:0}% boost" : $"{_volume:0}%";
 
     public bool IsMuted
     {
         get => _isMuted;
         set
         {
-            if (Set(ref _isMuted, value) && !_applying)
+            if (Set(ref _isMuted, value) && !_applying && !_isDefault)
             {
-                ApplyMute();
+                PushMute();
             }
         }
     }
 
-    /// <summary>Left/right balance, -100 (left) to 100 (right). Mirrored devices only.</summary>
+    /// <summary>Left/right balance, -100 (left) to 100 (right).</summary>
     public double Balance
     {
         get => _balance;
@@ -155,7 +200,7 @@ public sealed partial class DeviceViewModel : ObservableObject
         }
     }
 
-    /// <summary>Extra delay in milliseconds, 0 to 2000. Mirrored devices only.</summary>
+    /// <summary>Extra delay in milliseconds, 0 to 2000.</summary>
     public double Delay
     {
         get => _delay;
@@ -170,50 +215,28 @@ public sealed partial class DeviceViewModel : ObservableObject
         }
     }
 
-    /// <summary>Sends the slider value (times the master volume) to the right place.</summary>
+    /// <summary>Sends the slider value (times the master volume when that option is on) to the audio engine.</summary>
     public void ApplyAudio()
     {
-        var id = Id;
-        var level = (float)(_volume / 100.0 * _master());
-        var native = _isDefault;
-
-        SerialWorker.Run(() =>
+        if (_isDefault)
         {
-            if (native)
-            {
-                EndpointVolume.SetVolume(id, level);
-            }
-            else
-            {
-                _controller.SetVolume(id, level);
-            }
-        });
+            return; // the default device follows the Windows volume, which is the master slider
+        }
+
+        var id = Id;
+        var level = (float)Math.Clamp(_volume / 100.0 * _master(), 0.0, 2.0);
+        SerialWorker.Run(() => _controller.SetVolume(id, level));
     }
 
-    private void ApplyMute()
+    private void PushMute()
     {
         var id = Id;
         var muted = _isMuted;
-        var native = _isDefault;
-
-        SerialWorker.Run(() =>
-        {
-            if (native)
-            {
-                EndpointVolume.SetMuted(id, muted);
-            }
-            else
-            {
-                _controller.SetMuted(id, muted);
-            }
-        });
+        SerialWorker.Run(() => _controller.SetMuted(id, muted));
     }
 
-    public void MarkGone() =>
-        Update(new AudioDeviceInfo(Id, Name, _type, DeviceStatus.NotPresent, false), null);
-
-    /// <summary>Refreshes this card from Windows. mirrorState is null when the device is not selected.</summary>
-    public void Update(AudioDeviceInfo info, string? mirrorState)
+    /// <summary>Refreshes this card from Windows and the audio engine. mirrorState is null when not selected.</summary>
+    public void Update(AudioDeviceInfo info, string? mirrorState, string? detail)
     {
         _applying = true;
         try
@@ -223,38 +246,73 @@ public sealed partial class DeviceViewModel : ObservableObject
 
             Name = info.Name;
             Set(ref _type, info.ConnectionType, nameof(TypeText));
-            Set(ref _status, info.Status, nameof(IsAvailable));
+            Raise(nameof(IconGlyph));
             Set(ref _isDefault, nowDefault, nameof(IsDefault));
 
-            if (nowDefault && !wasDefault)
+            var confirmed = nowDefault || mirrorState is not null;
+            var waiting = DateTime.UtcNow < _pendingUntil && confirmed != _pendingValue;
+            if (!waiting)
             {
-                // The sliders now mean the real Windows volume: show it, never overwrite it.
-                var volume = EndpointVolume.GetVolume(Id);
-                var muted = EndpointVolume.GetMuted(Id);
-                Set(ref _volume, volume is null ? _volume : Math.Round(volume.Value * 100), nameof(Volume));
-                Set(ref _isMuted, muted ?? _isMuted, nameof(IsMuted));
+                _pendingUntil = DateTime.MinValue;
+                Set(ref _isSelected, confirmed, nameof(IsSelected));
             }
 
-            Set(ref _isSelected, nowDefault || mirrorState is not null, nameof(IsSelected));
+            StateText = nowDefault ? "Windows default"
+                : waiting ? (_pendingValue ? "Starting..." : "Stopping...")
+                : MapState(mirrorState);
+            DetailText = nowDefault ? null : FriendlyError(detail);
 
-            StateText = !IsAvailable ? (mirrorState ?? "Not connected")
-                : nowDefault ? "Playing directly (Windows default)"
-                : (mirrorState == "Mirroring" ? "Playing" : mirrorState) ?? "Ready";
-
+            Raise(nameof(SwitchLabel));
             Raise(nameof(CanSelect));
             Raise(nameof(CanMakeDefault));
-            Raise(nameof(CanAdjustMirror));
+            Raise(nameof(ShowMirrorControls));
             Raise(nameof(ShowDefaultNote));
 
-            if (!nowDefault && wasDefault)
+            if (wasDefault && !nowDefault)
             {
                 ApplyAudio();
-                ApplyMute();
+                PushMute();
             }
         }
         finally
         {
             _applying = false;
         }
+    }
+
+    private static string MapState(string? state) => state switch
+    {
+        null => "Ready",
+        "Mirroring" => "Playing together",
+        "Starting" => "Starting...",
+        "Recovering after an error" => "Reconnecting...",
+        "Paused after repeated errors" => "Stopped, see below",
+        "Waiting for device" => "Waiting for device",
+        _ => state
+    };
+
+    private static string? FriendlyError(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        if (raw.Contains("0x88890004", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Windows reset this device. Audora retries automatically.";
+        }
+
+        if (raw.Contains("0x8889000A", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Another app is using this device exclusively. Close it and try again.";
+        }
+
+        if (raw.Contains("0x88890008", StringComparison.OrdinalIgnoreCase))
+        {
+            return "This device does not support the audio format Audora sends.";
+        }
+
+        return raw.Length > 140 ? raw[..140] + "..." : raw;
     }
 }
