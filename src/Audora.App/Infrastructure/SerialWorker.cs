@@ -8,22 +8,48 @@ public static class SerialWorker
 {
     private static readonly object Gate = new();
     private static Task _tail = Task.CompletedTask;
+    private static bool _closed;
 
     public static void Run(Action action)
     {
         lock (Gate)
         {
+            if (_closed)
+            {
+                return;
+            }
+
             _tail = _tail.ContinueWith(_ =>
             {
                 try
                 {
                     action();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // a failed audio call must never crash the app
+                    Log.Error("Audio task failed", ex);
                 }
             }, TaskScheduler.Default);
+        }
+    }
+
+    /// <summary>Finishes queued work (up to the timeout) and refuses anything new. Used when the app closes.</summary>
+    public static void Shutdown(TimeSpan timeout)
+    {
+        Task tail;
+        lock (Gate)
+        {
+            _closed = true;
+            tail = _tail;
+        }
+
+        try
+        {
+            tail.Wait(timeout);
+        }
+        catch
+        {
+            // already logged inside the task
         }
     }
 }
