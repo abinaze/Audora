@@ -1,7 +1,7 @@
 <Window x:Class="Audora.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Audora" Width="980" Height="720" MinWidth="760" MinHeight="520"
+        Title="Audora" Width="1120" Height="780" MinWidth="940" MinHeight="640"
         WindowStartupLocation="CenterScreen" UseLayoutRounding="True"
         Background="{DynamicResource BgBrush}" Foreground="{DynamicResource TextBrush}"
         FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14">
@@ -9,69 +9,70 @@
   <Window.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
+    <!-- One device -->
     <DataTemplate x:Key="DeviceCard">
-      <Border Margin="0,0,0,10">
-        <Border.Style>
-          <Style TargetType="Border" BasedOn="{StaticResource Card}">
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding IsAvailable}" Value="False">
-                <Setter Property="Opacity" Value="0.6"/>
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </Border.Style>
-
+      <Border Width="452" Margin="0,0,16,16" Style="{StaticResource Card}" Padding="20,18">
         <StackPanel>
           <Grid>
             <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
               <ColumnDefinition Width="*"/>
               <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0">
-              <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-              <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                <Border Background="{DynamicResource ChipBrush}" CornerRadius="8" Padding="8,2" VerticalAlignment="Center">
-                  <TextBlock Text="{Binding TypeText}" FontSize="12" Foreground="{DynamicResource MutedBrush}"/>
-                </Border>
-                <TextBlock Text="{Binding StateText}" FontSize="12" Margin="10,0,0,0" VerticalAlignment="Center"
-                           Foreground="{DynamicResource MutedBrush}"/>
-              </StackPanel>
+            <Border Width="46" Height="46" CornerRadius="13" Background="{DynamicResource SurfaceAltBrush}">
+              <TextBlock Text="{Binding IconGlyph}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="21"
+                         Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <StackPanel Grid.Column="1" Margin="14,0,10,0" VerticalAlignment="Center">
+              <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                         ToolTip="{Binding Name}"/>
+              <TextBlock Margin="0,3,0,0" FontSize="12" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis">
+                <Run Text="{Binding TypeText, Mode=OneWay}"/><Run Text="  -  "/><Run Text="{Binding StateText, Mode=OneWay}"/>
+              </TextBlock>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-              <Button Content="Set as default" Style="{StaticResource AudoraButton}" Padding="10,5" FontSize="12"
-                      Margin="0,0,14,0" Command="{Binding MakeDefaultCommand}"
-                      Visibility="{Binding CanMakeDefault, Converter={StaticResource BoolToVis}}"
-                      ToolTip="Make this the Windows default output"/>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
               <ToggleButton Style="{StaticResource AudoraSwitch}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                            IsEnabled="{Binding CanSelect}" ToolTip="Play on this device"
-                            AutomationProperties.Name="Play on this device"/>
+                            IsEnabled="{Binding CanSelect}" AutomationProperties.Name="Play on this device"/>
+              <TextBlock Text="{Binding SwitchLabel}" FontSize="11" HorizontalAlignment="Center" Margin="0,5,0,0"
+                         Foreground="{DynamicResource MutedBrush}"/>
             </StackPanel>
           </Grid>
 
-          <Grid Margin="0,14,0,0">
+          <TextBlock Text="{Binding DetailText}" Margin="0,12,0,0" FontSize="12" TextWrapping="Wrap"
+                     Foreground="{DynamicResource DangerBrush}"
+                     Visibility="{Binding HasDetail, Converter={StaticResource BoolToVis}}"/>
+
+          <Grid Margin="0,16,0,0" Visibility="{Binding ShowMirrorControls, Converter={StaticResource BoolToVis}}">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto"/>
               <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="50"/>
-              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="92"/>
             </Grid.ColumnDefinitions>
-            <ToggleButton Grid.Column="0" Content="Mute" Style="{StaticResource ToggleChip}"
-                          IsChecked="{Binding IsMuted, Mode=TwoWay}" IsEnabled="{Binding IsAvailable}"/>
-            <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Margin="14,0"
-                    Value="{Binding Volume, Mode=TwoWay}" IsEnabled="{Binding IsAvailable}"
-                    AutomationProperties.Name="Volume"/>
-            <TextBlock Grid.Column="2" Text="{Binding Volume, StringFormat={}{0:0}%}" VerticalAlignment="Center"
-                       HorizontalAlignment="Right" Foreground="{DynamicResource MutedBrush}"/>
-            <Button Grid.Column="3" Content="Details" Style="{StaticResource AudoraButton}" Padding="12,6"
-                    Margin="14,0,0,0" FontSize="12" Command="{Binding ToggleDetailsCommand}"/>
+            <ToggleButton Content="Mute" Style="{StaticResource ToggleChip}" IsChecked="{Binding IsMuted, Mode=TwoWay}"/>
+            <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Margin="14,0" Minimum="0" Maximum="200"
+                    Value="{Binding Volume, Mode=TwoWay}" AutomationProperties.Name="Volume"/>
+            <TextBlock Grid.Column="2" Text="{Binding VolumeText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MutedBrush}"/>
+          </Grid>
+
+          <TextBlock Margin="0,16,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                     Visibility="{Binding ShowDefaultNote, Converter={StaticResource BoolToVis}}"
+                     Text="This is your Windows default device, so it plays directly. Its volume is the master volume above. Equalizer, balance, delay and boost work on the other devices."/>
+
+          <Grid Margin="0,14,0,0" Visibility="{Binding ShowMirrorControls, Converter={StaticResource BoolToVis}}">
+            <Button Content="Fine tune" HorizontalAlignment="Left" Style="{StaticResource AudoraButton}"
+                    Padding="12,6" FontSize="12" Command="{Binding ToggleDetailsCommand}"/>
+            <Button Content="Make Windows default" HorizontalAlignment="Right" Style="{StaticResource AudoraButton}"
+                    Padding="12,6" FontSize="12" Command="{Binding MakeDefaultCommand}"/>
           </Grid>
 
           <StackPanel Margin="0,14,0,0" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
-            <Grid IsEnabled="{Binding CanAdjustMirror}">
+            <Grid>
               <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="80"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="70"/>
               </Grid.ColumnDefinitions>
@@ -79,11 +80,11 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
-              <TextBlock Grid.Row="0" Text="Balance" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
-              <Slider Grid.Row="0" Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="-100" Maximum="100"
+              <TextBlock Text="Balance" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+              <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="-100" Maximum="100"
                       Value="{Binding Balance, Mode=TwoWay}" AutomationProperties.Name="Left and right balance"/>
-              <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Balance, StringFormat={}{0:+0;-0;0}}"
-                         HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+              <TextBlock Grid.Column="2" Text="{Binding Balance, StringFormat={}{0:+0;-0;0}}" HorizontalAlignment="Right"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
               <TextBlock Grid.Row="1" Text="Delay" Margin="0,10,0,0" VerticalAlignment="Center"
                          Foreground="{DynamicResource MutedBrush}"/>
               <Slider Grid.Row="1" Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="0" Maximum="2000"
@@ -91,86 +92,299 @@
               <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding Delay, StringFormat={}{0:0} ms}" Margin="0,10,0,0"
                          HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
             </Grid>
-            <TextBlock TextWrapping="Wrap" Margin="0,10,0,0" FontSize="12" Foreground="{DynamicResource MutedBrush}"
-                       Visibility="{Binding ShowDefaultNote, Converter={StaticResource BoolToVis}}"
-                       Text="This is the Windows default device, so it plays directly. Balance and delay are not available for it. To line up a slow device such as Bluetooth, make the slow one the default and delay the others."/>
+            <TextBlock Margin="0,10,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                       Text="Delay lines this device up with a slower one. Bluetooth is usually the slowest: make it the Windows default and delay the others."/>
           </StackPanel>
         </StackPanel>
       </Border>
     </DataTemplate>
+
+    <!-- One equalizer band -->
+    <DataTemplate x:Key="BandTemplate">
+      <StackPanel Width="56" HorizontalAlignment="Center">
+        <TextBlock Text="{Binding GainText}" FontSize="12" HorizontalAlignment="Center"
+                   Foreground="{DynamicResource MutedBrush}"/>
+        <Slider Style="{StaticResource VerticalSlider}" Minimum="-12" Maximum="12" SmallChange="0.5" LargeChange="2"
+                TickFrequency="0.5" IsSnapToTickEnabled="True" Height="220" Margin="0,8" HorizontalAlignment="Center"
+                Value="{Binding Gain, Mode=TwoWay}" AutomationProperties.Name="{Binding Label}"/>
+        <TextBlock Text="{Binding Label}" FontSize="12" HorizontalAlignment="Center"/>
+      </StackPanel>
+    </DataTemplate>
+
+    <!-- One preset chip -->
+    <DataTemplate x:Key="PresetTemplate">
+      <Button Content="{Binding Name}" Style="{StaticResource PresetChip}"
+              Command="{Binding DataContext.ChoosePresetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+              CommandParameter="{Binding}"/>
+    </DataTemplate>
   </Window.Resources>
 
-  <Grid Margin="28,22,28,16">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="*"/>
-      <RowDefinition Height="Auto"/>
-    </Grid.RowDefinitions>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="88"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
 
-    <!-- Header -->
-    <DockPanel Grid.Row="0" LastChildFill="False">
-      <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
-        <Viewbox Width="38" Height="33">
+    <!-- Navigation rail -->
+    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+      <DockPanel Margin="0,24,0,16">
+        <Viewbox DockPanel.Dock="Top" Width="40" Height="34" Margin="0,0,0,28">
           <Canvas Width="746" Height="642">
             <Path Data="{StaticResource MarkDark}" Fill="#351B9F"/>
             <Path Data="{StaticResource MarkBlue}" Fill="#1676FC"/>
             <Path Data="{StaticResource MarkPurple}" Fill="#7E33F5"/>
           </Canvas>
         </Viewbox>
-        <Viewbox Height="14" Margin="16,0,0,0" VerticalAlignment="Center">
+        <StackPanel DockPanel.Dock="Top">
+          <RadioButton Content="Devices" GroupName="nav" Style="{StaticResource NavButton}"
+                       IsChecked="{Binding IsDevicesTab, Mode=TwoWay}">
+            <RadioButton.Tag>
+              <TextBlock Text="&#xE767;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="22"
+                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+            </RadioButton.Tag>
+          </RadioButton>
+          <RadioButton Content="Sound" GroupName="nav" Style="{StaticResource NavButton}"
+                       IsChecked="{Binding IsSoundTab, Mode=TwoWay}">
+            <RadioButton.Tag>
+              <Path Data="M6 4V20M12 4V20M18 4V20M3 14H9M9 8H15M15 16H21" StrokeThickness="2" Width="24" Height="24"
+                    Stretch="None" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+            </RadioButton.Tag>
+          </RadioButton>
+          <RadioButton Content="Settings" GroupName="nav" Style="{StaticResource NavButton}"
+                       IsChecked="{Binding IsSettingsTab, Mode=TwoWay}">
+            <RadioButton.Tag>
+              <TextBlock Text="&#xE713;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="22"
+                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+            </RadioButton.Tag>
+          </RadioButton>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Main area -->
+    <Grid Grid.Column="1" Margin="28,22,28,14">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+
+      <!-- Header -->
+      <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,16">
+        <Viewbox DockPanel.Dock="Left" Height="14" VerticalAlignment="Center">
           <Path Data="{StaticResource Wordmark}" Fill="{DynamicResource TextBrush}"/>
         </Viewbox>
-      </StackPanel>
-      <Button DockPanel.Dock="Right" Content="{Binding ThemeButtonText}" Style="{StaticResource AudoraButton}"
-              Command="{Binding ToggleThemeCommand}"/>
-      <Button DockPanel.Dock="Right" Content="Refresh" Style="{StaticResource AudoraButton}" Margin="0,0,10,0"
-              Command="{Binding RefreshCommand}"/>
-    </DockPanel>
+        <TextBlock DockPanel.Dock="Right" Text="{Binding RoutingText}" FontSize="12" VerticalAlignment="Center"
+                   Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" MaxWidth="560"/>
+      </DockPanel>
 
-    <!-- Master control -->
-    <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,20,0,14">
-      <StackPanel>
+      <!-- Master volume (the Windows volume bar) -->
+      <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,0,18">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="64"/>
           </Grid.ColumnDefinitions>
-          <TextBlock Text="Master volume" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
-          <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Margin="18,0"
+          <StackPanel Orientation="Horizontal">
+            <ToggleButton Content="Mute" Style="{StaticResource ToggleChip}" VerticalAlignment="Center"
+                          IsChecked="{Binding IsMasterMuted, Mode=TwoWay}"/>
+            <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+              <TextBlock Text="Master volume" FontSize="16" FontWeight="SemiBold"/>
+              <TextBlock Text="Same as the Windows volume bar" FontSize="12" Foreground="{DynamicResource MutedBrush}"/>
+            </StackPanel>
+          </StackPanel>
+          <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Margin="26,0"
                   Value="{Binding Master, Mode=TwoWay}" AutomationProperties.Name="Master volume"/>
-          <TextBlock Grid.Column="2" Text="{Binding Master, StringFormat={}{0:0}%}" HorizontalAlignment="Right"
-                     VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+          <TextBlock Grid.Column="2" Text="{Binding MasterText}" FontSize="16" FontWeight="SemiBold"
+                     HorizontalAlignment="Right" VerticalAlignment="Center"/>
         </Grid>
-        <TextBlock Text="{Binding RoutingText}" Margin="0,10,0,0" FontSize="12" Foreground="{DynamicResource MutedBrush}"/>
-      </StackPanel>
-    </Border>
+      </Border>
 
-    <!-- Toolbar -->
-    <Grid Grid.Row="2" Margin="0,0,0,14">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="Auto"/>
-      </Grid.ColumnDefinitions>
-      <TextBox Style="{StaticResource SearchBox}" Tag="Search devices"
-               Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search devices"/>
-      <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
-        <Button Content="Select all" Style="{StaticResource AudoraButton}" Command="{Binding SelectAllCommand}"/>
-        <Button Content="Deselect all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding DeselectAllCommand}"/>
-        <Button Content="Mute all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding MuteAllCommand}"/>
-        <Button Content="Unmute all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding UnmuteAllCommand}"/>
-      </StackPanel>
+      <!-- Pages -->
+      <Grid Grid.Row="2">
+
+        <!-- Devices -->
+        <Grid Visibility="{Binding IsDevicesTab, Converter={StaticResource BoolToVis}}">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+
+          <TextBlock Text="Turn on the devices you want to play on. Your Windows default device is always on."
+                     Foreground="{DynamicResource MutedBrush}" FontSize="13" Margin="0,0,0,12"/>
+
+          <Grid Grid.Row="1" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Style="{StaticResource SearchBox}" Tag="Search devices"
+                     Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Search devices"/>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+              <Button Content="Play on all" Style="{StaticResource AudoraButton}" Command="{Binding SelectAllCommand}"/>
+              <Button Content="Stop all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding DeselectAllCommand}"/>
+              <Button Content="Mute all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding MuteAllCommand}"/>
+              <Button Content="Unmute all" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding UnmuteAllCommand}"/>
+              <Button Content="Refresh" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding RefreshCommand}"/>
+            </StackPanel>
+          </Grid>
+
+          <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+              <TextBlock Text="No audio devices found yet. Connect a speaker or headphones and it appears here."
+                         Foreground="{DynamicResource MutedBrush}" Margin="0,24,0,0"
+                         Visibility="{Binding HasNoDevices, Converter={StaticResource BoolToVis}}"/>
+              <ItemsControl ItemsSource="{Binding View}" ItemTemplate="{StaticResource DeviceCard}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+
+        <!-- Sound -->
+        <Grid Visibility="{Binding IsSoundTab, Converter={StaticResource BoolToVis}}">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel DataContext="{Binding Sound}">
+              <TextBlock Text="Sound" FontSize="22" FontWeight="SemiBold"/>
+              <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
+                         Text="Shape the sound of the devices Audora plays on. Your Windows default device plays directly, so it cannot be processed. Original means no changes."/>
+
+              <ItemsControl ItemsSource="{Binding Presets}" ItemTemplate="{StaticResource PresetTemplate}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel/>
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
+
+              <Border Style="{StaticResource Card}" Margin="0,8,0,16" Padding="22,18">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+
+                  <!-- Preamp -->
+                  <StackPanel Grid.Column="0" Width="72" Margin="0,0,10,0">
+                    <TextBlock Text="{Binding PreampText}" FontSize="12" HorizontalAlignment="Center"
+                               Foreground="{DynamicResource MutedBrush}"/>
+                    <Slider Style="{StaticResource VerticalSlider}" Minimum="-12" Maximum="12" SmallChange="0.5"
+                            LargeChange="2" TickFrequency="0.5" IsSnapToTickEnabled="True" Height="220" Margin="0,8"
+                            HorizontalAlignment="Center" Value="{Binding Preamp, Mode=TwoWay}"
+                            AutomationProperties.Name="Preamp"/>
+                    <TextBlock Text="Preamp" FontSize="12" HorizontalAlignment="Center"/>
+                  </StackPanel>
+
+                  <!-- Bands -->
+                  <StackPanel Grid.Column="1">
+                    <ItemsControl ItemsSource="{Binding Bands}" ItemTemplate="{StaticResource BandTemplate}"
+                                  HorizontalAlignment="Center">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                    <TextBlock Text="Frequency in Hz. Drag a band up to boost it or down to cut it (range plus or minus 12 dB)."
+                               FontSize="11" HorizontalAlignment="Center" Margin="0,8,0,0"
+                               Foreground="{DynamicResource MutedBrush}"/>
+                  </StackPanel>
+
+                  <!-- Tone -->
+                  <StackPanel Grid.Column="2" Width="250" Margin="18,0,0,0">
+                    <TextBlock Text="{Binding Summary}" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,14"/>
+
+                    <Grid>
+                      <TextBlock Text="Bass" Foreground="{DynamicResource MutedBrush}"/>
+                      <TextBlock Text="{Binding BassText}" HorizontalAlignment="Right" Foreground="{DynamicResource MutedBrush}"/>
+                    </Grid>
+                    <Slider Style="{StaticResource AudoraSlider}" Minimum="-10" Maximum="10" TickFrequency="0.5"
+                            IsSnapToTickEnabled="True" Margin="0,4,0,14" Value="{Binding Bass, Mode=TwoWay}"
+                            AutomationProperties.Name="Bass"/>
+
+                    <Grid>
+                      <TextBlock Text="Treble" Foreground="{DynamicResource MutedBrush}"/>
+                      <TextBlock Text="{Binding TrebleText}" HorizontalAlignment="Right" Foreground="{DynamicResource MutedBrush}"/>
+                    </Grid>
+                    <Slider Style="{StaticResource AudoraSlider}" Minimum="-10" Maximum="10" TickFrequency="0.5"
+                            IsSnapToTickEnabled="True" Margin="0,4,0,14" Value="{Binding Treble, Mode=TwoWay}"
+                            AutomationProperties.Name="Treble"/>
+
+                    <Grid>
+                      <TextBlock Text="Stereo width" Foreground="{DynamicResource MutedBrush}"/>
+                      <TextBlock Text="{Binding WidthText}" HorizontalAlignment="Right" Foreground="{DynamicResource MutedBrush}"/>
+                    </Grid>
+                    <Slider Style="{StaticResource AudoraSlider}" Minimum="0" Maximum="200" Margin="0,4,0,18"
+                            Value="{Binding Width, Mode=TwoWay}" AutomationProperties.Name="Stereo width"/>
+
+                    <Button Content="Back to Original" Style="{StaticResource AudoraButton}" Command="{Binding ResetCommand}"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+
+        <!-- Settings -->
+        <Grid Visibility="{Binding IsSettingsTab, Converter={StaticResource BoolToVis}}">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel MaxWidth="720" HorizontalAlignment="Left">
+              <TextBlock Text="Settings" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16"/>
+
+              <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
+                  <TextBlock Text="Appearance" FontSize="16" FontWeight="SemiBold"/>
+                  <Button Content="{Binding ThemeButtonText}" Command="{Binding ToggleThemeCommand}"
+                          Style="{StaticResource AudoraButton}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
+                  <TextBlock Text="Volume" FontSize="16" FontWeight="SemiBold"/>
+                  <CheckBox Margin="0,12,0,0" Foreground="{DynamicResource TextBrush}"
+                            Content="Master volume also changes the devices Audora plays on"
+                            IsChecked="{Binding MasterAffectsMirrors, Mode=TwoWay}"/>
+                  <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                             Text="Off by default. On some sound cards the Windows volume already changes what Audora hears, so the other devices follow it without this. If they do not follow the master volume on your PC, turn this on."/>
+                </StackPanel>
+              </Border>
+
+              <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
+                  <TextBlock Text="Troubleshooting" FontSize="16" FontWeight="SemiBold"/>
+                  <TextBlock Text="{Binding LogPath}" Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap"
+                             Foreground="{DynamicResource MutedBrush}"/>
+                  <Button Content="Open log folder" Command="{Binding OpenLogsCommand}"
+                          Style="{StaticResource AudoraButton}" HorizontalAlignment="Left" Margin="0,12,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="About" FontSize="16" FontWeight="SemiBold"/>
+                  <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}">
+                    <Run Text="Audora "/><Run Text="{Binding AppVersion, Mode=OneWay}"/><Run Text=". Free for personal and noncommercial use. No account, no telemetry, nothing leaves your computer."/>
+                  </TextBlock>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </Grid>
+
+      <!-- Status -->
+      <TextBlock Grid.Row="3" Text="{Binding Status}" Margin="0,10,0,0" FontSize="12"
+                 Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis"/>
     </Grid>
-
-    <!-- Devices -->
-    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
-      <ItemsControl ItemsSource="{Binding View}" ItemTemplate="{StaticResource DeviceCard}" Margin="0,0,6,0"/>
-    </ScrollViewer>
-
-    <!-- Status -->
-    <TextBlock Grid.Row="4" Text="{Binding Status}" Margin="0,10,0,0" FontSize="12"
-               Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis"/>
   </Grid>
 </Window>
