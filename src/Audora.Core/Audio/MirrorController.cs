@@ -463,7 +463,7 @@ public sealed partial class MirrorController : IDisposable
             {
                 var channel = engine.AddOutput(id, NameOf(id));
                 Apply(channel, GetOrCreate(id));
-                channel.ApplySound(_sound);
+                channel.ApplySound(SoundFor(id));
                 channel.Faulted += OnChannelFaulted;
                 _addedAt[id] = DateTime.UtcNow;
                 _lastErrors.Remove(id);
