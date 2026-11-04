@@ -13,7 +13,7 @@ public sealed record MirrorTargetStatus(string DeviceId, string Name, string Sta
 /// Per-device settings are remembered and re-applied whenever a device returns.
 /// <see cref="Message"/> may be raised on any thread; UI code must marshal to its own thread.
 /// </summary>
-public sealed class MirrorController : IDisposable
+public sealed partial class MirrorController : IDisposable
 {
     private const int MaxConsecutiveFailures = 5;
     private const int MaxRapidFailures = 3;
@@ -463,6 +463,7 @@ public sealed class MirrorController : IDisposable
             {
                 var channel = engine.AddOutput(id, NameOf(id));
                 Apply(channel, GetOrCreate(id));
+                channel.ApplySound(_sound);
                 channel.Faulted += OnChannelFaulted;
                 _addedAt[id] = DateTime.UtcNow;
                 _lastErrors.Remove(id);

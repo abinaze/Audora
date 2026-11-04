@@ -13,6 +13,7 @@ public sealed partial class OutputChannel : IDisposable
     private readonly BufferedWaveProvider _buffer;
     private readonly GainBalanceSampleProvider _gain;
     private readonly DelaySampleProvider _delay;
+    private readonly EqualizerSampleProvider _eq;
     private readonly WasapiOut _out;
     private bool _disposed;
 
@@ -29,7 +30,8 @@ public sealed partial class OutputChannel : IDisposable
             ReadFully = true
         };
 
-        _gain = new GainBalanceSampleProvider(_buffer.ToSampleProvider());
+        _eq = new EqualizerSampleProvider(_buffer.ToSampleProvider());
+        _gain = new GainBalanceSampleProvider(_eq);
         _delay = new DelaySampleProvider(_gain);
         _out = new WasapiOut(device, AudioClientShareMode.Shared, true, 100);
         _out.PlaybackStopped += OnPlaybackStopped;
