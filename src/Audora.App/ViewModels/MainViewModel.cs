@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Windows.Data;
 using System.Windows.Threading;
 using Audora.App.Infrastructure;
@@ -13,6 +12,8 @@ namespace Audora.App.ViewModels;
 
 public sealed class MainViewModel : ObservableObject, IDisposable
 {
+    private const string CablePage = "https://vb-audio.com/Cable/";
+
     private readonly Dispatcher _ui;
     private readonly DeviceEnumerator _devices;
     private readonly DefaultVolumeWatcher _watcher;
@@ -22,9 +23,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private double _master = 100;
     private bool _masterMuted;
-    private bool _masterAffectsMirrors;
     private bool _applyingMaster;
     private string? _watchedDefault;
+    private string? _cableId;
+    private string? _previousDefaultId;
+    private bool _selectAllWhenReady;
     private int _tab;
     private string _search = string.Empty;
     private bool _isDark = true;
@@ -67,18 +70,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             ThemeService.Apply(IsDark);
             Raise(nameof(ThemeButtonText));
         });
-        OpenLogsCommand = new RelayCommand(() =>
-        {
-            try
-            {
-                Directory.CreateDirectory(Log.Folder);
-                Process.Start(new ProcessStartInfo("explorer.exe", $"\"{Log.Folder}\"") { UseShellExecute = true });
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Could not open the log folder", ex);
-            }
-        });
+        GetCableCommand = new RelayCommand(() => OpenLink(CablePage));
+        TurnOnFullControlCommand = new RelayCommand(TurnOnFullControl);
+        TurnOffFullControlCommand = new RelayCommand(TurnOffFullControl);
 
         _devices.DevicesChanged += OnDevicesChanged;
         _controller.Message += OnMessage;
@@ -106,11 +100,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public RelayCommand ToggleThemeCommand { get; }
 
-    public RelayCommand OpenLogsCommand { get; }
+    public RelayCommand GetCableCommand { get; }
+
+    public RelayCommand TurnOnFullControlCommand { get; }
+
+    public RelayCommand TurnOffFullControlCommand { get; }
 
     public string AppVersion => AppInfo.Version;
-
-    public string LogPath => Log.FilePath;
 
     public bool IsDark
     {
@@ -152,7 +148,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Raise(nameof(IsSettingsTab));
     }
 
-    /// <summary>The Windows volume of the default output, 0 to 100. Moves when you use the Windows volume bar.</summary>
+    /// <summary>The Windows volume of the default output, 0 to 100. It also scales every other device.</summary>
     public double Master
     {
         get => _master;
@@ -187,18 +183,20 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    /// <summary>When on, the master volume also scales the devices Audora plays on.</summary>
-    public bool MasterAffectsMirrors
-    {
-        get => _masterAffectsMirrors;
-        set
-        {
-            if (Set(ref _masterAffectsMirrors, value))
-            {
-                ApplyMasterToDevices();
-            }
-        }
-    }
+    // Full control mode (optional virtual audio cable)
+    public bool CableFound => _cableId is not null;
+
+    public bool CableMissing => _cableId is null;
+
+    public bool FullControlOn =>
+        _cableId is not null && string.Equals(_cableId, _watchedDefault, StringComparison.OrdinalIgnoreCase);
+
+    public bool CanTurnOnFullControl => CableFound && !FullControlOn;
+
+    public string FullControlStatus =>
+        FullControlOn ? "On: Audora plays every device itself, so each one has full control."
+        : CableFound ? "Ready: a virtual cable is installed. Turn this on to control every device."
+        : "Needs a free virtual cable, which was not found on this PC.";
 
     public string Search
     {
@@ -249,8 +247,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         cleanup.Wait(TimeSpan.FromSeconds(4));
     }
 
-    private double CurrentMaster() =>
-        _masterAffectsMirrors ? (_masterMuted ? 0.0 : _master / 100.0) : 1.0;
+    // The master volume scales every device Audora plays on, and sets the Windows volume of the default device.
+    private double CurrentMaster() => _masterMuted ? 0.0 : _master / 100.0;
 
     private void ApplyMasterToDevices()
     {
@@ -294,6 +292,54 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             change(device);
         }
+    }
+
+    private static void OpenLink(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Could not open a link", ex);
+        }
+    }
+
+    private void TurnOnFullControl()
+    {
+        var cable = _cableId;
+        if (cable is null)
+        {
+            return;
+        }
+
+        _previousDefaultId = _watchedDefault;
+        _selectAllWhenReady = true;
+        SerialWorker.Run(() => DefaultDeviceSwitcher.SetDefaultOutput(cable));
+    }
+
+    private void TurnOffFullControl()
+    {
+        var target = _previousDefaultId is not null && _byId.ContainsKey(_previousDefaultId)
+            ? _previousDefaultId
+            : Devices.FirstOrDefault(d => !d.IsVirtualInput && !d.IsDefault)?.Id;
+
+        if (target is null)
+        {
+            return;
+        }
+
+        SerialWorker.Run(() => DefaultDeviceSwitcher.SetDefaultOutput(target));
+    }
+
+    private void RaiseFullControl()
+    {
+        Raise(nameof(CableFound));
+        Raise(nameof(CableMissing));
+        Raise(nameof(FullControlOn));
+        Raise(nameof(CanTurnOnFullControl));
+        Raise(nameof(FullControlStatus));
     }
 
     private void OnDevicesChanged(object? sender, EventArgs e)
@@ -410,6 +456,19 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _watchedDefault = defaultId;
             SerialWorker.Run(() => _watcher.Attach(defaultId));
         }
+
+        // Full control mode: is a virtual cable installed, and is it the default?
+        _cableId = visible.FirstOrDefault(d => d.Name.Contains("CABLE Input", StringComparison.OrdinalIgnoreCase))?.Id;
+        RaiseFullControl();
+
+        if (_selectAllWhenReady && FullControlOn)
+        {
+            _selectAllWhenReady = false;
+            SetAll(d => d.CanSelect, d => d.IsSelected = true);
+        }
+
+        // The sound tab can edit every device Audora plays on itself (everything except the default).
+        Sound.SetDevices(visible.Where(d => !d.IsDefault).Select(d => (d.Id, d.Name)).ToList());
 
         var waiting = state.Where(s => !seen.Contains(s.DeviceId)).Select(s => s.Name).ToList();
         var playing = Devices.Count(d => d.IsSelected);

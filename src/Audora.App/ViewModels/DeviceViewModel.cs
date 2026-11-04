@@ -247,6 +247,7 @@ public sealed partial class DeviceViewModel : ObservableObject
             Name = info.Name;
             Set(ref _type, info.ConnectionType, nameof(TypeText));
             Raise(nameof(IconGlyph));
+            Raise(nameof(DefaultNote));
             Set(ref _isDefault, nowDefault, nameof(IsDefault));
 
             var confirmed = nowDefault || mirrorState is not null;
