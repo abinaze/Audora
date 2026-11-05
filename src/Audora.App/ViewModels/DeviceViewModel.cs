@@ -224,7 +224,7 @@ public sealed partial class DeviceViewModel : ObservableObject
         }
 
         var id = Id;
-        var level = (float)Math.Clamp(_volume / 100.0 * _master(), 0.0, 2.0);
+        var level = (float)Math.Clamp(_volume / 100.0 * _master() * GroupFactor, 0.0, 2.0);
         SerialWorker.Run(() => _controller.SetVolume(id, level));
     }
 

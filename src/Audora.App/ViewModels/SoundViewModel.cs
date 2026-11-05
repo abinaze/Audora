@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Audora.App.Infrastructure;
 using Audora.Core.Audio;
+using Audora.Core.Settings;
 
 namespace Audora.App.ViewModels;
 
@@ -47,6 +48,9 @@ public sealed class PresetItem : ObservableObject
     public PresetItem(SoundPreset preset) => Preset = preset;
 
     public SoundPreset Preset { get; }
+
+    /// <summary>Set for presets the user saved; null for the built-in ones.</summary>
+    public SavedSound? Custom { get; init; }
 
     public string Name => Preset.Name;
 
@@ -110,7 +114,7 @@ public sealed class SoundTarget : ObservableObject
 /// The Sound tab: presets, 10-band equalizer, preamp, bass, treble and stereo width,
 /// for all devices together or for one device on its own.
 /// </summary>
-public sealed class SoundViewModel : ObservableObject
+public sealed partial class SoundViewModel : ObservableObject
 {
     private sealed record EditorState(string Preset, double[] Bands, double Preamp, double Bass, double Treble, double Width);
 
@@ -183,7 +187,13 @@ public sealed class SoundViewModel : ObservableObject
     public string Summary
     {
         get => _summary;
-        private set => Set(ref _summary, value);
+        private set
+        {
+            if (Set(ref _summary, value))
+            {
+                Raise(nameof(CanDeletePreset));
+            }
+        }
     }
 
     public string TargetTitle => _current.Name;
@@ -341,6 +351,12 @@ public sealed class SoundViewModel : ObservableObject
 
     private void Choose(PresetItem item)
     {
+        if (item.Custom is not null)
+        {
+            LoadCustom(item);
+            return;
+        }
+
         var original = item.Name == SoundPresets.OriginalName;
         Load(new EditorState(
             item.Name,

@@ -10,7 +10,7 @@ using Audora.Core.Devices;
 
 namespace Audora.App.ViewModels;
 
-public sealed class MainViewModel : ObservableObject, IDisposable
+public sealed partial class MainViewModel : ObservableObject, IDisposable
 {
     private const string CablePage = "https://vb-audio.com/Cable/";
 
@@ -46,6 +46,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         (_devices, _watcher) = Task.Run(() => (new DeviceEnumerator(), new DefaultVolumeWatcher())).GetAwaiter().GetResult();
         _controller = new MirrorController(_devices);
         Sound = new SoundViewModel(_controller);
+        InitializeExtras();
 
         View = CollectionViewSource.GetDefaultView(Devices);
         View.Filter = Filter;
@@ -147,6 +148,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Raise(nameof(IsDevicesTab));
         Raise(nameof(IsSoundTab));
         Raise(nameof(IsSettingsTab));
+        Raise(nameof(IsGroupsTab));
     }
 
     /// <summary>The Windows volume of the default output, 0 to 100. It also scales every other device.</summary>
@@ -238,6 +240,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _devices.DevicesChanged -= OnDevicesChanged;
         _controller.Message -= OnMessage;
         _watcher.Changed -= OnWindowsVolumeChanged;
+        SaveNow();
 
         // Let queued audio changes finish, then release everything off the UI thread.
         SerialWorker.Shutdown(TimeSpan.FromSeconds(2));
@@ -442,6 +445,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
                 _byId[info.Id] = vm;
                 Devices.Add(vm);
+                OnDeviceAdded(vm, info);
             }
 
             states.TryGetValue(info.Id, out var mirrorState);
@@ -490,6 +494,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         RoutingText = text;
+        AfterApply(visible);
         Raise(nameof(HasNoDevices));
         View.Refresh();
     }
