@@ -223,6 +223,13 @@
       </StackPanel>
     </DataTemplate>
 
+    <!-- One reverb type -->
+    <DataTemplate x:Key="RoomTemplate">
+      <Button Content="{Binding Name}" Style="{StaticResource PresetChip}"
+              Command="{Binding DataContext.ChooseRoomCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+              CommandParameter="{Binding}"/>
+    </DataTemplate>
+
     <!-- One preset chip -->
     <DataTemplate x:Key="PresetTemplate">
       <Button Content="{Binding Name}" Style="{StaticResource PresetChip}"
@@ -452,6 +459,49 @@
                         Command="{Binding DeletePresetCommand}"
                         Visibility="{Binding CanDeletePreset, Converter={StaticResource BoolToVis}}"/>
               </Grid>
+
+              <Border Style="{StaticResource Card}" Margin="0,8,0,16" Padding="22,18">
+                <StackPanel>
+                  <TextBlock Text="Effects" FontSize="16" FontWeight="SemiBold"/>
+                  <TextBlock Margin="0,4,0,14" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                             Text="3D makes the sound wider and more spread out, best on headphones. It is a simple widening effect, not true surround sound. Reverb adds the echo of a room, hall or stage."/>
+
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="150"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="70"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="3D virtualizer" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="0" Maximum="100" Margin="14,0"
+                            Value="{Binding Virtualizer, Mode=TwoWay}" AutomationProperties.Name="3D virtualizer"/>
+                    <TextBlock Grid.Column="2" Text="{Binding VirtualizerText}" HorizontalAlignment="Right"
+                               VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+                  </Grid>
+
+                  <Grid Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="150"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="70"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Reverb" VerticalAlignment="Center"/>
+                    <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="0" Maximum="100" Margin="14,0"
+                            Value="{Binding ReverbAmount, Mode=TwoWay}" AutomationProperties.Name="Reverb amount"/>
+                    <TextBlock Grid.Column="2" Text="{Binding ReverbText}" HorizontalAlignment="Right"
+                               VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+                  </Grid>
+
+                  <TextBlock Text="Reverb type" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,14,0,8"/>
+                  <ItemsControl ItemsSource="{Binding Rooms}" ItemTemplate="{StaticResource RoomTemplate}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel/>
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                  </ItemsControl>
+                </StackPanel>
+              </Border>
 
               <Border Style="{StaticResource Card}" Margin="0,8,0,16" Padding="22,18">
                 <Grid>

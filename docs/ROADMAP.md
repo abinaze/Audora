@@ -11,10 +11,10 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 - Groups of devices with their own volume and mute
 - Remembers devices, volumes, sound and theme
 - Optional Full control mode with a virtual audio cable
+- 3D virtualizer and reverb (Room, Hall, Stage)
 
 ## Next
 
-- 3D virtualizer and reverb (Room, Hall, Stage)
 - System tray icon, minimize to tray, start with Windows
 - Installer and portable download, public website
 - Per-app volume (like EarTrumpet)
