@@ -4,7 +4,8 @@ namespace Audora.Core.Audio;
 
 /// <summary>
 /// Applies per-device volume, mute and left/right balance, with a soft limiter so boosting
-/// above 100% never produces harsh digital clipping.
+/// above 100% never produces harsh digital clipping. Changes glide over one block of audio,
+/// so dragging a slider never causes clicks.
 /// Volume runs from 0 to 2 (0% to 200%). Up to 100% it follows a squared curve that feels
 /// natural to the ear; above 100% it adds up to +12 dB.
 /// </summary>
@@ -14,6 +15,8 @@ public sealed class GainBalanceSampleProvider : ISampleProvider
     private const float LimiterRange = 0.05f;
 
     private readonly ISampleProvider _source;
+    private float _lastLeft = float.NaN;   // NaN until the first block
+    private float _lastRight;
 
     public GainBalanceSampleProvider(ISampleProvider source)
     {
@@ -40,29 +43,48 @@ public sealed class GainBalanceSampleProvider : ISampleProvider
     public int Read(float[] buffer, int offset, int count)
     {
         var read = _source.Read(buffer, offset, count);
+        var channels = WaveFormat.Channels;
 
         var gain = Muted ? 0f : GainFor(Volume);
         var balance = Math.Clamp(Balance, -1f, 1f);
+        var left = channels == 2 ? gain * (balance > 0f ? 1f - balance : 1f) : gain;
+        var right = channels == 2 ? gain * (balance < 0f ? 1f + balance : 1f) : gain;
 
-        if (WaveFormat.Channels == 2)
+        if (float.IsNaN(_lastLeft))
         {
-            var left = gain * (balance > 0f ? 1f - balance : 1f);
-            var right = gain * (balance < 0f ? 1f + balance : 1f);
-
-            for (var i = 0; i + 1 < read; i += 2)
-            {
-                buffer[offset + i] = Limit(buffer[offset + i] * left);
-                buffer[offset + i + 1] = Limit(buffer[offset + i + 1] * right);
-            }
-        }
-        else
-        {
-            for (var i = 0; i < read; i++)
-            {
-                buffer[offset + i] = Limit(buffer[offset + i] * gain);
-            }
+            _lastLeft = left;
+            _lastRight = right;
         }
 
+        var frames = read / channels;
+        for (var f = 0; f < frames; f++)
+        {
+            var t = (f + 1f) / frames;
+            var l = _lastLeft + (left - _lastLeft) * t;
+            var r = _lastRight + (right - _lastRight) * t;
+            var index = offset + f * channels;
+
+            if (channels == 2)
+            {
+                buffer[index] = Limit(buffer[index] * l);
+                buffer[index + 1] = Limit(buffer[index + 1] * r);
+            }
+            else
+            {
+                for (var ch = 0; ch < channels; ch++)
+                {
+                    buffer[index + ch] = Limit(buffer[index + ch] * l);
+                }
+            }
+        }
+
+        for (var i = offset + frames * channels; i < offset + read; i++)
+        {
+            buffer[i] = Limit(buffer[i] * left);
+        }
+
+        _lastLeft = left;
+        _lastRight = right;
         return read;
     }
 

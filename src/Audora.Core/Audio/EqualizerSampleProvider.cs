@@ -47,7 +47,12 @@ public sealed class EqualizerSampleProvider : ISampleProvider
         var settings = _requested;
         if (!settings.Enabled)
         {
-            _built = null;
+            if (_built is not null)
+            {
+                Array.Clear(_z1);
+                Array.Clear(_z2);
+                _built = null;
+            }
             return read;
         }
 
