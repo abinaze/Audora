@@ -1,14 +1,34 @@
+using System.Collections.ObjectModel;
 using Audora.App.Infrastructure;
 using Audora.Core.Audio;
 using Audora.Core.Settings;
 
 namespace Audora.App.ViewModels;
 
+public sealed class RoomItem : ObservableObject
+{
+    private bool _isActive;
+
+    public RoomItem(string name) => Name = name;
+
+    public string Name { get; }
+
+    public bool IsActive
+    {
+        get => _isActive;
+        set => Set(ref _isActive, value);
+    }
+}
+
 public sealed partial class SoundViewModel
 {
     private string _newPresetName = string.Empty;
     private RelayCommand? _savePresetCommand;
     private RelayCommand? _deletePresetCommand;
+    private RelayCommand? _chooseRoomCommand;
+    private double _virtualizer;
+    private double _reverbAmount;
+    private string _reverbRoom = "Room";
 
     public string NewPresetName
     {
@@ -22,6 +42,80 @@ public sealed partial class SoundViewModel
 
     public bool CanDeletePreset => Presets.Any(p => p.IsActive && p.Custom is not null);
 
+    // ---------- effects ----------
+
+    public ObservableCollection<RoomItem> Rooms { get; } = new()
+    {
+        new RoomItem("Room") { IsActive = true },
+        new RoomItem("Hall"),
+        new RoomItem("Stage"),
+    };
+
+    public RelayCommand ChooseRoomCommand => _chooseRoomCommand ??= new RelayCommand(parameter =>
+    {
+        if (parameter is not RoomItem room)
+        {
+            return;
+        }
+
+        _reverbRoom = room.Name;
+        RaiseRooms();
+
+        // choosing a room with the reverb off turns it on at a gentle level
+        if (_reverbAmount < 1)
+        {
+            Set(ref _reverbAmount, 25d, nameof(ReverbAmount));
+            Raise(nameof(ReverbText));
+        }
+
+        OnManualChange();
+    });
+
+    /// <summary>3D virtualizer, 0 (off) to 100.</summary>
+    public double Virtualizer
+    {
+        get => _virtualizer;
+        set
+        {
+            if (Set(ref _virtualizer, Math.Round(Math.Clamp(value, 0, 100))))
+            {
+                Raise(nameof(VirtualizerText));
+                OnManualChange();
+            }
+        }
+    }
+
+    public string VirtualizerText => _virtualizer <= 0 ? "Off" : $"{_virtualizer:0}%";
+
+    /// <summary>Reverb amount, 0 (off) to 100.</summary>
+    public double ReverbAmount
+    {
+        get => _reverbAmount;
+        set
+        {
+            if (Set(ref _reverbAmount, Math.Round(Math.Clamp(value, 0, 100))))
+            {
+                Raise(nameof(ReverbText));
+                OnManualChange();
+            }
+        }
+    }
+
+    public string ReverbText => _reverbAmount <= 0 ? "Off" : $"{_reverbAmount:0}%";
+
+    private void RaiseRooms()
+    {
+        foreach (var room in Rooms)
+        {
+            room.IsActive = string.Equals(room.Name, _reverbRoom, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static ReverbKind RoomKind(string? name) =>
+        Enum.TryParse<ReverbKind>(name, true, out var kind) ? kind : ReverbKind.Room;
+
+    // ---------- saving and loading ----------
+
     private static SavedSound ToSaved(EditorState s) => new()
     {
         Preset = s.Preset,
@@ -30,6 +124,9 @@ public sealed partial class SoundViewModel
         Bass = s.Bass,
         Treble = s.Treble,
         Width = s.Width,
+        Virtualizer = s.Virtualizer,
+        ReverbAmount = s.Reverb,
+        ReverbRoom = s.Room,
     };
 
     private static double[] Fit(double[]? bands)
@@ -45,7 +142,9 @@ public sealed partial class SoundViewModel
 
     private static EditorState ToState(SavedSound s, string? presetName = null) =>
         new(presetName ?? (string.IsNullOrWhiteSpace(s.Preset) ? SoundPresets.OriginalName : s.Preset),
-            Fit(s.Bands), s.Preamp, s.Bass, s.Treble, s.Width);
+            Fit(s.Bands), s.Preamp, s.Bass, s.Treble, s.Width,
+            Math.Clamp(s.Virtualizer, 0, 100), Math.Clamp(s.ReverbAmount, 0, 100),
+            string.IsNullOrWhiteSpace(s.ReverbRoom) ? "Room" : s.ReverbRoom);
 
     private static EqSettings BuildFrom(EditorState s) =>
         s.Preset == SoundPresets.OriginalName
@@ -56,7 +155,10 @@ public sealed partial class SoundViewModel
                 s.Bands.Select(b => (float)b).ToArray(),
                 (float)s.Bass,
                 (float)s.Treble,
-                (float)(s.Width / 100.0));
+                (float)(s.Width / 100.0),
+                (float)(s.Virtualizer / 100.0),
+                (float)(s.Reverb / 100.0),
+                RoomKind(s.Room));
 
     private PresetItem AddCustom(string name, SavedSound sound)
     {

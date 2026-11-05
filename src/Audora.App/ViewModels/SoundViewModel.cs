@@ -116,7 +116,7 @@ public sealed class SoundTarget : ObservableObject
 /// </summary>
 public sealed partial class SoundViewModel : ObservableObject
 {
-    private sealed record EditorState(string Preset, double[] Bands, double Preamp, double Bass, double Treble, double Width);
+    private sealed record EditorState(string Preset, double[] Bands, double Preamp, double Bass, double Treble, double Width, double Virtualizer = 0, double Reverb = 0, string Room = "Room");
 
     private const string AllKey = "*";
 
@@ -302,7 +302,7 @@ public sealed partial class SoundViewModel : ObservableObject
         new(SoundPresets.OriginalName, new double[10], 0, 0, 0, 100);
 
     private EditorState Capture() =>
-        new(_preset, Bands.Select(b => b.Gain).ToArray(), _preamp, _bass, _treble, _width);
+        new(_preset, Bands.Select(b => b.Gain).ToArray(), _preamp, _bass, _treble, _width, _virtualizer, _reverbAmount, _reverbRoom);
 
     private void SelectTarget(SoundTarget target)
     {
@@ -364,7 +364,10 @@ public sealed partial class SoundViewModel : ObservableObject
             original ? 0 : SoundPresets.PreampFor(item.Preset.Bands),
             0,
             0,
-            100));
+            100,
+            original ? 0 : _virtualizer,
+            original ? 0 : _reverbAmount,
+            _reverbRoom));
         Commit();
     }
 
@@ -382,6 +385,12 @@ public sealed partial class SoundViewModel : ObservableObject
             Set(ref _bass, state.Bass, nameof(Bass));
             Set(ref _treble, state.Treble, nameof(Treble));
             Set(ref _width, state.Width, nameof(Width));
+            Set(ref _virtualizer, state.Virtualizer, nameof(Virtualizer));
+            Set(ref _reverbAmount, state.Reverb, nameof(ReverbAmount));
+            _reverbRoom = state.Room;
+            Raise(nameof(VirtualizerText));
+            Raise(nameof(ReverbText));
+            RaiseRooms();
             _preset = state.Preset;
             Raise(nameof(PreampText));
             Raise(nameof(BassText));
@@ -427,7 +436,10 @@ public sealed partial class SoundViewModel : ObservableObject
                 Bands.Select(b => (float)b.Gain).ToArray(),
                 (float)_bass,
                 (float)_treble,
-                (float)(_width / 100.0));
+                (float)(_width / 100.0),
+                (float)(_virtualizer / 100.0),
+                (float)(_reverbAmount / 100.0),
+                RoomKind(_reverbRoom));
 
     private void Commit()
     {
