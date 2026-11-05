@@ -1,7 +1,15 @@
 namespace Audora.Core.Audio;
 
+/// <summary>The size and character of the reverb.</summary>
+public enum ReverbKind
+{
+    Room,
+    Hall,
+    Stage
+}
+
 /// <summary>
-/// Sound shaping applied to every device Audora plays on.
+/// Sound shaping applied to a device Audora plays on.
 /// When Enabled is false (the "Original" setting) the audio is not touched at all.
 /// </summary>
 public sealed record EqSettings(
@@ -10,7 +18,10 @@ public sealed record EqSettings(
     IReadOnlyList<float> BandsDb,
     float BassDb,
     float TrebleDb,
-    float StereoWidth)
+    float StereoWidth,
+    float Virtualizer = 0f,
+    float ReverbAmount = 0f,
+    ReverbKind Room = ReverbKind.Room)
 {
     /// <summary>Centre frequency of each of the 10 bands, in Hz.</summary>
     public static IReadOnlyList<float> BandFrequencies { get; } =

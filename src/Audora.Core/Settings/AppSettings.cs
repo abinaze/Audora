@@ -33,6 +33,12 @@ public sealed class SavedSound
     public double Treble { get; set; }
 
     public double Width { get; set; } = 100;
+
+    public double Virtualizer { get; set; }
+
+    public double ReverbAmount { get; set; }
+
+    public string ReverbRoom { get; set; } = "Room";
 }
 
 public sealed class SavedDevice

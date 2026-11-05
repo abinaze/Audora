@@ -3,8 +3,8 @@ using NAudio.Wave;
 namespace Audora.Core.Audio;
 
 /// <summary>
-/// 10-band equalizer with preamp, bass and treble shelves and stereo width.
-/// When the settings are "Original" the samples pass through untouched.
+/// The sound shaper: 10-band equalizer with preamp, bass and treble, stereo width, a 3D virtualizer
+/// and reverb. When the settings are "Original" the samples pass through untouched.
 /// </summary>
 public sealed class EqualizerSampleProvider : ISampleProvider
 {
@@ -13,26 +13,43 @@ public sealed class EqualizerSampleProvider : ISampleProvider
     private const float BandQ = 1.41f;
     private const float BassHz = 110f;
     private const float TrebleHz = 8000f;
+    private const float EffectThreshold = 0.001f;
 
     private readonly ISampleProvider _source;
     private readonly int _channels;
+    private readonly int _rate;
     private readonly float _sampleRate;
     private readonly float[] _z1;
     private readonly float[] _z2;
     private readonly BiquadCoefficients[] _stages = new BiquadCoefficients[Stages];
+    private readonly VirtualizerProcessor? _virtualizer;
+    private readonly ReverbProcessor? _reverb;
     private volatile EqSettings _requested = EqSettings.Original;
     private EqSettings? _built;
     private float _preamp = 1f;
     private float _width = 1f;
+    private float _virtualizerAmount;
+    private float _reverbAmount;
+    private float _dry = 1f;
+    private float _wet;
+    private bool _effects;
 
     public EqualizerSampleProvider(ISampleProvider source)
     {
         _source = source;
         _channels = source.WaveFormat.Channels;
-        _sampleRate = source.WaveFormat.SampleRate;
+        _rate = source.WaveFormat.SampleRate;
+        _sampleRate = _rate;
         _z1 = new float[Stages * _channels];
         _z2 = new float[Stages * _channels];
         Array.Fill(_stages, BiquadCoefficients.Identity);
+
+        // the effects are made for stereo
+        if (_channels == 2)
+        {
+            _virtualizer = new VirtualizerProcessor(_rate);
+            _reverb = new ReverbProcessor(_rate);
+        }
     }
 
     public WaveFormat WaveFormat => _source.WaveFormat;
@@ -51,8 +68,11 @@ public sealed class EqualizerSampleProvider : ISampleProvider
             {
                 Array.Clear(_z1);
                 Array.Clear(_z2);
+                _virtualizer?.Reset();
+                _reverb?.Reset();
                 _built = null;
             }
+
             return read;
         }
 
@@ -97,6 +117,27 @@ public sealed class EqualizerSampleProvider : ISampleProvider
 
                 buffer[offset + i + ch] = x;
             }
+
+            if (_effects)
+            {
+                var l = buffer[offset + i];
+                var r = buffer[offset + i + 1];
+
+                if (_virtualizerAmount > EffectThreshold)
+                {
+                    _virtualizer!.Process(ref l, ref r, _virtualizerAmount);
+                }
+
+                if (_reverbAmount > EffectThreshold)
+                {
+                    _reverb!.Process(l, r, out var wetLeft, out var wetRight);
+                    l = l * _dry + wetLeft * _wet;
+                    r = r * _dry + wetRight * _wet;
+                }
+
+                buffer[offset + i] = l;
+                buffer[offset + i + 1] = r;
+            }
         }
 
         return read;
@@ -114,6 +155,23 @@ public sealed class EqualizerSampleProvider : ISampleProvider
         _stages[BandCount + 1] = BiquadCoefficients.HighShelf(_sampleRate, TrebleHz, settings.TrebleDb);
         _preamp = MathF.Pow(10f, settings.PreampDb / 20f);
         _width = Math.Clamp(settings.StereoWidth, 0f, 2f);
+
+        _virtualizerAmount = Math.Clamp(settings.Virtualizer, 0f, 1f);
+        _reverbAmount = Math.Clamp(settings.ReverbAmount, 0f, 1f);
+        _reverb?.Configure(settings.Room);
+        if (_virtualizerAmount <= EffectThreshold)
+        {
+            _virtualizer?.Reset();
+        }
+
+        if (_reverbAmount <= EffectThreshold)
+        {
+            _reverb?.Reset();
+        }
+
+        _dry = 1f - 0.25f * _reverbAmount;
+        _wet = 1.2f * _reverbAmount;
+        _effects = _channels == 2 && (_virtualizerAmount > EffectThreshold || _reverbAmount > EffectThreshold);
         _built = settings;
     }
 }
