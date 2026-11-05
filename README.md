@@ -41,12 +41,15 @@ download website are still being built, so for now you run it from source.
   together or for each device on its own, with an Original setting that changes nothing
 - Keeps playing when a device disconnects, and brings it back when it returns
 - Dark and light themes
+- Remembers your devices, volumes, equalizer and theme between runs
+- Groups: save the devices you play on together, play them in one click and control the group on its own
+- Your own equalizer presets, saved by name
 - Optional **Full control** mode (with a free virtual audio cable) so the equalizer and
   delay also work on the device that Windows uses by default
 
 ## Coming next
 
-- Saved settings and saved device groups
+- 3D virtualizer and reverb effects
 - System tray icon and start with Windows
 - An installer and a portable download
 

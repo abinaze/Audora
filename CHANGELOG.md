@@ -17,6 +17,7 @@ All notable changes are listed here. The format follows
 - Desktop app with a card per device, master volume linked to the Windows volume bar, volume boost to 200%
 - Sound tab with a 10-band equalizer, presets, bass, treble and stereo width for all devices or each device
 - Optional Full control mode using a virtual audio cable
+- Saved settings, saved devices, device groups and your own equalizer presets
 
 ### Changed
 - License changed from MIT to PolyForm Noncommercial 1.0.0: free for personal and noncommercial use, commercial use needs permission
