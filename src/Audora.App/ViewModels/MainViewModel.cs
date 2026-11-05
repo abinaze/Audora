@@ -24,6 +24,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private double _master = 100;
     private bool _masterMuted;
     private bool _applyingMaster;
+    private DateTime _lastMasterInput = DateTime.MinValue;
     private string? _watchedDefault;
     private string? _cableId;
     private string? _previousDefaultId;
@@ -159,6 +160,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 Raise(nameof(MasterText));
                 if (!_applyingMaster)
                 {
+                    _lastMasterInput = DateTime.UtcNow;
                     var volume = (float)(_master / 100.0);
                     SerialWorker.Run(() => _watcher.SetVolume(volume));
                     ApplyMasterToDevices();
@@ -176,6 +178,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             if (Set(ref _masterMuted, value) && !_applyingMaster)
             {
+                _lastMasterInput = DateTime.UtcNow;
                 var muted = value;
                 SerialWorker.Run(() => _watcher.SetMuted(muted));
                 ApplyMasterToDevices();
@@ -267,6 +270,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         _ui.BeginInvoke(() =>
         {
+            if ((DateTime.UtcNow - _lastMasterInput).TotalMilliseconds < 700)
+            {
+                return; // Windows echoing back what you just did; ignore it while you are still dragging
+            }
+
             _applyingMaster = true;
             try
             {
