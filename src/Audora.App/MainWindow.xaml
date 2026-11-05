@@ -99,6 +99,118 @@
       </Border>
     </DataTemplate>
 
+    <!-- One group -->
+    <DataTemplate x:Key="GroupCard">
+      <Border Style="{StaticResource Card}" Margin="0,0,0,16" Padding="20,18">
+        <StackPanel>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+              <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" FontSize="16" FontWeight="SemiBold"
+                       Background="Transparent" BorderThickness="0" Padding="0" Foreground="{DynamicResource TextBrush}"
+                       CaretBrush="{DynamicResource TextBrush}" SelectionBrush="{DynamicResource AccentBrush}"
+                       ToolTip="Click the name to rename" AutomationProperties.Name="Group name"/>
+              <TextBlock Margin="0,3,0,0" FontSize="12" Foreground="{DynamicResource MutedBrush}">
+                <Run Text="{Binding Summary, Mode=OneWay}"/><Run Text="{Binding ActiveText, Mode=OneWay}"/>
+              </TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+              <Button Content="Play group" Style="{StaticResource AudoraButton}" Command="{Binding PlayCommand}"
+                      Visibility="{Binding IsInactive, Converter={StaticResource BoolToVis}}"/>
+              <Button Content="Stop group" Style="{StaticResource AudoraButton}" Command="{Binding StopCommand}"
+                      Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}"/>
+              <Button Content="Delete" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding DeleteCommand}"/>
+            </StackPanel>
+          </Grid>
+
+          <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
+            <ToggleButton Content="Mute" Style="{StaticResource ToggleChip}" IsChecked="{Binding IsMuted, Mode=TwoWay}"/>
+            <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="0" Maximum="200" Margin="14,0"
+                    Value="{Binding Volume, Mode=TwoWay}" AutomationProperties.Name="Group volume"/>
+            <TextBlock Grid.Column="2" Text="{Binding VolumeText}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                       Foreground="{DynamicResource MutedBrush}"/>
+          </Grid>
+          <TextBlock Margin="0,6,0,0" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                     Text="Group volume changes the devices Audora plays on. The Windows default device follows the master volume."/>
+
+          <ItemsControl ItemsSource="{Binding Members}" Margin="0,16,0,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,0,0,10">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="210"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="84"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                    <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{DynamicResource MutedBrush}"/>
+                  </StackPanel>
+                  <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="0" Maximum="200" Margin="12,0"
+                          Value="{Binding Device.Volume, Mode=TwoWay}" AutomationProperties.Name="Device volume"
+                          Visibility="{Binding Device.ShowMirrorControls, Converter={StaticResource BoolToVis}}"/>
+                  <TextBlock Grid.Column="2" Text="{Binding Device.VolumeText}" HorizontalAlignment="Right"
+                             VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"
+                             Visibility="{Binding Device.ShowMirrorControls, Converter={StaticResource BoolToVis}}"/>
+                  <Button Grid.Column="3" Content="Remove" Style="{StaticResource AudoraButton}" Padding="10,4" FontSize="12"
+                          Margin="12,0,0,0" Command="{Binding RemoveCommand}"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+              <TextBlock Text="{Binding BluetoothHint}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,12"
+                         Foreground="{DynamicResource MutedBrush}"
+                         Visibility="{Binding HasBluetoothHint, Converter={StaticResource BoolToVis}}"/>
+
+              <StackPanel Margin="0,8,0,16" Visibility="{Binding HasKnownDevices, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="Saved devices (not connected now)" FontSize="16" FontWeight="SemiBold"/>
+                <TextBlock Margin="0,4,0,10" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                           Text="Audora remembers devices you used before, with their volume and sound. Connect one in Windows and it comes back by itself."/>
+                <ItemsControl ItemsSource="{Binding KnownDevices}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Border Style="{StaticResource Card}" Margin="0,0,0,8" Padding="16,12">
+                        <Grid>
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                          </Grid.ColumnDefinitions>
+                          <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
+                            <TextBlock FontSize="11" Foreground="{DynamicResource MutedBrush}">
+                              <Run Text="{Binding TypeText, Mode=OneWay}"/><Run Text="  -  "/><Run Text="{Binding LastSeenText, Mode=OneWay}"/>
+                            </TextBlock>
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="Open Bluetooth settings" Style="{StaticResource AudoraButton}" Padding="10,5" FontSize="12"
+                                    Command="{Binding OpenBluetoothCommand}"
+                                    Visibility="{Binding IsBluetooth, Converter={StaticResource BoolToVis}}"/>
+                            <Button Content="Forget" Style="{StaticResource AudoraButton}" Padding="10,5" FontSize="12"
+                                    Margin="8,0,0,0" Command="{Binding ForgetCommand}"/>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+
+          <Button Content="Use the devices that are playing now" Style="{StaticResource AudoraButton}"
+                  HorizontalAlignment="Left" Padding="12,6" FontSize="12" Margin="0,4,0,0"
+                  Command="{Binding UseCurrentCommand}"/>
+        </StackPanel>
+      </Border>
+    </DataTemplate>
+
     <!-- One equalizer band -->
     <DataTemplate x:Key="BandTemplate">
       <StackPanel Width="56" HorizontalAlignment="Center">
@@ -148,6 +260,14 @@
             <RadioButton.Tag>
               <TextBlock Text="&#xE767;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="22"
                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+            </RadioButton.Tag>
+          </RadioButton>
+          <RadioButton Content="Groups" GroupName="nav" Style="{StaticResource NavButton}"
+                       IsChecked="{Binding IsGroupsTab, Mode=TwoWay}">
+            <RadioButton.Tag>
+              <Path Data="M4 4H10V10H4Z M14 4H20V10H14Z M4 14H10V20H4Z M14 14H20V20H14Z" StrokeThickness="2" Width="24" Height="24"
+                    Stretch="None" StrokeLineJoin="Round"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
             </RadioButton.Tag>
           </RadioButton>
           <RadioButton Content="Sound" GroupName="nav" Style="{StaticResource NavButton}"
@@ -257,6 +377,38 @@
           </ScrollViewer>
         </Grid>
 
+        <!-- Groups -->
+        <Grid Visibility="{Binding IsGroupsTab, Converter={StaticResource BoolToVis}}">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+              <TextBlock Text="Groups" FontSize="22" FontWeight="SemiBold"/>
+              <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
+                         Text="Save the devices you play on together as a group, such as Living room or Headphones only. Play a group in one click and control its volume on its own. Turn the devices on in the Devices tab first, then save them here."/>
+
+              <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBox Style="{StaticResource SearchBox}" Tag="Group name, for example Living room"
+                           Text="{Binding NewGroupName, UpdateSourceTrigger=PropertyChanged}"
+                           AutomationProperties.Name="Group name"/>
+                  <Button Grid.Column="1" Content="Save playing devices as a group" Style="{StaticResource AudoraButton}"
+                          Margin="12,0,0,0" Command="{Binding CreateGroupCommand}"/>
+                </Grid>
+              </Border>
+
+              <TextBlock Text="{Binding GroupMessage}" FontSize="12" Margin="0,0,0,12" TextWrapping="Wrap"
+                         Foreground="{DynamicResource MutedBrush}"/>
+              <TextBlock Text="No groups yet." Foreground="{DynamicResource MutedBrush}" Margin="0,8,0,0"
+                         Visibility="{Binding HasNoGroups, Converter={StaticResource BoolToVis}}"/>
+
+              <ItemsControl ItemsSource="{Binding Groups}" ItemTemplate="{StaticResource GroupCard}"/>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+
         <!-- Sound -->
         <Grid Visibility="{Binding IsSoundTab, Converter={StaticResource BoolToVis}}">
           <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -284,6 +436,22 @@
                   </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
               </ItemsControl>
+
+              <Grid Margin="0,4,0,12">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="280"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Style="{StaticResource SearchBox}" Tag="Name this sound, then press Save"
+                         Text="{Binding NewPresetName, UpdateSourceTrigger=PropertyChanged}"
+                         AutomationProperties.Name="Preset name"/>
+                <Button Grid.Column="1" Content="Save as my preset" Style="{StaticResource AudoraButton}" Margin="10,0,0,0"
+                        Command="{Binding SavePresetCommand}"/>
+                <Button Grid.Column="2" Content="Delete this preset" Style="{StaticResource AudoraButton}" Margin="8,0,0,0"
+                        Command="{Binding DeletePresetCommand}"
+                        Visibility="{Binding CanDeletePreset, Converter={StaticResource BoolToVis}}"/>
+              </Grid>
 
               <Border Style="{StaticResource Card}" Margin="0,8,0,16" Padding="22,18">
                 <Grid>
