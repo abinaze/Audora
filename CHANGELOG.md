@@ -17,7 +17,8 @@ All notable changes are listed here. The format follows
 - Desktop app with a card per device, master volume linked to the Windows volume bar, volume boost to 200%
 - Sound tab with a 10-band equalizer, presets, bass, treble and stereo width for all devices or each device
 - Optional Full control mode using a virtual audio cable
-- 3D virtualizer and reverb effects on the Sound tab
+- Sound profiles (Music, Movie, Communication, Gaming, Smart) with voice clarity, a volume stabilizer and a 3D surround effect
+- Connect and disconnect paired Bluetooth audio devices from the Devices tab
 - Saved settings, saved devices, device groups and your own equalizer presets
 
 ### Changed

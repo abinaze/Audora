@@ -7,11 +7,13 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 
 - Play on any number of devices at once, of any mix (Bluetooth, USB, wired, HDMI)
 - Master volume tied to the Windows volume bar, per-device volume up to 200%, mute, balance, delay
-- 10-band equalizer, presets, your own saved presets, bass, treble, stereo width, per device or for all
+- Sound profiles: Music, Movie, Communication, Gaming and Smart (picks one for the app you are using)
+- Effects: bass, treble, voice clarity, volume stabilizer, 3D surround, stereo width, 10-band equalizer
+- Your own saved presets, per device or for all devices
 - Groups of devices with their own volume and mute
+- Connect and disconnect paired Bluetooth devices from inside Audora
 - Remembers devices, volumes, sound and theme
 - Optional Full control mode with a virtual audio cable
-- 3D virtualizer and reverb (Room, Hall, Stage)
 
 ## Next
 
@@ -21,13 +23,13 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 
 ## Later, if there is demand
 
-- Automatic sound profiles per app
-- One-click connect for paired Bluetooth devices
+- Choose which app each profile belongs to in Smart mode
+- Reverb (the engine is ready, the controls are hidden for now)
 
 ## Not planned
 
 - In-game sound radar overlays: they need integration with each game.
-- Microphone noise removal: a different job (input, not output). Windows and other tools already cover it.
+- Microphone noise removal: a different job (input, not output).
 - Anything that needs an account, a server or telemetry.
 
 ## Good to know
@@ -35,3 +37,4 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 - Nahimic's Sound Sharing and Windows 11 Shared Audio work with two Bluetooth devices. Audora has no such limit.
   How many Bluetooth audio devices play at once is decided by your PC's Bluetooth adapter, usually two to four.
 - Windows plays the default device directly. Audora cannot change its sound unless Full control is on.
+- Smart mode looks at the name and title of the app in front, on your PC only. Nothing is stored or sent.

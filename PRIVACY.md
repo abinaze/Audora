@@ -11,3 +11,14 @@ Audora does not collect, store or send your personal data.
   delete it at any time.
 
 If this ever changes, this page will change first.
+
+## Smart sound mode
+
+If you turn on the Smart profile, Audora reads the name and window title of the app in front of you,
+and whether a fullscreen game is running, to choose between Music, Movie, Communication and Gaming.
+This happens on your computer only. Nothing is stored or sent anywhere.
+
+## Bluetooth
+
+Audora asks Windows for your paired Bluetooth audio devices so you can connect them. The list stays on your
+computer.

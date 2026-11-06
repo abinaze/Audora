@@ -44,7 +44,8 @@ download website are still being built, so for now you run it from source.
 - Remembers your devices, volumes, equalizer and theme between runs
 - Groups: save the devices you play on together, play them in one click and control the group on its own
 - Your own equalizer presets, saved by name
-- 3D virtualizer (a widening effect for headphones) and reverb (Room, Hall, Stage)
+- Sound profiles for Music, Movies, Communication and Gaming, plus Smart, which picks one for the app you are using. Includes voice clarity, a volume stabilizer and a 3D surround effect
+- Connect and disconnect your paired Bluetooth headphones and speakers from inside Audora
 - Optional **Full control** mode (with a free virtual audio cable) so the equalizer and
   delay also work on the device that Windows uses by default
 
