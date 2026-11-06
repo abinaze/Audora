@@ -46,12 +46,12 @@ download website are still being built, so for now you run it from source.
 - Your own equalizer presets, saved by name
 - Sound profiles for Music, Movies, Communication and Gaming, plus Smart, which picks one for the app you are using. Includes voice clarity, a volume stabilizer and a 3D surround effect
 - Connect and disconnect your paired Bluetooth headphones and speakers from inside Audora
+- A tray icon with quick controls (volume, mute, sound profile, groups), runs in the background, optional start with Windows
 - Optional **Full control** mode (with a free virtual audio cable) so the equalizer and
   delay also work on the device that Windows uses by default
 
 ## Coming next
 
-- System tray icon and start with Windows
 - An installer and a portable download
 
 ## Try it

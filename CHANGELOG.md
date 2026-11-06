@@ -19,6 +19,7 @@ All notable changes are listed here. The format follows
 - Optional Full control mode using a virtual audio cable
 - Sound profiles (Music, Movie, Communication, Gaming, Smart) with voice clarity, a volume stabilizer and a 3D surround effect
 - Connect and disconnect paired Bluetooth audio devices from the Devices tab
+- System tray icon with quick controls, keep running in the background, optional start with Windows
 - Saved settings, saved devices, device groups and your own equalizer presets
 
 ### Changed

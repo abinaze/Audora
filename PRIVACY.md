@@ -22,3 +22,8 @@ This happens on your computer only. Nothing is stored or sent anywhere.
 
 Audora asks Windows for your paired Bluetooth audio devices so you can connect them. The list stays on your
 computer.
+
+## Start with Windows
+
+If you turn this on, Audora adds one entry to the Windows startup list of your own user account
+(a registry value under HKEY_CURRENT_USER). Turning it off removes it. Nothing else is changed.

@@ -454,6 +454,54 @@
 
               <Border Style="{StaticResource Card}" Margin="0,0,0,14">
                 <StackPanel>
+                  <TextBlock Text="Behaviour" FontSize="16" FontWeight="SemiBold"/>
+
+                  <Grid Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Keep running in the tray when I close the window"/>
+                      <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                                 Text="Your devices keep playing. Use the tray icon to open Audora again or to quit."/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
+                                  IsChecked="{Binding CloseToTray, Mode=TwoWay}" AutomationProperties.Name="Keep running in the tray"/>
+                  </Grid>
+
+                  <Grid Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Hide from the taskbar when minimized"/>
+                      <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                                 Text="Minimizing sends Audora to the tray instead of the taskbar."/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
+                                  IsChecked="{Binding MinimizeToTray, Mode=TwoWay}" AutomationProperties.Name="Hide from the taskbar when minimized"/>
+                  </Grid>
+
+                  <Grid Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Start Audora with Windows"/>
+                      <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                                 Text="Opens quietly in the tray when you sign in. Adds one entry to your own Windows startup list."/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
+                                  IsChecked="{Binding StartWithWindows, Mode=TwoWay}" AutomationProperties.Name="Start with Windows"/>
+                  </Grid>
+                </StackPanel>
+              </Border>
+
+              <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
                   <TextBlock Text="Full control" FontSize="16" FontWeight="SemiBold"/>
                   <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
                              Text="Windows plays your default device directly, so Audora cannot change its sound. With a free virtual audio cable, Audora plays every device itself: the equalizer, boost, balance and delay then work on all of them, and you can line up Bluetooth with the rest."/>

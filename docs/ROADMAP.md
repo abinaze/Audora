@@ -12,12 +12,12 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 - Your own saved presets, per device or for all devices
 - Groups of devices with their own volume and mute
 - Connect and disconnect paired Bluetooth devices from inside Audora
+- Tray icon with quick controls, runs in the background, optional start with Windows
 - Remembers devices, volumes, sound and theme
 - Optional Full control mode with a virtual audio cable
 
 ## Next
 
-- System tray icon, minimize to tray, start with Windows
 - Installer and portable download, public website
 - Per-app volume (like EarTrumpet)
 
