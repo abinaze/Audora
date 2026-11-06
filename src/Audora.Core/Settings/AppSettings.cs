@@ -39,6 +39,10 @@ public sealed class SavedSound
     public double ReverbAmount { get; set; }
 
     public string ReverbRoom { get; set; } = "Room";
+
+    public double VoiceClarity { get; set; }
+
+    public double Stabilizer { get; set; }
 }
 
 public sealed class SavedDevice

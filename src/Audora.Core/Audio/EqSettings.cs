@@ -21,7 +21,9 @@ public sealed record EqSettings(
     float StereoWidth,
     float Virtualizer = 0f,
     float ReverbAmount = 0f,
-    ReverbKind Room = ReverbKind.Room)
+    ReverbKind Room = ReverbKind.Room,
+    float VoiceClarity = 0f,
+    float Stabilizer = 0f)
 {
     /// <summary>Centre frequency of each of the 10 bands, in Hz.</summary>
     public static IReadOnlyList<float> BandFrequencies { get; } =

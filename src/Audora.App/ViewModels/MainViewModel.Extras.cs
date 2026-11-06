@@ -85,6 +85,7 @@ public sealed partial class MainViewModel
         _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
         _saveTimer.Tick += (_, _) => SaveIfChanged();
         _saveTimer.Start();
+        StartSmartWatcher();
     }
 
     private AppSettings BuildSettings()

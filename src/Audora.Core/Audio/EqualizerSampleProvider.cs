@@ -3,8 +3,9 @@ using NAudio.Wave;
 namespace Audora.Core.Audio;
 
 /// <summary>
-/// The sound shaper: 10-band equalizer with preamp, bass and treble, stereo width, a 3D virtualizer
-/// and reverb. When the settings are "Original" the samples pass through untouched.
+/// The sound shaper: 10-band equalizer with preamp, bass and treble, voice clarity, stereo width,
+/// a 3D virtualizer, reverb and a volume stabilizer. When the settings are "Original" the samples
+/// pass through untouched.
 /// </summary>
 public sealed class EqualizerSampleProvider : ISampleProvider
 {
@@ -15,6 +16,9 @@ public sealed class EqualizerSampleProvider : ISampleProvider
     private const float TrebleHz = 8000f;
     private const float EffectThreshold = 0.001f;
 
+    // What "voice clarity" adds to each band at full strength (dB): clearer speech, less rumble and mud.
+    private static readonly float[] VoiceDelta = { 0f, 0f, -2f, -2f, -1f, 1f, 3f, 4f, 1f, 0f };
+
     private readonly ISampleProvider _source;
     private readonly int _channels;
     private readonly int _rate;
@@ -24,12 +28,14 @@ public sealed class EqualizerSampleProvider : ISampleProvider
     private readonly BiquadCoefficients[] _stages = new BiquadCoefficients[Stages];
     private readonly VirtualizerProcessor? _virtualizer;
     private readonly ReverbProcessor? _reverb;
+    private readonly StabilizerProcessor _stabilizer;
     private volatile EqSettings _requested = EqSettings.Original;
     private EqSettings? _built;
     private float _preamp = 1f;
     private float _width = 1f;
     private float _virtualizerAmount;
     private float _reverbAmount;
+    private float _stabilizerAmount;
     private float _dry = 1f;
     private float _wet;
     private bool _effects;
@@ -43,8 +49,9 @@ public sealed class EqualizerSampleProvider : ISampleProvider
         _z1 = new float[Stages * _channels];
         _z2 = new float[Stages * _channels];
         Array.Fill(_stages, BiquadCoefficients.Identity);
+        _stabilizer = new StabilizerProcessor(_rate);
 
-        // the effects are made for stereo
+        // the 3D and reverb effects are made for stereo
         if (_channels == 2)
         {
             _virtualizer = new VirtualizerProcessor(_rate);
@@ -70,6 +77,7 @@ public sealed class EqualizerSampleProvider : ISampleProvider
                 Array.Clear(_z2);
                 _virtualizer?.Reset();
                 _reverb?.Reset();
+                _stabilizer.Reset();
                 _built = null;
             }
 
@@ -138,6 +146,21 @@ public sealed class EqualizerSampleProvider : ISampleProvider
                 buffer[offset + i] = l;
                 buffer[offset + i + 1] = r;
             }
+
+            if (_stabilizerAmount > EffectThreshold)
+            {
+                var peak = 0f;
+                for (var ch = 0; ch < channels; ch++)
+                {
+                    peak = Math.Max(peak, Math.Abs(buffer[offset + i + ch]));
+                }
+
+                var gain = _stabilizer.GainFor(peak, _stabilizerAmount);
+                for (var ch = 0; ch < channels; ch++)
+                {
+                    buffer[offset + i + ch] *= gain;
+                }
+            }
         }
 
         return read;
@@ -145,9 +168,11 @@ public sealed class EqualizerSampleProvider : ISampleProvider
 
     private void Build(EqSettings settings)
     {
+        var clarity = Math.Clamp(settings.VoiceClarity, 0f, 1f);
+
         for (var i = 0; i < BandCount; i++)
         {
-            var gain = i < settings.BandsDb.Count ? settings.BandsDb[i] : 0f;
+            var gain = (i < settings.BandsDb.Count ? settings.BandsDb[i] : 0f) + VoiceDelta[i] * clarity;
             _stages[i] = BiquadCoefficients.Peaking(_sampleRate, EqSettings.BandFrequencies[i], gain, BandQ);
         }
 
@@ -158,7 +183,9 @@ public sealed class EqualizerSampleProvider : ISampleProvider
 
         _virtualizerAmount = Math.Clamp(settings.Virtualizer, 0f, 1f);
         _reverbAmount = Math.Clamp(settings.ReverbAmount, 0f, 1f);
+        _stabilizerAmount = Math.Clamp(settings.Stabilizer, 0f, 1f);
         _reverb?.Configure(settings.Room);
+
         if (_virtualizerAmount <= EffectThreshold)
         {
             _virtualizer?.Reset();
@@ -167,6 +194,11 @@ public sealed class EqualizerSampleProvider : ISampleProvider
         if (_reverbAmount <= EffectThreshold)
         {
             _reverb?.Reset();
+        }
+
+        if (_stabilizerAmount <= EffectThreshold)
+        {
+            _stabilizer.Reset();
         }
 
         _dry = 1f - 0.25f * _reverbAmount;

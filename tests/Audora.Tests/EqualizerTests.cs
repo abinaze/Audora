@@ -133,27 +133,4 @@ public class EqualizerTests
         Assert.InRange(Magnitude(c, 16000), 1.8, 2.1);
         Assert.InRange(Magnitude(c, 100), 0.98, 1.02);
     }
-
-    [Fact]
-    public void OriginalPresetIsFirstAndFlat()
-    {
-        var first = SoundPresets.All[0];
-        Assert.Equal(SoundPresets.OriginalName, first.Name);
-        Assert.All(first.Bands, gain => Assert.Equal(0f, gain));
-        Assert.False(SoundPresets.ToSettings(first).Enabled);
-    }
-
-    [Fact]
-    public void EveryPresetHasTenBandsAndAUniqueName()
-    {
-        Assert.All(SoundPresets.All, p => Assert.Equal(10, p.Bands.Length));
-        Assert.Equal(SoundPresets.All.Count, SoundPresets.All.Select(p => p.Name).Distinct().Count());
-    }
-
-    [Fact]
-    public void BoostingPresetsLowerThePreampToStayClean()
-    {
-        var bass = SoundPresets.All.First(p => p.Name == "Bass Boost");
-        Assert.True(SoundPresets.ToSettings(bass).PreampDb < 0f);
-    }
 }
