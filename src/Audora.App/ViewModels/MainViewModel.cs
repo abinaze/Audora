@@ -47,6 +47,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _controller = new MirrorController(_devices);
         Sound = new SoundViewModel(_controller);
         InitializeExtras();
+        InitializeBluetooth();
 
         View = CollectionViewSource.GetDefaultView(Devices);
         View.Filter = Filter;

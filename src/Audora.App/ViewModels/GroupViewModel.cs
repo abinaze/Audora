@@ -167,7 +167,7 @@ public sealed class GroupViewModel : ObservableObject
 /// <summary>A device Audora has seen before that is not connected right now.</summary>
 public sealed class KnownDeviceViewModel
 {
-    public KnownDeviceViewModel(SavedDevice saved, Action<KnownDeviceViewModel> forget)
+    public KnownDeviceViewModel(SavedDevice saved, Action<KnownDeviceViewModel> forget, Action<KnownDeviceViewModel>? connect = null)
     {
         Id = saved.Id;
         Name = saved.Name;
@@ -186,6 +186,7 @@ public sealed class KnownDeviceViewModel
         LastSeenText = days <= 0 ? "last seen today" : days == 1 ? "last seen yesterday" : $"last seen {seen:d MMM yyyy}";
 
         ForgetCommand = new RelayCommand(() => forget(this));
+        ConnectCommand = new RelayCommand(() => connect?.Invoke(this));
         OpenBluetoothCommand = new RelayCommand(() =>
         {
             try
@@ -210,6 +211,8 @@ public sealed class KnownDeviceViewModel
     public string LastSeenText { get; }
 
     public RelayCommand ForgetCommand { get; }
+
+    public RelayCommand ConnectCommand { get; }
 
     public RelayCommand OpenBluetoothCommand { get; }
 }

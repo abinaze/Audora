@@ -234,7 +234,7 @@ public sealed partial class MainViewModel
             KnownDevices.Clear();
             foreach (var record in offline)
             {
-                KnownDevices.Add(new KnownDeviceViewModel(record, ForgetDevice));
+                KnownDevices.Add(new KnownDeviceViewModel(record, ForgetDevice, ConnectKnown));
             }
 
             Raise(nameof(HasKnownDevices));
@@ -243,6 +243,7 @@ public sealed partial class MainViewModel
         LinkMembers();
         RefreshGroupFactors();
 
+        RefreshBluetoothSoon();
         var bluetooth = Devices.Count(d => d.IsBluetooth && d.IsSelected);
         BluetoothHint = bluetooth >= 2
             ? "Several Bluetooth devices are playing at once. Most PCs handle two or three. If the sound stutters, switch one off."

@@ -172,6 +172,54 @@
                          Foreground="{DynamicResource MutedBrush}"
                          Visibility="{Binding HasBluetoothHint, Converter={StaticResource BoolToVis}}"/>
 
+              <Border Style="{StaticResource Card}" Margin="0,0,0,16" Padding="20,16">
+                <StackPanel>
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Bluetooth devices" FontSize="16" FontWeight="SemiBold"/>
+                      <TextBlock Margin="0,4,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                                 Text="Connect your paired Bluetooth speakers and headphones from here, as many as your PC allows (usually two to four). Pair a new device once in Windows."/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                      <Button Content="Connect all" Style="{StaticResource AudoraButton}" Command="{Binding ConnectAllBluetoothCommand}"/>
+                      <Button Content="Refresh" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding RefreshBluetoothCommand}"/>
+                      <Button Content="Pair a new device" Style="{StaticResource AudoraButton}" Margin="8,0,0,0" Command="{Binding PairNewDeviceCommand}"/>
+                    </StackPanel>
+                  </Grid>
+
+                  <TextBlock Text="{Binding BluetoothMessage}" FontSize="12" TextWrapping="Wrap" Margin="0,10,0,0"
+                             Foreground="{DynamicResource MutedBrush}"/>
+                  <TextBlock Text="No paired Bluetooth speakers or headphones found. Pair one in Windows first." FontSize="12"
+                             Margin="0,10,0,0" Foreground="{DynamicResource MutedBrush}"
+                             Visibility="{Binding HasNoBluetooth, Converter={StaticResource BoolToVis}}"/>
+
+                  <ItemsControl ItemsSource="{Binding BluetoothDevices}" Margin="0,10,0,0">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Grid Margin="0,0,0,8">
+                          <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="130"/>
+                            <ColumnDefinition Width="Auto"/>
+                          </Grid.ColumnDefinitions>
+                          <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                     ToolTip="{Binding Name}"/>
+                          <TextBlock Grid.Column="1" Text="{Binding StatusText}" VerticalAlignment="Center" FontSize="12"
+                                     Foreground="{DynamicResource MutedBrush}"/>
+                          <Button Grid.Column="2" Content="{Binding ButtonText}" Style="{StaticResource AudoraButton}"
+                                  Padding="12,5" FontSize="12" MinWidth="96" Command="{Binding ToggleCommand}"
+                                  IsEnabled="{Binding CanToggle}"/>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Border>
+
               <StackPanel Margin="0,8,0,16" Visibility="{Binding HasKnownDevices, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="Saved devices (not connected now)" FontSize="16" FontWeight="SemiBold"/>
                 <TextBlock Margin="0,4,0,10" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
@@ -192,8 +240,8 @@
                             </TextBlock>
                           </StackPanel>
                           <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Button Content="Open Bluetooth settings" Style="{StaticResource AudoraButton}" Padding="10,5" FontSize="12"
-                                    Command="{Binding OpenBluetoothCommand}"
+                            <Button Content="Connect" Style="{StaticResource AudoraButton}" Padding="10,5" FontSize="12"
+                                    Command="{Binding ConnectCommand}"
                                     Visibility="{Binding IsBluetooth, Converter={StaticResource BoolToVis}}"/>
                             <Button Content="Forget" Style="{StaticResource AudoraButton}" Padding="10,5" FontSize="12"
                                     Margin="8,0,0,0" Command="{Binding ForgetCommand}"/>
