@@ -65,6 +65,9 @@ public sealed partial class MainViewModel
     {
         _settings = _store.Load();
         _isDark = _settings.DarkTheme;
+        _closeToTray = _settings.CloseToTray;
+        _minimizeToTray = _settings.MinimizeToTray;
+        _trayHintShown = _settings.TrayHintShown;
         ThemeService.Apply(_isDark);
 
         Sound.Import(_settings);
@@ -108,6 +111,9 @@ public sealed partial class MainViewModel
             Devices = _settings.Devices.ToList(),
             Groups = Groups.Select(g => g.ToSaved()).ToList(),
             ActiveGroupId = _activeGroupId,
+            CloseToTray = _closeToTray,
+            MinimizeToTray = _minimizeToTray,
+            TrayHintShown = _trayHintShown,
         };
 
         Sound.Export(result);
