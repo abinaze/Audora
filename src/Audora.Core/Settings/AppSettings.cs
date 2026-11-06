@@ -18,6 +18,15 @@ public sealed class AppSettings
     public List<SavedGroup> Groups { get; set; } = new();
 
     public string? ActiveGroupId { get; set; }
+
+    /// <summary>Closing the window keeps Audora running in the tray.</summary>
+    public bool CloseToTray { get; set; } = true;
+
+    /// <summary>Minimizing hides the window from the taskbar.</summary>
+    public bool MinimizeToTray { get; set; }
+
+    /// <summary>The "still running in the tray" note has been shown once.</summary>
+    public bool TrayHintShown { get; set; }
 }
 
 public sealed class SavedSound
