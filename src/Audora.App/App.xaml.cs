@@ -6,7 +6,19 @@ namespace Audora.App;
 
 public partial class App : Application
 {
+    private const string ShowSignalName = @"Local\Audora.Show";
+
     private static Mutex? _singleInstance;
+    private static EventWaitHandle? _showSignal;
+
+    /// <summary>True once the user chose Quit (or Windows is closing), so closing really closes.</summary>
+    public static bool IsQuitting { get; private set; }
+
+    public static void Quit()
+    {
+        IsQuitting = true;
+        Current.Shutdown();
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -14,8 +26,7 @@ public partial class App : Application
         _singleInstance = new Mutex(true, @"Local\Audora.SingleInstance", out var isFirst);
         if (!isFirst)
         {
-            MessageBox.Show("Audora is already running. Look for its window in the taskbar.", "Audora",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            SignalRunningCopy();
             Shutdown();
             return;
         }
@@ -33,9 +44,15 @@ public partial class App : Application
             Log.Error("Background task error", args.Exception);
             args.SetObserved();
         };
+        SessionEnding += (_, _) => IsQuitting = true;
 
         Log.Info("Audora started");
         base.OnStartup(e);
+
+        var window = new MainWindow();
+        MainWindow = window;
+        window.ShowAtStart(e.Args.Contains("--minimized", StringComparer.OrdinalIgnoreCase));
+        ListenForShowSignal(window);
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -44,5 +61,40 @@ public partial class App : Application
         try { _singleInstance?.ReleaseMutex(); } catch { }
         _singleInstance?.Dispose();
         base.OnExit(e);
+    }
+
+    // A second launch asks the running copy to show its window.
+    private static void SignalRunningCopy()
+    {
+        try
+        {
+            using var signal = EventWaitHandle.OpenExisting(ShowSignalName);
+            signal.Set();
+        }
+        catch
+        {
+            // the first copy is still starting up; nothing to do
+        }
+    }
+
+    private void ListenForShowSignal(MainWindow window)
+    {
+        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSignalName);
+        var thread = new Thread(() =>
+        {
+            while (_showSignal.WaitOne())
+            {
+                if (IsQuitting)
+                {
+                    break;
+                }
+
+                Dispatcher.BeginInvoke(window.ShowFromTray);
+            }
+        })
+        {
+            IsBackground = true
+        };
+        thread.Start();
     }
 }
