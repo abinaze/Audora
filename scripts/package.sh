@@ -8,7 +8,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VERSION="${1:-$(sed -n 's|.*<Version>\(.*\)</Version>.*|\1|p' Directory.Build.props | head -n 1)}"
-OUT="artifacts"
+OUT="$PWD/artifacts"
 PUBLISH="$OUT/publish"
 PORTABLE="$OUT/portable/Audora"
 

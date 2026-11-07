@@ -7,6 +7,10 @@ For maintainers. A release builds the installer and the portable zip and publish
 - Install [Inno Setup 6](https://jrsoftware.org/isinfo.php) if you want to build the installer on your own
   computer: `winget install --id JRSoftware.InnoSetup -e`. GitHub installs it itself when it builds a release.
 
+## Before you rebuild
+
+Quit Audora first (right-click its tray icon, **Quit Audora**), or the build cannot replace its files.
+
 ## Try the build on your computer
 
 ```bash
