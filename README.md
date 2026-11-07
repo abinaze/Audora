@@ -28,8 +28,8 @@ never changes the others.
 
 ## Status
 
-**Early development.** The app already works on real hardware. The installer and the
-download website are still being built, so for now you run it from source.
+**Early development.** The app already works on real hardware.
+The installer, the portable download and the website are ready; the first release is being prepared.
 
 ## What works today
 
@@ -53,6 +53,12 @@ download website are still being built, so for now you run it from source.
 ## Coming next
 
 - An installer and a portable download
+
+## Download
+
+Installer and portable versions for Windows 10 and 11 (64-bit) are published on the
+[Releases page](https://github.com/abinaze/Audora/releases/latest). The first release is being prepared;
+until then you can run Audora from source (below). Install steps are in [docs/INSTALL.md](docs/INSTALL.md).
 
 ## Try it
 
