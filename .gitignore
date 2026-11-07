@@ -19,3 +19,6 @@ Desktop.ini
 
 # Logs
 *.log
+
+# Website build output
+_site/

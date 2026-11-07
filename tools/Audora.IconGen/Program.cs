@@ -7,7 +7,7 @@ using System.Windows.Media.Imaging;
 namespace Audora.IconGen;
 
 /// <summary>Builds assets/icons/audora.ico and PNGs from assets/brand/mark.svg.</summary>
-internal static class Program
+internal static partial class Program
 {
     private static readonly int[] Sizes = { 16, 24, 32, 48, 64, 128, 256 };
 
@@ -45,6 +45,7 @@ internal static class Program
         }
 
         WriteIco(Path.Combine(outDir, "audora.ico"), images);
+        WriteSocialPreview(repo, shapes);
         Console.WriteLine($"Wrote audora.ico and {images.Count} PNGs to {outDir}");
         return 0;
     }

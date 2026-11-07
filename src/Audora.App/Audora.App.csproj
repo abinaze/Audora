@@ -12,6 +12,8 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>../../assets/icons/audora.ico</ApplicationIcon>
+    <AssemblyName>Audora</AssemblyName>
+    <Description>Play your Windows audio on many speakers and headphones at once</Description>
   </PropertyGroup>
 
   <ItemGroup>
