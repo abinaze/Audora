@@ -4,30 +4,36 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Audora: play your Windows audio on many devices at once</title>
-  <meta name="description" content="Audora plays your Windows audio on many speakers and headphones at once, with separate volume, sound profiles and groups. Free for personal use, private by design.">
+  <meta name="description" content="Audora plays your Windows audio on many speakers and headphones at once, with a separate volume for each. Free for personal use.">
   <meta name="theme-color" content="#0B1528">
-  <meta property="og:title" content="Audora: play your Windows audio on many devices at once">
-  <meta property="og:description" content="Many speakers and headphones at once. Separate volume for each. Free for personal use.">
-  <meta property="og:type" content="website">
-  <link rel="icon" type="image/svg+xml" href="assets/brand/mark.svg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- The logo lives inside the page, so it can never be missing. The build script fills in the shapes. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="mark" viewBox="0 0 746 642">
+      <path fill="#351B9F" d="{{MARK_DARK}}"/>
+      <path fill="#1676FC" d="{{MARK_BLUE}}"/>
+      <path fill="#7E33F5" d="{{MARK_PURPLE}}"/>
+    </symbol>
+    <symbol id="wordmark" viewBox="0 0 1243.75 101.5">
+      <path fill="currentColor" fill-rule="evenodd" d="{{WORDMARK}}"/>
+    </symbol>
+  </svg>
+
   <a class="skip" href="#main">Skip to content</a>
 
   <header class="top">
     <div class="wrap bar">
-      <a class="brand" href="#top" aria-label="Audora home">
-        <picture>
-          <source media="(prefers-color-scheme: light)" srcset="assets/brand/logo-horizontal-light.svg">
-          <img src="assets/brand/logo-horizontal-dark.svg" alt="Audora" height="40">
-        </picture>
+      <a class="brand" href="#top" aria-label="Audora">
+        <svg class="mark" aria-hidden="true"><use href="#mark"/></svg>
+        <svg class="wordmark" role="img" aria-label="Audora"><use href="#wordmark"/></svg>
       </a>
       <nav aria-label="Main">
         <a href="#features">Features</a>
-        <a href="#sound">Sound</a>
         <a href="#download">Download</a>
-        <a href="#faq">FAQ</a>
+        <a href="#faq">Questions</a>
         <a href="https://github.com/abinaze/Audora">GitHub</a>
       </nav>
     </div>
@@ -36,137 +42,79 @@
   <main id="main">
     <section class="hero wrap" id="top">
       <div class="hero-text">
-        <p class="eyebrow">For Windows 10 and 11</p>
-        <h1>Play your audio on <span class="grad">many speakers and headphones</span> at once.</h1>
-        <p class="lead">Connect Bluetooth, USB, wired and HDMI devices together. Give each one its own volume and sound. Free for personal use, with no account and no tracking.</p>
-        <div class="actions">
+        <svg class="hero-mark" aria-hidden="true"><use href="#mark"/></svg>
+        <p class="eyebrow">Free for Windows 10 and 11</p>
+        <h1>Play your audio on many devices at once.</h1>
+        <p class="lead">Connect speakers and headphones together. Each one gets its own volume.</p>
+        <p class="actions">
           <a class="button primary" href="https://github.com/abinaze/Audora/releases/latest/download/Audora-Setup.exe" data-download="installer">Download for Windows</a>
-          <a class="button" href="https://github.com/abinaze/Audora/releases/latest/download/Audora-Portable.zip" data-download="portable">Portable zip</a>
-        </div>
-        <p class="meta"><span data-version>Latest version</span> · Windows 10 and 11, 64-bit · <a href="https://github.com/abinaze/Audora/releases">Release notes</a></p>
+          <a class="textlink" href="https://github.com/abinaze/Audora/releases/latest/download/Audora-Portable.zip" data-download="portable">Portable version</a>
+        </p>
+        <p class="meta"><span data-version>Free</span> · No account · No tracking</p>
       </div>
-
-      <div class="illustration" aria-hidden="true">
-        <p class="caption">Illustration</p>
-        <div class="mock">
-          <div class="mock-master"><span>Master volume</span><i style="--v:72%"></i><b>72%</b></div>
-          <div class="mock-card"><em>Headphones</em><small>Bluetooth · Playing together</small><i style="--v:55%"></i></div>
-          <div class="mock-card"><em>Speakers</em><small>USB · Playing together</small><i style="--v:80%"></i></div>
-          <div class="mock-card"><em>Living room TV</em><small>HDMI · Playing together</small><i style="--v:40%"></i></div>
-        </div>
-      </div>
+      {{HERO}}
     </section>
 
-    <section class="wrap" id="shots" hidden>
-      <h2>See it</h2>
-      <div class="shots">
-        <figure><img src="assets/screenshots/devices.png" alt="The Devices tab with a card for every connected device"><figcaption>Devices</figcaption></figure>
-        <figure><img src="assets/screenshots/sound.png" alt="The Sound tab with profiles, effects and an equalizer"><figcaption>Sound</figcaption></figure>
-        <figure><img src="assets/screenshots/groups.png" alt="The Groups tab with saved device groups"><figcaption>Groups</figcaption></figure>
-      </div>
-    </section>
+    {{SHOTS}}
 
     <section class="wrap" id="features">
-      <h2>Everything in one simple window</h2>
+      <h2>What it does</h2>
       <div class="grid">
-        <article class="card"><h3>Many devices at once</h3><p>Play the same sound on as many devices as your PC can handle, in any mix of Bluetooth, USB, wired and HDMI.</p></article>
-        <article class="card"><h3>Volume for each device</h3><p>Every device has its own volume (up to 200%), mute, left/right balance and delay to line up slower devices like Bluetooth.</p></article>
-        <article class="card"><h3>Master volume that matches Windows</h3><p>One slider that moves with the Windows volume bar and your keyboard volume keys, and controls all your devices together.</p></article>
-        <article class="card"><h3>Sound profiles</h3><p>Music, Movie, Communication and Gaming, plus Smart, which picks the right one for the app you are using.</p></article>
-        <article class="card"><h3>Groups</h3><p>Save the devices you use together, like Living room or Headphones only, and play them in one click with their own volume.</p></article>
-        <article class="card"><h3>Bluetooth, handled</h3><p>See your paired Bluetooth speakers and headphones and connect them from inside Audora. It brings them back by itself when they return.</p></article>
-        <article class="card"><h3>Private by design</h3><p>No account, no tracking and no internet connection needed. Your audio is never recorded or sent anywhere.</p></article>
-        <article class="card"><h3>Lives in your tray</h3><p>Close the window and the music keeps playing. Quick controls are one right-click away. Optionally starts with Windows.</p></article>
+        <div class="item"><h3>Many devices at once</h3><p>Bluetooth, USB, wired and HDMI together.</p></div>
+        <div class="item"><h3>A volume for each</h3><p>Up to 200%, plus mute, balance and delay.</p></div>
+        <div class="item"><h3>Sound profiles</h3><p>Music, Movie, Calls and Gaming. Or let Smart pick.</p></div>
+        <div class="item"><h3>Groups</h3><p>Save a set of devices and play it in one click.</p></div>
+        <div class="item"><h3>Bluetooth</h3><p>Connect your paired devices from the app.</p></div>
+        <div class="item"><h3>Private</h3><p>No account. No tracking. No internet needed.</p></div>
       </div>
     </section>
 
     <section class="wrap" id="how">
       <h2>How it works</h2>
       <ol class="steps">
-        <li><b>1</b><div><h3>Listen</h3><p>Audora listens to what your Windows default device is playing.</p></div></li>
-        <li><b>2</b><div><h3>Copy</h3><p>It plays the same sound on the other devices you switch on.</p></div></li>
-        <li><b>3</b><div><h3>Control</h3><p>You set volume, sound and delay for each device, or for a whole group.</p></div></li>
+        <li><b>1</b><p>Audora listens to what your default device plays.</p></li>
+        <li><b>2</b><p>It plays the same sound on the devices you switch on.</p></li>
+        <li><b>3</b><p>You set the volume and sound for each one.</p></li>
       </ol>
-      <p class="note">Windows plays the default device directly, so the sound effects work on the other devices. To use them on every device, turn on <b>Full control</b> in Settings (it uses a free virtual audio cable).</p>
-    </section>
-
-    <section class="wrap" id="devices">
-      <h2>Works with the audio devices you already have</h2>
-      <ul class="chips">
-        <li>Bluetooth headphones and earbuds</li>
-        <li>Bluetooth speakers</li>
-        <li>USB headphones and speakers</li>
-        <li>USB audio adapters</li>
-        <li>3.5 mm wired headphones</li>
-        <li>HDMI and DisplayPort screens and TVs</li>
-        <li>Anything else Windows can play sound on</li>
-      </ul>
-    </section>
-
-    <section class="wrap" id="sound">
-      <h2>A sound for what you are doing</h2>
-      <div class="grid four">
-        <article class="card"><h3>Music</h3><p>Fuller bass, clearer highs and a slightly wider sound.</p></article>
-        <article class="card"><h3>Movie</h3><p>Deeper bass, clearer dialogue and wide surround. Evens out loud scenes and quiet speech.</p></article>
-        <article class="card"><h3>Communication</h3><p>Clear, centred voices for calls. Cuts low rumble and evens out the volume.</p></article>
-        <article class="card"><h3>Gaming</h3><p>Sharper footsteps and directions, with a wide, positional sound.</p></article>
-      </div>
-      <p class="note"><b>Smart</b> picks one of these for you. It looks at the name of the app in front, on your PC only, and never stores or sends it. Plus a 10-band equalizer and your own saved presets.</p>
     </section>
 
     <section class="wrap" id="download">
-      <h2>Download Audora</h2>
-      <div class="grid two">
-        <article class="card dl">
+      <h2>Download</h2>
+      <div class="two">
+        <div class="box">
           <h3>Installer</h3>
-          <p>The easiest way. Adds a Start menu entry and can start with Windows. No administrator rights needed.</p>
-          <a class="button primary" href="https://github.com/abinaze/Audora/releases/latest/download/Audora-Setup.exe" data-download="installer">Download Audora-Setup.exe</a>
+          <p>The easy way. No administrator rights needed.</p>
+          <a class="button primary" href="https://github.com/abinaze/Audora/releases/latest/download/Audora-Setup.exe" data-download="installer">Download the installer</a>
           <p class="size" data-size="installer"></p>
-        </article>
-        <article class="card dl">
+        </div>
+        <div class="box">
           <h3>Portable</h3>
-          <p>Unzip anywhere and run Audora.exe. Nothing is installed. Good for a USB stick.</p>
-          <a class="button" href="https://github.com/abinaze/Audora/releases/latest/download/Audora-Portable.zip" data-download="portable">Download Audora-Portable.zip</a>
+          <p>Unzip it anywhere and run it. Nothing is installed.</p>
+          <a class="button" href="https://github.com/abinaze/Audora/releases/latest/download/Audora-Portable.zip" data-download="portable">Download the zip</a>
           <p class="size" data-size="portable"></p>
-        </article>
-      </div>
-
-      <div class="grid two info">
-        <div>
-          <h3>System requirements</h3>
-          <ul>
-            <li>Windows 10 (version 1809 or newer) or Windows 11, 64-bit</li>
-            <li>No extra software needed</li>
-            <li>A Bluetooth adapter if you want to use Bluetooth devices</li>
-          </ul>
-        </div>
-        <div>
-          <h3>Install in three steps</h3>
-          <ol>
-            <li>Download and open <b>Audora-Setup.exe</b>.</li>
-            <li>If Windows says "unknown publisher", click <b>More info</b>, then <b>Run anyway</b>. The installer is not code-signed yet.</li>
-            <li>Open Audora, start some music and switch on the devices you want.</li>
-          </ol>
         </div>
       </div>
-      <p class="note">Every release comes with a checksum file so you can check your download. See the <a href="https://github.com/abinaze/Audora/blob/main/docs/INSTALL.md">install guide</a>.</p>
+      <p class="small">Needs Windows 10 (1809 or newer) or Windows 11, 64-bit. Nothing else to install.</p>
+      <p class="small">If Windows says "unknown publisher", choose <b>More info</b>, then <b>Run anyway</b>. The installer is not signed yet. See the <a href="https://github.com/abinaze/Audora/blob/main/docs/INSTALL.md">install guide</a> to check your download.</p>
     </section>
 
     <section class="wrap" id="faq">
       <h2>Questions</h2>
-      <details><summary>Is Audora free?</summary><p>Yes, for personal and other noncommercial use, under the PolyForm Noncommercial License. Selling Audora or using it in a paid product needs the author's permission.</p></details>
-      <details><summary>Does it send any data?</summary><p>No. There is no account, no tracking and no internet connection. Audio is read in memory only to play it on your other devices, and is never saved or sent.</p></details>
+      <details><summary>Is it free?</summary><p>Yes, for personal and other noncommercial use. Selling it or using it in a paid product needs the author's permission.</p></details>
+      <details><summary>Does it send any data?</summary><p>No. There is no account, no tracking and no internet connection. Your audio is never saved or sent anywhere.</p></details>
       <details><summary>How many Bluetooth devices can play at once?</summary><p>That depends on your PC's Bluetooth adapter, usually two to four. Audora has no limit of its own.</p></details>
-      <details><summary>Why can't I change the sound of my default device?</summary><p>Windows plays that device directly. Turn on Full control in Settings, with a free virtual audio cable, and Audora plays every device itself.</p></details>
-      <details><summary>Why does Windows warn me when I install?</summary><p>The installer is not code-signed yet, so Windows does not know the publisher. Choose More info, then Run anyway. You can check the download with the checksum file.</p></details>
-      <details><summary>How do I uninstall it?</summary><p>Windows Settings, Apps, Audora, Uninstall. It asks whether to delete your settings too. For the portable version, delete the folder.</p></details>
+      <details><summary>Why can't I change the sound of my default device?</summary><p>Windows plays that device directly. Turn on Full control in Settings, with a free virtual audio cable, and every device can be changed.</p></details>
+      <details><summary>How do I uninstall it?</summary><p>Windows Settings, Apps, Audora, Uninstall. For the portable version, delete the folder.</p></details>
     </section>
   </main>
 
   <footer>
     <div class="wrap foot">
-      <p>Audora · Free for personal and noncommercial use · <a href="https://github.com/abinaze/Audora/blob/main/LICENSE">License</a> · <a href="https://github.com/abinaze/Audora/blob/main/PRIVACY.md">Privacy</a> · <a href="https://github.com/abinaze/Audora/blob/main/docs/TROUBLESHOOTING.md">Help</a> · <a href="https://github.com/abinaze/Audora">GitHub</a></p>
-      <p class="small">Built with NAudio.</p>
+      <a class="brand" href="#top" aria-label="Audora">
+        <svg class="mark" aria-hidden="true"><use href="#mark"/></svg>
+        <svg class="wordmark" role="img" aria-label="Audora"><use href="#wordmark"/></svg>
+      </a>
+      <p>Free for personal and noncommercial use · <a href="https://github.com/abinaze/Audora/blob/main/LICENSE">License</a> · <a href="https://github.com/abinaze/Audora/blob/main/PRIVACY.md">Privacy</a> · <a href="https://github.com/abinaze/Audora/blob/main/docs/TROUBLESHOOTING.md">Help</a> · <a href="https://github.com/abinaze/Audora">GitHub</a></p>
     </div>
   </footer>
 

@@ -1,26 +1,8 @@
 // Fills in the version and download sizes from the latest GitHub release.
 // The buttons already work without this: they point at the latest release files.
 (async () => {
-  const repo = "abinaze/Audora";
-
-  // Show the screenshots section only if the pictures exist.
-  const shots = document.getElementById("shots");
-  if (shots) {
-    let shown = false;
-    shots.querySelectorAll("figure").forEach((figure) => {
-      const image = figure.querySelector("img");
-      const ok = () => {
-        shown = true;
-        shots.hidden = false;
-      };
-      image.addEventListener("load", ok);
-      image.addEventListener("error", () => figure.remove());
-      if (image.complete && image.naturalWidth > 0) ok();
-    });
-  }
-
   try {
-    const response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
+    const response = await fetch("https://api.github.com/repos/abinaze/Audora/releases/latest", {
       headers: { Accept: "application/vnd.github+json" },
     });
     if (!response.ok) return;
@@ -43,8 +25,7 @@
         a.href = asset.browser_download_url;
       });
       document.querySelectorAll(`[data-size="${kind}"]`).forEach((el) => {
-        const megabytes = Math.max(1, Math.round(asset.size / 1048576));
-        el.textContent = `${megabytes} MB`;
+        el.textContent = `${Math.max(1, Math.round(asset.size / 1048576))} MB`;
       });
     }
   } catch {
