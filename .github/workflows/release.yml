@@ -1,0 +1,54 @@
+name: Release
+
+# Runs when a version tag such as v0.1.0 is pushed. Use scripts/release.sh to create it.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install Inno Setup
+        shell: bash
+        run: choco install innosetup -y --no-progress
+
+      - name: Test and package
+        shell: bash
+        run: bash scripts/package.sh "${GITHUB_REF_NAME#v}"
+
+      - name: Write the release notes
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v v="$VERSION" '$0 ~ "^## \\[" v "\\]" { p = 1; next } /^## \[/ { p = 0 } p' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then echo "See the changelog for what is new." > release-notes.md; fi
+          {
+            echo
+            echo "## Downloads"
+            echo
+            echo "- **Audora-Setup.exe**: installer for Windows 10 and 11 (64-bit). No administrator rights needed."
+            echo "- **Audora-Portable.zip**: unzip anywhere and run Audora.exe. Nothing is installed."
+            echo "- **SHA256SUMS.txt**: checksums to check the files."
+            echo
+            echo "The installer is not code-signed yet, so Windows SmartScreen may ask you to click **More info**, then **Run anyway**."
+          } >> release-notes.md
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            artifacts/Audora-Setup.exe artifacts/Audora-Portable.zip artifacts/SHA256SUMS.txt \
+            --title "Audora $VERSION" --notes-file release-notes.md
