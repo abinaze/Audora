@@ -27,6 +27,12 @@ public sealed class AppSettings
 
     /// <summary>The "still running in the tray" note has been shown once.</summary>
     public bool TrayHintShown { get; set; }
+
+    /// <summary>Turn the Audora engine on by itself when the app starts. Off by default, so nothing starts touching audio on its own.</summary>
+    public bool StartEngineOn { get; set; }
+
+    /// <summary>How Windows audio looked the last time Audora was turned on, so it can be put back.</summary>
+    public SavedRestorePoint? RestorePoint { get; set; }
 }
 
 public sealed class SavedSound
