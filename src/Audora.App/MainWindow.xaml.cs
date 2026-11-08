@@ -74,7 +74,7 @@ public partial class MainWindow : Window
 
     private void OnClosing(object? sender, CancelEventArgs e)
     {
-        if (App.IsQuitting || !_viewModel.CloseToTray)
+        if (App.IsQuitting || !_viewModel.CloseToTray || !_viewModel.EngineOn)
         {
             return;
         }

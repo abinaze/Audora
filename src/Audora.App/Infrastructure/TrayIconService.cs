@@ -92,6 +92,14 @@ public sealed class TrayIconService : IDisposable
         menu.Items.Add(Item("Open Audora", _window.ShowFromTray, bold: true));
         menu.Items.Add(new WinForms.ToolStripSeparator());
 
+        menu.Items.Add(Item(_viewModel.EngineOn ? "Turn Audora off" : "Turn Audora on", () => _viewModel.EngineOn = !_viewModel.EngineOn));
+        menu.Items.Add(new WinForms.ToolStripSeparator());
+        if (!_viewModel.EngineOn)
+        {
+            menu.Items.Add(Item("Quit Audora", App.Quit));
+            return;
+        }
+
         menu.Items.Add(Item($"Master volume {_viewModel.Master:0}%", () => { }, enabled: false));
         menu.Items.Add(Item("Volume up", () => _viewModel.Master += 10));
         menu.Items.Add(Item("Volume down", () => _viewModel.Master -= 10));

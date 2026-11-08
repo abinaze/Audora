@@ -331,28 +331,43 @@
                    Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" MaxWidth="560"/>
       </DockPanel>
 
-      <!-- Master volume (the Windows volume bar, and every other device) -->
+      <!-- Audora engine and master volume -->
       <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,0,0,18">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="64"/>
-          </Grid.ColumnDefinitions>
-          <StackPanel Orientation="Horizontal">
-            <ToggleButton Content="Mute" Style="{StaticResource ToggleChip}" VerticalAlignment="Center"
-                          IsChecked="{Binding IsMasterMuted, Mode=TwoWay}"/>
-            <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
-              <TextBlock Text="Master volume" FontSize="16" FontWeight="SemiBold"/>
-              <TextBlock Text="Windows volume bar, and all your other devices" FontSize="12"
-                         Foreground="{DynamicResource MutedBrush}"/>
+        <StackPanel>
+          <Grid Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ToggleButton Style="{StaticResource AudoraSwitch}" IsChecked="{Binding EngineOn, Mode=TwoWay}"
+                          VerticalAlignment="Center" AutomationProperties.Name="Turn Audora on or off"/>
+            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+              <TextBlock Text="{Binding EngineText}" FontSize="16" FontWeight="SemiBold"/>
+              <TextBlock Text="{Binding EngineHint}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"/>
             </StackPanel>
-          </StackPanel>
-          <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Margin="26,0"
-                  Value="{Binding Master, Mode=TwoWay}" AutomationProperties.Name="Master volume"/>
-          <TextBlock Grid.Column="2" Text="{Binding MasterText}" FontSize="16" FontWeight="SemiBold"
-                     HorizontalAlignment="Right" VerticalAlignment="Center"/>
-        </Grid>
+          </Grid>
+
+          <Grid IsEnabled="{Binding EngineOn}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="64"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+              <ToggleButton Content="Mute" Style="{StaticResource ToggleChip}" VerticalAlignment="Center"
+                            IsChecked="{Binding IsMasterMuted, Mode=TwoWay}"/>
+              <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Master volume" FontSize="16" FontWeight="SemiBold"/>
+                <TextBlock Text="Windows volume bar, and all your other devices" FontSize="12"
+                           Foreground="{DynamicResource MutedBrush}"/>
+              </StackPanel>
+            </StackPanel>
+            <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Margin="26,0"
+                    Value="{Binding Master, Mode=TwoWay}" AutomationProperties.Name="Master volume"/>
+            <TextBlock Grid.Column="2" Text="{Binding MasterText}" FontSize="16" FontWeight="SemiBold"
+                       HorizontalAlignment="Right" VerticalAlignment="Center"/>
+          </Grid>
+        </StackPanel>
       </Border>
 
       <!-- Pages -->
@@ -502,6 +517,37 @@
 
               <Border Style="{StaticResource Card}" Margin="0,0,0,14">
                 <StackPanel>
+                  <TextBlock Text="Audora engine and Windows audio" FontSize="16" FontWeight="SemiBold"/>
+                  <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                             Text="When Audora is off it does nothing to your audio: it does not listen, copy or change anything, and Windows works as usual. When it is on, it only changes Windows audio when you ask it to: the master volume, Mute all, Make Windows default and Full control."/>
+
+                  <Grid Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="Turn Audora on when it starts"/>
+                      <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                                 Text="Off by default, so Audora never starts changing audio by itself after you sign in."/>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
+                                  IsChecked="{Binding StartEngineOn, Mode=TwoWay}" AutomationProperties.Name="Turn Audora on when it starts"/>
+                  </Grid>
+
+                  <TextBlock Text="{Binding StartupMessage}" Margin="0,10,0,0" FontSize="12" TextWrapping="Wrap"
+                             Foreground="{DynamicResource DangerBrush}"/>
+
+                  <Button Content="Restore Windows audio" Style="{StaticResource AudoraButton}" HorizontalAlignment="Left"
+                          Margin="0,14,0,0" Command="{Binding RestoreWindowsAudioCommand}"/>
+                  <TextBlock Margin="0,8,0,0" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                             Text="Turns Audora off and puts the default output, volume and mute back as they were when you last turned Audora on."/>
+                  <TextBlock Text="{Binding EngineMessage}" Margin="0,8,0,0" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Border>
+
+              <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                <StackPanel>
                   <TextBlock Text="Full control" FontSize="16" FontWeight="SemiBold"/>
                   <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
                              Text="Windows plays your default device directly, so Audora cannot change its sound. With a free virtual audio cable, Audora plays every device itself: the equalizer, boost, balance and delay then work on all of them, and you can line up Bluetooth with the rest."/>
@@ -534,6 +580,18 @@
             </StackPanel>
           </ScrollViewer>
         </Grid>
+        <!-- Shown while Audora is off -->
+        <Border Background="{DynamicResource BgBrush}"
+                Visibility="{Binding ShowOffPanel, Converter={StaticResource BoolToVis}}">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="460">
+            <TextBlock Text="Audora is off" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+            <TextBlock Margin="0,10,0,18" TextWrapping="Wrap" TextAlignment="Center"
+                       Foreground="{DynamicResource MutedBrush}"
+                       Text="Windows audio is working as usual and Audora is not touching it. Turn Audora on to play on several devices, with sound profiles and groups. Your settings and groups are kept."/>
+            <Button Content="Turn Audora on" Style="{StaticResource AudoraButton}" HorizontalAlignment="Center"
+                    Padding="22,10" Command="{Binding TurnOnEngineCommand}"/>
+          </StackPanel>
+        </Border>
       </Grid>
 
       <!-- Status -->
