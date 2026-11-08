@@ -20,6 +20,7 @@ You need Windows 10 or 11, Git and the .NET 8 SDK.
 git clone https://github.com/<your-name>/Audora.git
 cd Audora
 bash scripts/validate.sh      # restore, build and run the tests
+bash scripts/dev.sh           # run Audora from source (closes a copy hiding in the tray first)
 ```
 
 ## Making a change
