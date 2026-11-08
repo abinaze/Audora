@@ -19,6 +19,8 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 
 ## Next
 
+- Diagnostics and Repair Center: scan, Sound Check (test tones, microphone level) and targeted repairs with backup and rollback
+
 - First public release, a winget package and a code-signed installer
 - Per-app volume (like EarTrumpet)
 

@@ -46,3 +46,23 @@ Remove any device names you would rather not share before pasting.
 
 `%LOCALAPPDATA%\Audora\logs\audora.log` (paste that into the Windows Explorer address bar).
 It holds device names and error messages. When you report a bug, attach the last 40 lines.
+
+## My sound sounds wrong or stopped
+
+Try these in order. Stop when it is fixed.
+
+1. **Turn Audora off** with the switch above the master volume (or right-click the tray icon, **Turn Audora off**).
+   If the sound is fine now, tell us what Audora was doing.
+2. **Make sure no old copy is running.** Right-click the tray icon, **Quit Audora**. In Task Manager, look for
+   `Audora` or `Audora.App`.
+3. **Check Windows.** Settings → System → Sound: the right output is selected, its volume is up and it is not muted.
+4. **Run the Windows fixer.** Settings → System → Sound → Troubleshoot common sound problems.
+5. **Try without enhancements.** Sound settings → your device → Audio enhancements: switch them off and test.
+6. **Restart the Windows audio services.** Open PowerShell as administrator and run:
+   `Restart-Service Audiosrv -Force; Restart-Service AudioEndpointBuilder -Force`.
+   Sound stops for a second and comes back.
+7. **Restart the driver.** Device Manager → Sound, video and game controllers → right-click your device → Disable
+   device, then Enable device. If it still fails, install the newest audio driver from your PC maker.
+8. **Restore from Audora.** Settings → **Restore Windows audio** puts back the default output, volume and mute.
+
+Software cannot repair a damaged speaker or a broken cable.
