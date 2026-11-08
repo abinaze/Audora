@@ -47,6 +47,7 @@ public partial class App : Application
         SessionEnding += (_, _) => IsQuitting = true;
 
         Log.Info("Audora started");
+        StartupRegistration.RemoveStaleDevelopmentEntry();
         base.OnStartup(e);
 
         var window = new MainWindow();

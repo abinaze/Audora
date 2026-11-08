@@ -97,7 +97,7 @@ public sealed partial class MainViewModel
 
     private async Task RefreshBluetoothAsync()
     {
-        if (_disposed || Interlocked.Exchange(ref _bluetoothRefreshing, 1) == 1)
+        if (_disposed || !_engineOn || Interlocked.Exchange(ref _bluetoothRefreshing, 1) == 1)
         {
             return;
         }

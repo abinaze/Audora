@@ -68,6 +68,7 @@ public sealed partial class MainViewModel
         _closeToTray = _settings.CloseToTray;
         _minimizeToTray = _settings.MinimizeToTray;
         _trayHintShown = _settings.TrayHintShown;
+        _startEngineOn = _settings.StartEngineOn;
         ThemeService.Apply(_isDark);
 
         Sound.Import(_settings);
@@ -114,6 +115,8 @@ public sealed partial class MainViewModel
             CloseToTray = _closeToTray,
             MinimizeToTray = _minimizeToTray,
             TrayHintShown = _trayHintShown,
+            StartEngineOn = _startEngineOn,
+            RestorePoint = _settings.RestorePoint,
         };
 
         Sound.Export(result);

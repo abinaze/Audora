@@ -81,7 +81,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _controller.Message += OnMessage;
         _watcher.Changed += OnWindowsVolumeChanged;
 
-        SerialWorker.Run(() => _controller.Start());
+        ApplyStartupEngineState();
         _ = RefreshAsync();
     }
 
@@ -150,6 +150,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Raise(nameof(IsSoundTab));
         Raise(nameof(IsSettingsTab));
         Raise(nameof(IsGroupsTab));
+        Raise(nameof(ShowOffPanel));
     }
 
     /// <summary>The Windows volume of the default output, 0 to 100. It also scales every other device.</summary>
@@ -381,6 +382,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
+        if (!_engineOn)
+        {
+            return;
+        }
+
         if (Interlocked.Exchange(ref _refreshing, 1) == 1)
         {
             _again = true;
@@ -424,6 +430,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void Apply(IReadOnlyList<AudioDeviceInfo> devices, IReadOnlyList<MirrorTargetStatus> state, string? source)
     {
         if (_disposed)
+        {
+            return;
+        }
+
+        if (!_engineOn)
         {
             return;
         }

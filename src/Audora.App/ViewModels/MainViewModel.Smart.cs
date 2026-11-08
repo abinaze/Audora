@@ -19,7 +19,7 @@ public sealed partial class MainViewModel
     // Smart mode: switch only when two checks in a row agree, so the sound never flickers between profiles.
     private void SmartTick()
     {
-        if (_disposed || !Sound.IsSmartOn)
+        if (_disposed || !_engineOn || !Sound.IsSmartOn)
         {
             _smartPending = null;
             return;
