@@ -58,11 +58,7 @@ public sealed partial class MirrorController : IDisposable
         }
     }
 
-    public void Start()
-    {
-        _devices.DevicesChanged += OnDevicesChanged;
-        Reconcile();
-    }
+    public void Start() => StartEngine();
 
     public void Select(string deviceId)
     {
@@ -358,6 +354,11 @@ public sealed partial class MirrorController : IDisposable
 
     private void ReconcileLocked(List<string> messages)
     {
+        if (!_running)
+        {
+            return; // the engine is off: do nothing to any audio device
+        }
+
         var now = DateTime.UtcNow;
 
         if (Interlocked.Exchange(ref _devicesChanged, 0) == 1)
