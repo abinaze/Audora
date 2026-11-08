@@ -6,6 +6,8 @@ All notable changes are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-08
+
 ### Added
 - Detection of every Windows audio output, with connection type (Bluetooth, USB, HDMI, wired) and live plug and unplug events
 - Audio engine that plays system audio on several devices at once
