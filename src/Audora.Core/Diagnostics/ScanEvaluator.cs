@@ -6,7 +6,7 @@ namespace Audora.Core.Diagnostics;
 /// Turns what the scan read into findings. It only describes; it never changes anything.
 /// A missing microphone is only a note, because many PCs have none.
 /// </summary>
-public static class ScanEvaluator
+public static partial class ScanEvaluator
 {
     public const string ServicesArea = "Windows audio services";
     public const string OutputsArea = "Sound outputs";
@@ -23,6 +23,7 @@ public static class ScanEvaluator
 
         CheckDevices(input.RenderDevices, OutputsArea, "sound output", "sound outputs", required: true, findings);
         CheckDevices(input.CaptureDevices, InputsArea, "microphone", "microphones", required: false, findings);
+        CheckEndpointDetails(input.Details, findings);
         return findings;
     }
 
