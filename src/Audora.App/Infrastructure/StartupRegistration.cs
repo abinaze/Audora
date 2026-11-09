@@ -14,6 +14,7 @@ public static class StartupRegistration
 {
     private const string KeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string ValueName = "Audora";
+    private static bool _refusalLogged;
 
     public static bool IsEnabled
     {
@@ -46,7 +47,11 @@ public static class StartupRegistration
             var path = ExePath();
             if (string.IsNullOrEmpty(path) || BuildLocation.IsDevelopmentBuild(path))
             {
-                Log.Info("Start with Windows was refused: this copy runs from a source folder.");
+                if (!_refusalLogged)
+                {
+                    _refusalLogged = true;
+                    Log.Info("Start with Windows was refused: this copy runs from a source folder.");
+                }
                 return false;
             }
 
