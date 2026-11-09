@@ -31,6 +31,9 @@ internal static class Program
             case "run":
                 return RunCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
 
+            case "scan":
+                return ScanCommand.Run(devices);
+
             case "dump":
                 foreach (var line in devices.DumpProperties())
                 {
@@ -39,7 +42,7 @@ internal static class Program
                 return 0;
 
             default:
-                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror|probe|setdefault|run] [--all]");
+                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror|probe|setdefault|run|scan] [--all]");
                 return 1;
         }
     }
