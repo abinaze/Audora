@@ -22,6 +22,7 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 - Diagnostics and Repair Center: scan, Sound Check (test tones, microphone level) and targeted repairs with backup and rollback
 
 - First public release, a winget package and a code-signed installer
+- Noise removal for the microphone (no driver needed), then a clean microphone for other apps through a virtual cable you install, then optional voice cleanup for call audio
 - Per-app volume (like EarTrumpet)
 
 ## Later, if there is demand
@@ -32,7 +33,6 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 ## Not planned
 
 - In-game sound radar overlays: they need integration with each game.
-- Microphone noise removal: a different job (input, not output).
 - Anything that needs an account, a server or telemetry.
 
 ## Good to know
