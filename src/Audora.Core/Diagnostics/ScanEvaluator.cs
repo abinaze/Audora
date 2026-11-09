@@ -97,6 +97,14 @@ public static class ScanEvaluator
                 $"{unplugged.Count} remembered {Noun(unplugged.Count, singular, plural)} not connected",
                 Names(unplugged)));
         }
+
+        var remembered = devices.Count(d => d.Status == DeviceStatus.NotPresent);
+        if (remembered > 0)
+        {
+            findings.Add(new ScanFinding(ScanLevel.Info, area,
+                $"Windows keeps {remembered} old {Noun(remembered, singular, plural)} on record",
+                "These are devices that were connected before and are gone. Windows keeps them so settings return when a device comes back. Audora does not remove them."));
+        }
     }
 
     private static string Noun(int count, string singular, string plural) => count == 1 ? singular : plural;
