@@ -32,7 +32,7 @@ internal static class Program
                 return RunCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
 
             case "scan":
-                return ScanCommand.Run(devices);
+                return ScanCommand.Run(devices, showAll);
 
             case "dump":
                 foreach (var line in devices.DumpProperties())
