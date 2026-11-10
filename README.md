@@ -47,6 +47,7 @@ The installer, the portable download and the website are ready; the first releas
 - Sound profiles for Music, Movies, Communication and Gaming, plus Smart, which picks one for the app you are using. Includes voice clarity, a volume stabilizer and a 3D surround effect
 - Connect and disconnect your paired Bluetooth headphones and speakers from inside Audora
 - A tray icon with quick controls (volume, mute, sound profile, groups), runs in the background, optional start with Windows
+- A Health page that scans your Windows audio (services, outputs, microphones, drivers). It only reads and changes nothing
 - An on/off switch for Audora itself: while off it does nothing to your audio. A Restore Windows audio button puts the default output, volume and mute back. See [docs/SAFETY.md](docs/SAFETY.md)
 - Optional **Full control** mode (with a free virtual audio cable) so the equalizer and
   delay also work on the device that Windows uses by default

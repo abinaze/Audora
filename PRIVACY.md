@@ -27,3 +27,9 @@ computer.
 
 If you turn this on, Audora adds one entry to the Windows startup list of your own user account
 (a registry value under HKEY_CURRENT_USER). Turning it off removes it. Nothing else is changed.
+
+## Health scan
+
+The Health page reads the state of the Windows audio services, the list of sound outputs and microphones,
+and each connected device's driver status and sound format. It only reads, it changes nothing, and the
+result stays on your computer.

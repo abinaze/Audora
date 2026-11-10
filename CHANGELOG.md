@@ -8,7 +8,7 @@ All notable changes are listed here. The format follows
 
 ### Added
 - Audora engine on/off switch (starts off by default), Restore Windows audio, and a safer start with Windows that refuses development builds
-- Read-only audio scan (command line for now): checks the Windows audio services, sound outputs, microphones, driver status and sound format, and changes nothing
+- Read-only audio scan (Health page and command line): checks the Windows audio services, sound outputs, microphones, driver status and sound format, and changes nothing
 
 ## [0.1.0] - 2026-11-08
 
