@@ -70,6 +70,7 @@ public sealed partial class MainViewModel
 
         if (_startEngineOn)
         {
+            Log.Info("Turning Audora on at start, because the start-on setting is switched on.");
             _ = TurnOnEngineAsync();
         }
     }
@@ -106,6 +107,7 @@ public sealed partial class MainViewModel
             }
 
             _engineOn = true;
+            Log.Info("Audora is on.");
             RaiseEngine();
             Status = "Audora is on.";
             RoutingText = "Looking for audio devices...";
@@ -135,6 +137,7 @@ public sealed partial class MainViewModel
         }
 
         _engineOn = false;
+        Log.Info("Audora is off.");
         _watchedDefault = null;
         RaiseEngine();
 
