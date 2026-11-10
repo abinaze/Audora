@@ -108,6 +108,7 @@ public sealed partial class MainViewModel
 
             _engineOn = true;
             Log.Info("Audora is on.");
+            StartLevelLog();
             RaiseEngine();
             Status = "Audora is on.";
             RoutingText = "Looking for audio devices...";
@@ -138,6 +139,7 @@ public sealed partial class MainViewModel
 
         _engineOn = false;
         Log.Info("Audora is off.");
+        StopLevelLog();
         _watchedDefault = null;
         RaiseEngine();
 

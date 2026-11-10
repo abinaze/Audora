@@ -128,6 +128,7 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         _asking = null;
         RaiseQuestion();
         Message = "Stopped.";
+        Log.Info("Sound Check: stopped by you.");
         _ = Task.Run(() => _player.Stop());
     }
 
@@ -205,12 +206,14 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         if (state is not null && state.Muted)
         {
             Message = $"{device.Name} is muted in Windows, so you would hear nothing. Unmute it first.";
+            Log.Info($"Sound Check refused: {device.Name} is muted in Windows.");
             return;
         }
 
         if (state is not null && state.Volume > LoudVolume)
         {
             Message = $"The Windows volume of this device is {state.Volume * 100:0}%. A test tone could be loud. Lower it to 50% or less first (for the default device, use the Master volume slider). Audora never changes your volume.";
+            Log.Info($"Sound Check refused: the Windows volume of {device.Name} is {state.Volume * 100:0}%.");
             return;
         }
 
@@ -218,6 +221,7 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         _current = test;
         _playedOn = device.Name;
         Message = $"{test.Title} on {device.Name}. {test.Hint}";
+        Log.Info($"Sound Check: {test.Title} on {device.Name}.");
 
         try
         {
@@ -245,6 +249,7 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         _asking = _current;
         RaiseQuestion();
         Message = "Finished.";
+        Log.Info("Sound Check: the tone finished.");
         _ = Task.Run(() => _player.Stop());
     }
 

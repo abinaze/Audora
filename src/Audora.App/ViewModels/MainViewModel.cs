@@ -241,6 +241,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         _disposed = true;
         _health?.Dispose();
+        StopLevelLog();
         _devices.DevicesChanged -= OnDevicesChanged;
         _controller.Message -= OnMessage;
         _watcher.Changed -= OnWindowsVolumeChanged;
