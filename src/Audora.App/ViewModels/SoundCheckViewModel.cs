@@ -36,7 +36,7 @@ public sealed class SoundDeviceChoice : ObservableObject
 /// Sound Check: plays a short, quiet tone and asks what you heard. It never changes the Windows volume.
 /// The rule for when a tone may play lives in <see cref="SoundCheckGuard"/>. Stop ends the sound at once.
 /// </summary>
-public sealed class SoundCheckViewModel : ObservableObject, IDisposable
+public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
 {
     private const string Intro = "Pick a device, then press a test and listen.";
 
@@ -310,6 +310,7 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         try
         {
             await Task.Run(() => _player.Play(device.Id, test.Request));
+            StartMeasuring(test.Request.Channel);
         }
         catch (Exception ex)
         {
@@ -332,7 +333,7 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         SetPlaying(false);
         _asking = _current;
         RaiseQuestion();
-        Message = "Finished.";
+        Message = "Finished." + FinishMeasuring();
         Log.Info("Sound Check: the tone finished.");
         _ = Task.Run(() => _player.Stop());
     }
@@ -345,7 +346,7 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         }
 
         var verdict = heard ? "you heard it correctly" : "it was not as expected";
-        Results.Insert(0, $"{DateTime.Now:HH:mm}  {_asking.Title} on {_playedOn}: {verdict}");
+        Results.Insert(0, $"{DateTime.Now:HH:mm}  {_asking.Title} on {_playedOn}: {verdict}.{_measuredShort}");
         _asking = null;
         RaiseQuestion();
         Raise(nameof(HasResults));

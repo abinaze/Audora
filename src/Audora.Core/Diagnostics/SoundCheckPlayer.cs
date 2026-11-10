@@ -70,6 +70,40 @@ public sealed class SoundCheckPlayer : IDisposable
         }
     }
 
+    /// <summary>
+    /// The peak level (0 to 1) of each channel at the device right now, as Windows measures it.
+    /// Read only. Returns null when nothing is playing or the meter cannot be read.
+    /// </summary>
+    public float[]? ReadChannelPeaks()
+    {
+        MMDevice? device;
+        lock (_gate)
+        {
+            device = _device;
+        }
+
+        if (device is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var channels = device.AudioMeterInformation.PeakValues;
+            var result = new float[channels.Count];
+            for (var i = 0; i < result.Length; i++)
+            {
+                result[i] = channels[i];
+            }
+
+            return result;
+        }
+        catch
+        {
+            return null; // the device may have just been released
+        }
+    }
+
     /// <summary>Ends the sound at once and lets go of the device.</summary>
     public void Stop()
     {
