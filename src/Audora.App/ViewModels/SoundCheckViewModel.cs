@@ -33,12 +33,11 @@ public sealed class SoundDeviceChoice : ObservableObject
 }
 
 /// <summary>
-/// Sound Check: plays a short, quiet tone and asks what you heard. It never changes the Windows volume,
-/// refuses when the volume is high or the device is muted, and Stop ends the sound at once.
+/// Sound Check: plays a short, quiet tone and asks what you heard. It never changes the Windows volume.
+/// The rule for when a tone may play lives in <see cref="SoundCheckGuard"/>. Stop ends the sound at once.
 /// </summary>
 public sealed class SoundCheckViewModel : ObservableObject, IDisposable
 {
-    private const float LoudVolume = 0.5f;
     private const string Intro = "Pick a device, then press a test and listen.";
 
     private readonly DeviceEnumerator _devices;
@@ -48,7 +47,10 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
     private SoundDeviceChoice? _selected;
     private SoundCheckTest? _current;
     private SoundCheckTest? _asking;
+    private string? _refusedKey;
     private string _playedOn = string.Empty;
+    private string _volumeText = string.Empty;
+    private bool _volumeWarning;
     private bool _playing;
     private bool _disposed;
     private string _message = Intro;
@@ -63,7 +65,17 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         _player = Task.Run(() => new SoundCheckPlayer()).GetAwaiter().GetResult();
         _player.Finished += OnPlayerFinished;
 
-        PlayCommand = new RelayCommand(p => _ = PlayAsync(p as string ?? string.Empty), _ => !_playing && _selected is not null);
+        PlayCommand = new RelayCommand(p => _ = PlayAsync(p as string ?? string.Empty, false), _ => !_playing && _selected is not null);
+        PlayAnywayCommand = new RelayCommand(
+            () =>
+            {
+                var key = _refusedKey;
+                if (key is not null)
+                {
+                    _ = PlayAsync(key, true);
+                }
+            },
+            () => !_playing && _refusedKey is not null);
         StopCommand = new RelayCommand(Stop, () => _playing);
         ChooseDeviceCommand = new RelayCommand(p =>
         {
@@ -84,6 +96,8 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
 
     public RelayCommand PlayCommand { get; }
 
+    public RelayCommand PlayAnywayCommand { get; }
+
     public RelayCommand StopCommand { get; }
 
     public RelayCommand ChooseDeviceCommand { get; }
@@ -98,6 +112,20 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         private set => Set(ref _message, value);
     }
 
+    public string VolumeText
+    {
+        get => _volumeText;
+        private set => Set(ref _volumeText, value);
+    }
+
+    public bool VolumeWarning
+    {
+        get => _volumeWarning;
+        private set => Set(ref _volumeWarning, value);
+    }
+
+    public bool CanPlayAnyway => _refusedKey is not null;
+
     public bool HasQuestion => _asking is not null;
 
     public string Question => _asking?.Question ?? string.Empty;
@@ -109,11 +137,12 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
     public string EngineNote =>
         "Audora is on, so a tone on your default device is also copied to the other devices you switched on. Turn Audora off to hear only the device you picked.";
 
-    /// <summary>Called when the page is shown, so the engine note and device list are current.</summary>
+    /// <summary>Called when the page is shown, so the engine note, device list and volume are current.</summary>
     public void RefreshState()
     {
         Raise(nameof(ShowEngineNote));
         _ = LoadDevicesAsync();
+        _ = RefreshVolumeAsync();
     }
 
     /// <summary>Ends any tone at once. Safe to call when nothing is playing.</summary>
@@ -165,6 +194,8 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
             if (pick is null)
             {
                 _selected = null;
+                VolumeText = string.Empty;
+                VolumeWarning = false;
                 CommandManager.InvalidateRequerySuggested();
             }
             else
@@ -187,10 +218,49 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         }
 
         _selected = choice;
+        SetRefused(null);
         CommandManager.InvalidateRequerySuggested();
+        _ = RefreshVolumeAsync();
     }
 
-    private async Task PlayAsync(string key)
+    private async Task RefreshVolumeAsync()
+    {
+        var device = _selected;
+        if (device is null)
+        {
+            return;
+        }
+
+        var state = await Task.Run(() => _player.ReadWindowsVolume(device.Id));
+        if (ReferenceEquals(device, _selected))
+        {
+            ShowVolume(state);
+        }
+    }
+
+    private void ShowVolume(DeviceVolumeState? state)
+    {
+        if (state is null)
+        {
+            VolumeText = "The Windows volume of this device could not be read.";
+            VolumeWarning = false;
+        }
+        else if (state.Muted)
+        {
+            VolumeText = "This device is muted in Windows.";
+            VolumeWarning = true;
+        }
+        else
+        {
+            var percent = state.Volume * 100;
+            VolumeWarning = state.Volume > SoundCheckGuard.LoudVolume;
+            VolumeText = VolumeWarning
+                ? $"Windows volume of this device: {percent:0}%. Above 50% a tone could be loud. Lower it first, or press Play anyway after a refusal."
+                : $"Windows volume of this device: {percent:0}%.";
+        }
+    }
+
+    private async Task PlayAsync(string key, bool allowLoud)
     {
         var test = SoundCheckTests.Find(key);
         var device = _selected;
@@ -201,20 +271,34 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
 
         _asking = null;
         RaiseQuestion();
+        SetRefused(null);
 
         var state = await Task.Run(() => _player.ReadWindowsVolume(device.Id));
-        if (state is not null && state.Muted)
+        ShowVolume(state);
+        var percent = state is null ? 0 : state.Volume * 100;
+
+        switch (SoundCheckGuard.Decide(state, allowLoud))
         {
-            Message = $"{device.Name} is muted in Windows, so you would hear nothing. Unmute it first.";
-            Log.Info($"Sound Check refused: {device.Name} is muted in Windows.");
-            return;
+            case GuardDecision.Muted:
+                Message = $"{device.Name} is muted in Windows, so you would hear nothing. Unmute it first.";
+                Log.Info($"Sound Check refused: {device.Name} is muted in Windows.");
+                return;
+
+            case GuardDecision.TooLoud:
+                Message = $"The Windows volume of this device is {percent:0}%, which is above 80%. Sound Check will not play. Lower it first (for the default device, use the Master volume slider). Audora never changes your volume.";
+                Log.Info($"Sound Check refused: the Windows volume of {device.Name} is {percent:0}%, above the 80% limit.");
+                return;
+
+            case GuardDecision.Loud:
+                Message = $"The Windows volume of this device is {percent:0}%. A test tone could be loud. Lower it to 50% or less first (for the default device, use the Master volume slider), or press Play anyway. Audora never changes your volume.";
+                Log.Info($"Sound Check refused: the Windows volume of {device.Name} is {percent:0}%.");
+                SetRefused(key);
+                return;
         }
 
-        if (state is not null && state.Volume > LoudVolume)
+        if (allowLoud && percent > SoundCheckGuard.LoudVolume * 100)
         {
-            Message = $"The Windows volume of this device is {state.Volume * 100:0}%. A test tone could be loud. Lower it to 50% or less first (for the default device, use the Master volume slider). Audora never changes your volume.";
-            Log.Info($"Sound Check refused: the Windows volume of {device.Name} is {state.Volume * 100:0}%.");
-            return;
+            Log.Info($"Sound Check: playing at your request although the Windows volume is {percent:0}%.");
         }
 
         SetPlaying(true);
@@ -268,6 +352,13 @@ public sealed class SoundCheckViewModel : ObservableObject, IDisposable
         Message = heard
             ? "Noted. Try another test."
             : "Noted. A test that is not as expected is worth a closer look. Repairs will come later and will always ask you first.";
+    }
+
+    private void SetRefused(string? key)
+    {
+        _refusedKey = key;
+        Raise(nameof(CanPlayAnyway));
+        CommandManager.InvalidateRequerySuggested();
     }
 
     private void SetPlaying(bool value)

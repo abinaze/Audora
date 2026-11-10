@@ -68,6 +68,12 @@ internal static class ToneCommand
             return 1;
         }
 
+        if (state is not null && state.Volume > SoundCheckGuard.HardLimit)
+        {
+            Console.WriteLine($"The Windows volume of {target.Name} is {state.Volume * 100:0}%, above the 80% limit. Lower it first, even with --ok.");
+            return 1;
+        }
+
         if (state is not null && state.Volume > LoudVolume && !allowLoud)
         {
             Console.WriteLine($"The Windows volume of {target.Name} is {state.Volume * 100:0}%. A test tone could be loud.");

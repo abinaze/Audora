@@ -110,6 +110,19 @@
             </ItemsControl.ItemsPanel>
           </ItemsControl>
 
+          <TextBlock Text="{Binding VolumeText}" FontSize="12.5" Margin="0,2,0,6">
+            <TextBlock.Style>
+              <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding VolumeWarning}" Value="True">
+                    <Setter Property="Foreground" Value="#E8A317"/>
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBlock.Style>
+          </TextBlock>
+
           <StackPanel Orientation="Horizontal" Margin="0,6,0,12">
             <Button Content="Left side" Command="{Binding PlayCommand}" CommandParameter="left"
                     Style="{StaticResource AudoraButton}" MinWidth="96" Margin="0,0,8,0"/>
@@ -124,6 +137,9 @@
           </StackPanel>
 
           <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,8"/>
+          <Button Content="Play anyway (the tone is quiet)" Command="{Binding PlayAnywayCommand}"
+                  Style="{StaticResource AudoraButton}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                  Visibility="{Binding CanPlayAnyway, Converter={StaticResource BoolToVis}}"/>
           <TextBlock Text="{Binding EngineNote}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,12"
                      Foreground="{DynamicResource MutedBrush}"
                      Visibility="{Binding ShowEngineNote, Converter={StaticResource BoolToVis}}"/>
