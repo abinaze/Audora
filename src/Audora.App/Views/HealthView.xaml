@@ -5,6 +5,25 @@
   <UserControl.Resources>
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
+    <!-- One page chip: Scan, Sound Check -->
+    <DataTemplate x:Key="PageChipTemplate">
+      <Button Content="{Binding Label}" Style="{StaticResource PresetChip}"
+              Command="{Binding DataContext.ChoosePageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+              CommandParameter="{Binding}"/>
+    </DataTemplate>
+
+    <!-- One device to test -->
+    <DataTemplate x:Key="DeviceChoiceTemplate">
+      <Button Content="{Binding Label}" Style="{StaticResource PresetChip}"
+              Command="{Binding DataContext.ChooseDeviceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+              CommandParameter="{Binding}"/>
+    </DataTemplate>
+
+    <!-- One answer in the list -->
+    <DataTemplate x:Key="ResultTemplate">
+      <TextBlock Text="{Binding}" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,6"/>
+    </DataTemplate>
+
     <!-- One line of the scan result -->
     <DataTemplate x:Key="FindingTemplate">
       <Grid Margin="0,0,0,14">
@@ -46,23 +65,93 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <StackPanel MaxWidth="820" HorizontalAlignment="Left">
       <TextBlock Text="Health" FontSize="22" FontWeight="SemiBold"/>
-      <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
-                 Text="A scan looks at your Windows audio services, sound outputs, microphones and drivers. It only reads: it changes nothing, and it works even when Audora is off."/>
 
-      <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-        <Button Content="{Binding ButtonText}" Command="{Binding ScanCommand}"
-                Style="{StaticResource AudoraButton}" MinWidth="120" HorizontalAlignment="Left"/>
-        <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Margin="16,0,0,0" FontSize="13"
-                   Foreground="{DynamicResource MutedBrush}"/>
+      <ItemsControl ItemsSource="{Binding Pages}" ItemTemplate="{StaticResource PageChipTemplate}" Margin="0,10,0,6">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel/>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+      </ItemsControl>
+
+      <!-- Scan -->
+      <StackPanel Visibility="{Binding IsScanPage, Converter={StaticResource BoolToVis}}">
+        <TextBlock Margin="0,0,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
+                   Text="A scan looks at your Windows audio services, sound outputs, microphones and drivers. It only reads: it changes nothing, and it works even when Audora is off."/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+          <Button Content="{Binding ButtonText}" Command="{Binding ScanCommand}"
+                  Style="{StaticResource AudoraButton}" MinWidth="120" HorizontalAlignment="Left"/>
+          <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Margin="16,0,0,0" FontSize="13"
+                     Foreground="{DynamicResource MutedBrush}"/>
+        </StackPanel>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,14"
+                Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}">
+          <ItemsControl ItemsSource="{Binding Findings}" ItemTemplate="{StaticResource FindingTemplate}"/>
+        </Border>
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,24"
+                   Text="A scan can find software problems. It cannot tell whether a speaker, cable or port is physically damaged. Fixing problems comes later and will always ask you first."/>
       </StackPanel>
 
-      <Border Style="{StaticResource Card}" Margin="0,0,0,14"
-              Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}">
-        <ItemsControl ItemsSource="{Binding Findings}" ItemTemplate="{StaticResource FindingTemplate}"/>
-      </Border>
+      <!-- Sound Check -->
+      <StackPanel Visibility="{Binding IsSoundCheckPage, Converter={StaticResource BoolToVis}}">
+        <StackPanel DataContext="{Binding SoundCheck}">
+          <TextBlock Margin="0,0,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
+                     Text="Play a short, quiet tone and listen. Tones are made on this PC, start softly and stop by themselves. Stop ends one at once. Audora never changes your volume."/>
 
-      <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,24"
-                 Text="A scan can find software problems. It cannot tell whether a speaker, cable or port is physically damaged. Fixing problems comes later and will always ask you first."/>
+          <TextBlock Text="Test this device" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+          <ItemsControl ItemsSource="{Binding Devices}" ItemTemplate="{StaticResource DeviceChoiceTemplate}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+          </ItemsControl>
+
+          <StackPanel Orientation="Horizontal" Margin="0,6,0,12">
+            <Button Content="Left side" Command="{Binding PlayCommand}" CommandParameter="left"
+                    Style="{StaticResource AudoraButton}" MinWidth="96" Margin="0,0,8,0"/>
+            <Button Content="Right side" Command="{Binding PlayCommand}" CommandParameter="right"
+                    Style="{StaticResource AudoraButton}" MinWidth="96" Margin="0,0,8,0"/>
+            <Button Content="Both sides" Command="{Binding PlayCommand}" CommandParameter="both"
+                    Style="{StaticResource AudoraButton}" MinWidth="96" Margin="0,0,8,0"/>
+            <Button Content="Sweep" Command="{Binding PlayCommand}" CommandParameter="sweep"
+                    Style="{StaticResource AudoraButton}" MinWidth="96" Margin="0,0,24,0"/>
+            <Button Content="Stop" Command="{Binding StopCommand}"
+                    Style="{StaticResource AudoraButton}" MinWidth="80"/>
+          </StackPanel>
+
+          <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,8"/>
+          <TextBlock Text="{Binding EngineNote}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,12"
+                     Foreground="{DynamicResource MutedBrush}"
+                     Visibility="{Binding ShowEngineNote, Converter={StaticResource BoolToVis}}"/>
+
+          <Border Style="{StaticResource Card}" Margin="0,0,0,14"
+                  Visibility="{Binding HasQuestion, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+              <TextBlock Text="{Binding Question}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+              <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <Button Content="Yes" Command="{Binding YesCommand}" Style="{StaticResource AudoraButton}"
+                        MinWidth="80" Margin="0,0,8,0"/>
+                <Button Content="No" Command="{Binding NoCommand}" Style="{StaticResource AudoraButton}" MinWidth="80"/>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Style="{StaticResource Card}" Margin="0,0,0,14"
+                  Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}">
+            <StackPanel>
+              <TextBlock Text="Your answers this session" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
+              <ItemsControl ItemsSource="{Binding Results}" ItemTemplate="{StaticResource ResultTemplate}"/>
+            </StackPanel>
+          </Border>
+
+          <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,24"
+                     Text="These tests record what you heard. They cannot prove that a speaker is damaged or healthy. Nothing is saved to disk."/>
+        </StackPanel>
+      </StackPanel>
     </StackPanel>
   </ScrollViewer>
 </UserControl>
