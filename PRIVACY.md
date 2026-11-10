@@ -33,3 +33,8 @@ If you turn this on, Audora adds one entry to the Windows startup list of your o
 The Health page reads the state of the Windows audio services, the list of sound outputs and microphones,
 and each connected device's driver status and sound format. It only reads, it changes nothing, and the
 result stays on your computer.
+
+## Sound Check
+
+Sound Check plays short test tones that are made on your computer. It does not record anything.
+The answers you give are shown on screen for the current session only and are not saved.
