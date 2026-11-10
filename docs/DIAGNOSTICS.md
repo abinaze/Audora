@@ -47,3 +47,43 @@ after a check passes again.
   The Restore Windows audio button already exists in Settings.
 
 Audora has one device-detection engine. Diagnostics and audio control both use it.
+
+## From the research
+
+Two outside research reports were checked against what Audora does and what it must never do.
+
+### Adopted
+
+- **Level meter at the device.** Windows can report the peak level of each channel at a device. Sound Check uses it
+  to show what Windows measured on the left and right while a tone plays.
+- **Microphone privacy.** When Windows blocks microphone access it still opens the stream but feeds zeros. An all-zero
+  recording is reported as "possibly blocked by Windows privacy", never as a broken microphone.
+- **Apps using a device.** A read-only list of which apps have a sound stream open on each device.
+- **Recent audio errors.** A read-only look at recent audio crashes and driver errors in the Windows event log.
+  The package to read the log is checked before use.
+- **Bluetooth call mode.** A note that using the microphone can make Windows switch headphones to the
+  lower-quality call profile. Audora only explains it.
+- **Repair order, least to most disruptive:** correct a format, restore the default device, change one device's
+  enhancements, restart one device's driver, restart the Windows audio service last (it cuts all sound).
+- **Every repair:** a snapshot first, your approval, one device at a time, a re-check afterwards, and a way back.
+- **Administrator rights** are asked for only at the moment one action needs them: restarting a driver, changing
+  registry settings under HKLM, and restarting a Windows service. Playing tones, reading levels, listing devices and
+  switching the default device need none.
+- **Honest wording at the hardware boundary:** "The software and driver stack sent the signal, but the sound that
+  comes out cannot be verified."
+
+### Not adopted
+
+- Disabling a Bluetooth headset profile automatically. It can switch the headset microphone off for good.
+- Event tracing (ETW) for DPC and interrupt delays. It needs administrator rights and heavy parsing. For crackle from
+  system delays, the free LatencyMon tool is the pointer.
+- Proving a speaker or microphone is healthy from a digital level or spectrum alone. The signal is read before the
+  speaker, so it cannot see hardware faults.
+- Repair recipes that could not be verified, for example a global registry flag that "disables enhancements".
+  Each repair is read, written and rolled back on a real device first.
+
+### Possible later
+
+- An optional **Acoustic check:** play a tone and listen with the microphone for 3 seconds, saving nothing. This is the
+  only way software can check what a speaker actually produces.
+- Per-app volume from the list of apps using a device.
