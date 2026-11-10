@@ -302,6 +302,14 @@
                     Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
             </RadioButton.Tag>
           </RadioButton>
+          <RadioButton Content="Health" GroupName="nav" Style="{StaticResource NavButton}"
+                       IsChecked="{Binding IsHealthTab, Mode=TwoWay}">
+            <RadioButton.Tag>
+              <Path Data="M2 12H7L9.5 5L14.5 19L17 12H22" StrokeThickness="2" Width="24" Height="24"
+                    Stretch="None" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+            </RadioButton.Tag>
+          </RadioButton>
           <RadioButton Content="Settings" GroupName="nav" Style="{StaticResource NavButton}"
                        IsChecked="{Binding IsSettingsTab, Mode=TwoWay}">
             <RadioButton.Tag>
@@ -451,6 +459,11 @@
         <!-- Sound -->
         <Grid Visibility="{Binding IsSoundTab, Converter={StaticResource BoolToVis}}">
           <views:SoundView DataContext="{Binding Sound}"/>
+        </Grid>
+
+        <!-- Health -->
+        <Grid Visibility="{Binding IsHealthTab, Converter={StaticResource BoolToVis}}">
+          <views:HealthView DataContext="{Binding Health}"/>
         </Grid>
 
         <!-- Settings -->

@@ -38,7 +38,7 @@ public sealed partial class MainViewModel
 
     public bool EngineOff => !_engineOn;
 
-    public bool ShowOffPanel => !_engineOn && !IsSettingsTab;
+    public bool ShowOffPanel => !_engineOn && !IsSettingsTab && !IsHealthTab;
 
     public string EngineText => _engineOn ? "Audora is on" : "Audora is off";
 

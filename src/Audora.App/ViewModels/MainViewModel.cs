@@ -150,6 +150,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Raise(nameof(IsSoundTab));
         Raise(nameof(IsSettingsTab));
         Raise(nameof(IsGroupsTab));
+        Raise(nameof(IsHealthTab));
         Raise(nameof(ShowOffPanel));
     }
 
