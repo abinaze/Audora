@@ -3,6 +3,7 @@ namespace Audora.Core.Diagnostics;
 public enum ChannelVerdict
 {
     Matches,
+    MonoMix,
     LeaksToOtherSide,
     ExpectedSideSilent,
     Unbalanced,
@@ -24,6 +25,9 @@ public static class ChannelCheck
     /// <summary>Two sides playing the same tone may differ by this much before it counts as unbalanced (about -6 dB).</summary>
     public const float BalanceRatio = 0.5f;
 
+    /// <summary>A one-sided tone that measures this similar on both sides (within about 1 dB) is a mono mix.</summary>
+    public const float MonoRatio = 0.9f;
+
     public static ChannelVerdict Judge(ToneChannel expected, float left, float right)
     {
         if (Math.Max(left, right) < Silent)
@@ -34,20 +38,10 @@ public static class ChannelCheck
         switch (expected)
         {
             case ToneChannel.Left:
-                if (left < Silent)
-                {
-                    return ChannelVerdict.ExpectedSideSilent;
-                }
-
-                return right > left * LeakRatio ? ChannelVerdict.LeaksToOtherSide : ChannelVerdict.Matches;
+                return JudgeOneSide(left, right);
 
             case ToneChannel.Right:
-                if (right < Silent)
-                {
-                    return ChannelVerdict.ExpectedSideSilent;
-                }
-
-                return left > right * LeakRatio ? ChannelVerdict.LeaksToOtherSide : ChannelVerdict.Matches;
+                return JudgeOneSide(right, left);
 
             default:
                 if (left < Silent || right < Silent)
@@ -61,12 +55,29 @@ public static class ChannelCheck
         }
     }
 
+    private static ChannelVerdict JudgeOneSide(float playing, float other)
+    {
+        if (playing < Silent)
+        {
+            return ChannelVerdict.ExpectedSideSilent;
+        }
+
+        if (other >= Silent && Math.Min(playing, other) / Math.Max(playing, other) >= MonoRatio)
+        {
+            return ChannelVerdict.MonoMix;
+        }
+
+        return other > playing * LeakRatio ? ChannelVerdict.LeaksToOtherSide : ChannelVerdict.Matches;
+    }
+
     public static string Describe(ChannelVerdict verdict) => verdict switch
     {
         ChannelVerdict.Matches =>
             "That matches the test. If you still hear it wrongly, the cause is after this point: the driver, the Bluetooth link or the headphones.",
+        ChannelVerdict.MonoMix =>
+            "Both sides measured the same level, so something is mixing left and right into one (mono). The Windows Mono audio setting does this, and so can a driver or sound enhancement. Check Windows Settings, Accessibility, Audio, Mono audio, and the device's Audio enhancements. Audora does not change these.",
         ChannelVerdict.LeaksToOtherSide =>
-            "Windows already showed sound on the other side too. Something before the device is mixing left and right: an app, a Windows setting such as Mono audio, or Audora's own sound profile on this device. Other sound playing on the device, including copies made by Audora, also counts.",
+            "Windows already showed sound on the other side too. Something before the device is mixing left and right: an app, a Windows setting, or Audora's own sound profile on this device. Other sound playing on the device, including copies made by Audora, also counts.",
         ChannelVerdict.ExpectedSideSilent =>
             "Windows showed no sound on the side that should play.",
         ChannelVerdict.Unbalanced =>
