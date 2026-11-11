@@ -87,3 +87,12 @@ Two outside research reports were checked against what Audora does and what it m
 - An optional **Acoustic check:** play a tone and listen with the microphone for 3 seconds, saving nothing. This is the
   only way software can check what a speaker actually produces.
 - Per-app volume from the list of apps using a device.
+
+## Repairs built so far
+
+- **Unmute a device.** Found by the scan. Asks first, turns off the Windows mute of that one device, checks what
+  Windows reports afterwards, re-scans, and offers an Undo. No administrator rights.
+- **Open the Mono audio setting.** Opens the Windows page. Audora does not change that setting for you.
+
+Not built yet: restart one device's driver, change a device's enhancements, restore the default device, restart the
+Windows audio service. Those need a snapshot, approval, and administrator rights at the moment they run.
