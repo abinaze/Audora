@@ -11,6 +11,7 @@ All notable changes are listed here. The format follows
 - Read-only audio scan (Health page and command line): checks the Windows audio services, sound outputs, microphones, driver status and sound format, and changes nothing
 - Sound Check test tones (Health page and command line): left, right, both and a sweep, quiet and stoppable at once
 - Sound Check now shows the left and right levels Windows measured at the device, with a plain verdict
+- The scan notes when Windows Mono audio is on, and Sound Check names the devices a tone is copied to and can turn Audora off for testing
 - The log now records when Audora turns on or off, every 15 seconds whether it hears sound while on, and what Sound Check does
 
 ## [0.1.0] - 2026-11-08

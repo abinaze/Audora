@@ -143,6 +143,9 @@
           <TextBlock Text="{Binding EngineNote}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,12"
                      Foreground="{DynamicResource MutedBrush}"
                      Visibility="{Binding ShowEngineNote, Converter={StaticResource BoolToVis}}"/>
+          <Button Content="Turn Audora off for testing" Command="{Binding TurnEngineOffCommand}"
+                  Style="{StaticResource AudoraButton}" HorizontalAlignment="Left" Margin="0,0,0,12"
+                  Visibility="{Binding ShowEngineNote, Converter={StaticResource BoolToVis}}"/>
 
           <Border Style="{StaticResource Card}" Margin="0,0,0,14"
                   Visibility="{Binding HasQuestion, Converter={StaticResource BoolToVis}}">

@@ -60,10 +60,10 @@ public sealed class HealthViewModel : ObservableObject, IDisposable
     private bool _scanning;
     private string _summary = "Not scanned yet. Press Scan now.";
 
-    public HealthViewModel(DeviceEnumerator devices, Dispatcher ui, Func<bool> isEngineOn)
+    public HealthViewModel(DeviceEnumerator devices, Dispatcher ui, Func<bool> isEngineOn, Func<string> copiesTo, Action turnEngineOff)
     {
         _devices = devices;
-        SoundCheck = new SoundCheckViewModel(devices, ui, isEngineOn);
+        SoundCheck = new SoundCheckViewModel(devices, ui, isEngineOn, copiesTo, turnEngineOff);
         Pages = new[] { _scanPage, _soundCheckPage };
 
         ScanCommand = new RelayCommand(() => _ = ScanAsync(), () => !_scanning);

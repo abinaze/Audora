@@ -17,6 +17,7 @@ public sealed class SoundDeviceChoice : ObservableObject
         Id = device.Id;
         Name = device.Name;
         Label = device.IsDefault ? $"{device.Name} (default)" : device.Name;
+        IsDefault = device.IsDefault;
     }
 
     public string Id { get; }
@@ -24,6 +25,8 @@ public sealed class SoundDeviceChoice : ObservableObject
     public string Name { get; }
 
     public string Label { get; }
+
+    public bool IsDefault { get; }
 
     public bool IsActive
     {
@@ -43,6 +46,8 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
     private readonly DeviceEnumerator _devices;
     private readonly Dispatcher _ui;
     private readonly Func<bool> _isEngineOn;
+    private readonly Func<string> _copiesTo;
+    private readonly Action _turnEngineOff;
     private readonly SoundCheckPlayer _player;
     private SoundDeviceChoice? _selected;
     private SoundCheckTest? _current;
@@ -55,11 +60,13 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
     private bool _disposed;
     private string _message = Intro;
 
-    public SoundCheckViewModel(DeviceEnumerator devices, Dispatcher ui, Func<bool> isEngineOn)
+    public SoundCheckViewModel(DeviceEnumerator devices, Dispatcher ui, Func<bool> isEngineOn, Func<string> copiesTo, Action turnEngineOff)
     {
         _devices = devices;
         _ui = ui;
         _isEngineOn = isEngineOn;
+        _copiesTo = copiesTo;
+        _turnEngineOff = turnEngineOff;
 
         // Created off the UI thread, like the other Windows audio objects.
         _player = Task.Run(() => new SoundCheckPlayer()).GetAwaiter().GetResult();
@@ -86,6 +93,11 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
         });
         YesCommand = new RelayCommand(() => Answer(true));
         NoCommand = new RelayCommand(() => Answer(false));
+        TurnEngineOffCommand = new RelayCommand(() =>
+        {
+            _turnEngineOff();
+            Raise(nameof(ShowEngineNote));
+        });
 
         _ = LoadDevicesAsync();
     }
@@ -105,6 +117,8 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
     public RelayCommand YesCommand { get; }
 
     public RelayCommand NoCommand { get; }
+
+    public RelayCommand TurnEngineOffCommand { get; }
 
     public string Message
     {
@@ -132,10 +146,10 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
 
     public bool HasResults => Results.Count > 0;
 
-    public bool ShowEngineNote => _isEngineOn();
+    public bool ShowEngineNote => _isEngineOn() && _selected is { IsDefault: true } && _copiesTo().Length > 0;
 
     public string EngineNote =>
-        "Audora is on, so a tone on your default device is also copied to the other devices you switched on. Turn Audora off to hear only the device you picked.";
+        $"Audora is on, so this tone is also copied to: {_copiesTo()}. Press Turn Audora off for testing to hear only the device you picked.";
 
     /// <summary>Called when the page is shown, so the engine note, device list and volume are current.</summary>
     public void RefreshState()
@@ -218,6 +232,8 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
         }
 
         _selected = choice;
+        Raise(nameof(ShowEngineNote));
+        Raise(nameof(EngineNote));
         SetRefused(null);
         CommandManager.InvalidateRequerySuggested();
         _ = RefreshVolumeAsync();
