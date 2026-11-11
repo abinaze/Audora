@@ -11,6 +11,7 @@ public sealed partial class SoundCheckViewModel
     private bool _measured;
     private ToneChannel _expected;
     private string _measuredShort = string.Empty;
+    private float _playedVolumePercent;
 
     /// <summary>While a tone plays, reads the left and right peak at the device every 40 ms and keeps the highest.</summary>
     private void StartMeasuring(ToneChannel expected)
@@ -66,8 +67,8 @@ public sealed partial class SoundCheckViewModel
         }
 
         var verdict = ChannelCheck.Judge(expected, left, right);
-        _measuredShort = $" Windows measured left {left:0.00}, right {right:0.00}.";
-        Log.Info($"Sound Check measured on {_playedOn}: left {left:0.000}, right {right:0.000} ({verdict}).");
+        _measuredShort = $" Windows measured left {left:0.00}, right {right:0.00} at a Windows volume of {_playedVolumePercent:0}%.";
+        Log.Info($"Sound Check measured on {_playedOn}: left {left:0.000}, right {right:0.000} ({verdict}) at a Windows volume of {_playedVolumePercent:0}%.");
         return $"{_measuredShort} {ChannelCheck.Describe(verdict)}";
     }
 }

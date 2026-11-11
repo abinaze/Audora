@@ -304,6 +304,7 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
         SetPlaying(true);
         _current = test;
         _playedOn = device.Name;
+        _playedVolumePercent = percent;
         Message = $"{test.Title} on {device.Name}. {test.Hint}";
         Log.Info($"Sound Check: {test.Title} on {device.Name}.");
 
