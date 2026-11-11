@@ -22,6 +22,9 @@ public sealed class FindingViewModel
         Area = finding.Area;
         Title = finding.Title;
         Detail = finding.Detail;
+        RepairKey = finding.RepairKey;
+        DeviceId = finding.DeviceId;
+        DeviceName = finding.DeviceName ?? string.Empty;
     }
 
     public string LevelText { get; }
@@ -33,6 +36,16 @@ public sealed class FindingViewModel
     public string Detail { get; }
 
     public bool HasDetail => Detail.Length > 0;
+
+    public string? RepairKey { get; }
+
+    public string? DeviceId { get; }
+
+    public string DeviceName { get; }
+
+    public bool CanRepair => RepairKey is not null;
+
+    public string RepairLabel => RepairKey == ScanEvaluator.RepairUnmute ? "Unmute" : RepairKey == ScanEvaluator.RepairOpenMonoSettings ? "Open Settings" : "Fix";
 }
 
 /// <summary>One page chip on the Health page: Scan or Sound Check.</summary>
@@ -52,7 +65,7 @@ public sealed class HealthPage : ObservableObject
 }
 
 /// <summary>The Health page. The scan only reads. Sound Check plays quiet tones and never changes your volume.</summary>
-public sealed class HealthViewModel : ObservableObject, IDisposable
+public sealed partial class HealthViewModel : ObservableObject, IDisposable
 {
     private readonly DeviceEnumerator _devices;
     private readonly HealthPage _scanPage = new("Scan") { IsActive = true };

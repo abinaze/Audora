@@ -57,6 +57,11 @@
                      Foreground="{DynamicResource MutedBrush}"
                      Visibility="{Binding HasDetail, Converter={StaticResource BoolToVis}}"/>
           <TextBlock Text="{Binding Area}" FontSize="11" Margin="0,2,0,0" Foreground="{DynamicResource MutedBrush}"/>
+          <Button Content="{Binding RepairLabel}" Style="{StaticResource AudoraButton}"
+                  HorizontalAlignment="Left" Margin="0,8,0,0" MinWidth="90"
+                  Command="{Binding DataContext.AskRepairCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                  CommandParameter="{Binding}"
+                  Visibility="{Binding CanRepair, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
       </Grid>
     </DataTemplate>
@@ -84,6 +89,29 @@
                   Style="{StaticResource AudoraButton}" MinWidth="120" HorizontalAlignment="Left"/>
           <TextBlock Text="{Binding Summary}" VerticalAlignment="Center" Margin="16,0,0,0" FontSize="13"
                      Foreground="{DynamicResource MutedBrush}"/>
+        </StackPanel>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,14"
+                Visibility="{Binding HasPending, Converter={StaticResource BoolToVis}}">
+          <StackPanel>
+            <TextBlock Text="{Binding PendingTitle}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding PendingText}" FontSize="12.5" TextWrapping="Wrap" Margin="0,4,0,0"
+                       Foreground="{DynamicResource MutedBrush}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+              <Button Content="Unmute" Command="{Binding ConfirmRepairCommand}" Style="{StaticResource AudoraButton}"
+                      MinWidth="90" Margin="0,0,8,0"/>
+              <Button Content="Cancel" Command="{Binding CancelRepairCommand}" Style="{StaticResource AudoraButton}"
+                      MinWidth="90"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,14"
+                    Visibility="{Binding HasRepairMessage, Converter={StaticResource BoolToVis}}">
+          <TextBlock Text="{Binding RepairMessage}" FontSize="13" TextWrapping="Wrap" MaxWidth="600" VerticalAlignment="Center"/>
+          <Button Content="Undo" Command="{Binding UndoRepairCommand}" Style="{StaticResource AudoraButton}"
+                  MinWidth="80" Margin="12,0,0,0"
+                  Visibility="{Binding CanUndo, Converter={StaticResource BoolToVis}}"/>
         </StackPanel>
 
         <Border Style="{StaticResource Card}" Margin="0,0,0,14"
