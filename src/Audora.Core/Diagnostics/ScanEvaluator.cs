@@ -24,6 +24,7 @@ public static partial class ScanEvaluator
         CheckDevices(input.RenderDevices, OutputsArea, "sound output", "sound outputs", required: true, findings);
         CheckDevices(input.CaptureDevices, InputsArea, "microphone", "microphones", required: false, findings);
         CheckEndpointDetails(input.Details, findings);
+        CheckMonoAudio(input.MonoAudioOn, findings);
         return findings;
     }
 

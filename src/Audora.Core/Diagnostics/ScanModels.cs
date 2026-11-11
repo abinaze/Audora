@@ -45,7 +45,8 @@ public sealed record ScanInput(
     IReadOnlyList<ServiceSnapshot> Services,
     IReadOnlyList<AudioDeviceInfo> RenderDevices,
     IReadOnlyList<AudioDeviceInfo> CaptureDevices,
-    IReadOnlyList<EndpointDetails>? Details = null);
+    IReadOnlyList<EndpointDetails>? Details = null,
+    bool? MonoAudioOn = null);
 
 public sealed record ScanReport(DateTime TakenAt, ScanInput Input, IReadOnlyList<ScanFinding> Findings)
 {

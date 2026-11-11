@@ -20,7 +20,8 @@ public sealed class AudioScanner
             ServiceProbe.ReadAudioServices(),
             _devices.GetRenderDevices(),
             _devices.GetCaptureDevices(),
-            details);
+            details,
+            MonoAudioProbe.Read());
 
         return new ScanReport(DateTime.Now, input, ScanEvaluator.Evaluate(input));
     }
