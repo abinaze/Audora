@@ -30,7 +30,7 @@ public enum ServiceStartup
 }
 
 /// <summary>One thing the scan found, in plain words.</summary>
-public sealed record ScanFinding(ScanLevel Level, string Area, string Title, string Detail);
+public sealed record ScanFinding(ScanLevel Level, string Area, string Title, string Detail, string? RepairKey = null, string? DeviceId = null, string? DeviceName = null);
 
 /// <summary>What was read from one Windows service. Read only.</summary>
 public sealed record ServiceSnapshot(
@@ -46,7 +46,8 @@ public sealed record ScanInput(
     IReadOnlyList<AudioDeviceInfo> RenderDevices,
     IReadOnlyList<AudioDeviceInfo> CaptureDevices,
     IReadOnlyList<EndpointDetails>? Details = null,
-    bool? MonoAudioOn = null);
+    bool? MonoAudioOn = null,
+    IReadOnlyCollection<string>? MutedDeviceIds = null);
 
 public sealed record ScanReport(DateTime TakenAt, ScanInput Input, IReadOnlyList<ScanFinding> Findings)
 {
