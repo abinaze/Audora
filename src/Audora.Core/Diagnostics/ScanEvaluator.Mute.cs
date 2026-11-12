@@ -36,12 +36,18 @@ public static partial class ScanEvaluator
                 device.IsDefault ? ScanLevel.Warning : ScanLevel.Info,
                 area,
                 $"{device.Name} is muted in Windows",
-                device.IsDefault
-                    ? "This is your default device, so you will hear nothing from it. Muting is a Windows setting."
-                    : "A muted device plays no sound. This is a Windows setting, and it may be on purpose.",
+                MutedDetail(area == InputsArea, device.IsDefault),
                 RepairUnmute,
                 device.Id,
                 device.Name));
         }
     }
+
+    private static string MutedDetail(bool isInput, bool isDefault) => (isInput, isDefault) switch
+    {
+        (true, true) => "This is the default microphone. It records no sound until it is unmuted.",
+        (true, false) => "A muted microphone records no sound. This is a Windows setting and may be intentional.",
+        (false, true) => "This is the default output. It plays no sound until it is unmuted.",
+        _ => "A muted output plays no sound. This is a Windows setting and may be intentional."
+    };
 }
