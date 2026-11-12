@@ -96,3 +96,17 @@ Two outside research reports were checked against what Audora does and what it m
 
 Not built yet: restart one device's driver, change a device's enhancements, restore the default device, restart the
 Windows audio service. Those need a snapshot, approval, and administrator rights at the moment they run.
+
+## Verified findings
+
+- **Windows volume and loopback.** Loopback audio is taken before the endpoint volume and mute by default, but the
+  tap point depends on the driver. On the test PC the USB headphones' loopback ignored the Windows volume, and the
+  Realtek speakers' loopback followed it. When the default device is the Realtek output, the master volume is
+  therefore applied twice on mirrored devices. A per-device calibration is planned.
+- **Windows Mono audio** is stored as AccessibilityMonoMixState under HKCU\Software\Microsoft\Multimedia\Audio.
+  The scan reads it. Its signature: a one-sided tone measures half on both sides in the engine's capture while the
+  device meter shows one side only.
+- **Muted devices.** Audora's Mute button mutes the default device. If the default changes, Audora now unmutes the
+  device it muted.
+- **Event log.** On .NET 8 the reader comes from the System.Diagnostics.EventLog package. Whether a standard user
+  can read the System log has to be tested before that check is built.

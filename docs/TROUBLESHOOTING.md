@@ -66,3 +66,13 @@ Try these in order. Stop when it is fixed.
 8. **Restore from Audora.** Settings → **Restore Windows audio** puts back the default output, volume and mute.
 
 Software cannot repair a damaged speaker or a broken cable.
+
+## Left and right play on both sides
+
+Run Health, Scan now. If it reports "Windows Mono audio is on", turn it off in Settings, Accessibility, Audio.
+Then run Sound Check on the device: left and right should measure on separate sides.
+
+## A device plays no sound
+
+Run Health, Scan now. A muted device is listed with an Unmute button. Sound Check also refuses to play on a
+muted device and says so.

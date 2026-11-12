@@ -21,6 +21,7 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 
 - Diagnostics and Repair Center: scan, Sound Check (test tones, microphone level) and targeted repairs with backup and rollback
 - More read-only checks: apps using each device, recent Windows audio errors, Bluetooth call mode, microphone privacy
+- Volume calibration: detect when the Windows volume is already in the captured sound, so mirrored devices follow it only once
 
 - First public release, a winget package and a code-signed installer
 - Noise removal for the microphone (no driver needed), then a clean microphone for other apps through a virtual cable you install, then optional voice cleanup for call audio

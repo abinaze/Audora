@@ -15,6 +15,15 @@ All notable changes are listed here. The format follows
 - The scan notes when Windows Mono audio is on, and Sound Check names the devices a tone is copied to and can turn Audora off for testing
 - The log now records when Audora turns on or off, every 15 seconds whether it hears sound while on, and what Sound Check does
 
+### Changed
+- Clearer, shorter wording across the app
+- The log records level checks only when something changes, and once every five minutes otherwise
+- Dependabot leaves major versions of System packages alone and groups the rest
+
+### Fixed
+- A device muted with the Mute button is unmuted when the Windows default device changes
+- The scan describes a muted microphone as not recording
+
 ## [0.1.0] - 2026-11-08
 
 ### Added
