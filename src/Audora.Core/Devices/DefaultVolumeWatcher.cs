@@ -16,6 +16,7 @@ public sealed class DefaultVolumeWatcher : IDisposable
     private MMDevice? _device;
     private AudioEndpointVolume? _endpoint;
     private bool _disposed;
+    private bool _mutedByUs;
 
     public event EventHandler<VolumeState>? Changed;
 
@@ -32,6 +33,7 @@ public sealed class DefaultVolumeWatcher : IDisposable
                 return;
             }
 
+            ReleaseOurMute();
             Detach();
             if (deviceId is null)
             {
@@ -85,6 +87,7 @@ public sealed class DefaultVolumeWatcher : IDisposable
                 if (_endpoint is not null)
                 {
                     _endpoint.Mute = muted;
+                    _mutedByUs = muted;
                 }
             }
             catch
@@ -107,6 +110,27 @@ public sealed class DefaultVolumeWatcher : IDisposable
             Detach();
             try { _enumerator.Dispose(); } catch { }
         }
+    }
+
+    /// <summary>
+    /// Audora's Mute button mutes the default device. If the default changes, give the old device its sound back
+    /// so it is not left muted. Mutes made by Windows or by you elsewhere are left alone.
+    /// </summary>
+    private void ReleaseOurMute()
+    {
+        if (_mutedByUs && _endpoint is not null)
+        {
+            try
+            {
+                _endpoint.Mute = false;
+            }
+            catch
+            {
+                // the device may already be gone
+            }
+        }
+
+        _mutedByUs = false;
     }
 
     private void Detach()
