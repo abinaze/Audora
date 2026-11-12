@@ -1,4 +1,5 @@
 using Audora.App.Infrastructure;
+using Audora.Core.Audio;
 
 namespace Audora.App.ViewModels;
 
@@ -6,11 +7,13 @@ public sealed partial class MainViewModel
 {
     private static readonly TimeSpan LevelLogEvery = TimeSpan.FromSeconds(15);
     private System.Threading.Timer? _levelLog;
+    private readonly LevelLogGate _levelGate = new();
 
     /// <summary>While Audora is on, writes one line every 15 seconds saying whether it heard sound.</summary>
     private void StartLevelLog()
     {
         StopLevelLog();
+        _levelGate.Reset();
         _levelLog = new System.Threading.Timer(_ => LogLevel(), null, LevelLogEvery, LevelLogEvery);
     }
 
@@ -27,7 +30,10 @@ public sealed partial class MainViewModel
             var level = _controller.TakeCaptureLevel();
             if (level is not null)
             {
-                Log.Info(level.Describe());
+                if (_levelGate.ShouldLog(level, DateTime.UtcNow))
+                {
+                    Log.Info(level.Describe());
+                }
             }
         }
         catch (Exception ex)
