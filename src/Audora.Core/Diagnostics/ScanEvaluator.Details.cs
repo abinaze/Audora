@@ -21,7 +21,7 @@ public static partial class ScanEvaluator
             {
                 findings.Add(new ScanFinding(ScanLevel.Info, DriversArea,
                     $"{d.Name} runs at a very high sample rate ({d.Format.SampleRate} Hz)",
-                    "Rates this high are rarely needed. If this device crackles, a lower rate such as 48000 Hz is the usual test. Audora does not change it."));
+                    "Rates this high are rarely needed. If the device crackles, try 48000 Hz. Audora does not change it."));
             }
 
             if (d.EnhancementsOff == true)
@@ -37,7 +37,7 @@ public static partial class ScanEvaluator
     {
         null => new ScanFinding(ScanLevel.Info, DriversArea,
             $"{d.Name}: driver status could not be read{Summary(d)}",
-            "Windows did not let the scan look up this device's driver state. This is not a fault by itself."),
+            "The driver state could not be read. This is not a fault by itself."),
         0 => new ScanFinding(ScanLevel.Ok, DriversArea,
             $"{d.Name}: no driver problem{Summary(d)}",
             string.Empty),

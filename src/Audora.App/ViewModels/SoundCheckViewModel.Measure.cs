@@ -67,7 +67,7 @@ public sealed partial class SoundCheckViewModel
         }
 
         var verdict = ChannelCheck.Judge(expected, left, right);
-        _measuredShort = $" Windows measured left {left:0.00}, right {right:0.00} at a Windows volume of {_playedVolumePercent:0}%.";
+        _measuredShort = $" Measured: left {left:0.00}, right {right:0.00} at Windows volume {_playedVolumePercent:0}%.";
         Log.Info($"Sound Check measured on {_playedOn}: left {left:0.000}, right {right:0.000} ({verdict}) at a Windows volume of {_playedVolumePercent:0}%.");
         return $"{_measuredShort} {ChannelCheck.Describe(verdict)}";
     }

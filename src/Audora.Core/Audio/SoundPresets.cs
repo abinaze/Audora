@@ -31,7 +31,7 @@ public static class SoundPresets
     public static IReadOnlyList<SoundPreset> All { get; } = new[]
     {
         new SoundPreset(OriginalName, new float[10],
-            "No changes. Your audio plays exactly as it is."),
+            "No processing. Audio plays unchanged."),
 
         new SoundPreset(MusicName, new float[] { 2, 2, 1, 0, 0, 0, 0, 1, 2, 2 },
             "Fuller bass, clearer highs and a slightly wider sound.",

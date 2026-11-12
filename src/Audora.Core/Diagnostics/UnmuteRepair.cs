@@ -34,12 +34,12 @@ public sealed class UnmuteRepair
         var before = _access.GetMuted(deviceId);
         if (before is null)
         {
-            return new RepairResult(false, $"Windows would not tell Audora whether {deviceName} is muted. Nothing was changed.", null);
+            return new RepairResult(false, $"The mute state of {deviceName} could not be read. Nothing was changed.", null);
         }
 
         if (before == false)
         {
-            return new RepairResult(true, $"{deviceName} is not muted now. Nothing was changed.", false);
+            return new RepairResult(true, $"{deviceName} is not muted. Nothing was changed.", false);
         }
 
         try
@@ -48,12 +48,12 @@ public sealed class UnmuteRepair
         }
         catch (Exception)
         {
-            return new RepairResult(false, $"Windows would not let Audora unmute {deviceName}. Nothing was changed.", true);
+            return new RepairResult(false, $"{deviceName} could not be unmuted. Nothing was changed.", true);
         }
 
         return _access.GetMuted(deviceId) == false
             ? new RepairResult(true, $"{deviceName} is no longer muted. You can undo this.", true)
-            : new RepairResult(false, $"Audora asked Windows to unmute {deviceName}, but Windows still reports it as muted.", true);
+            : new RepairResult(false, $"Unmute was requested, but Windows still reports {deviceName} as muted.", true);
     }
 
     /// <summary>Puts the mute back as it was. Returns true when Windows confirms it.</summary>

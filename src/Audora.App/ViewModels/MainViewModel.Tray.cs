@@ -43,7 +43,7 @@ public sealed partial class MainViewModel
         {
             if (value && !StartupRegistration.Set(true))
             {
-                StartupMessage = "Start with Windows only works from the installed or portable version, not from a build in a source folder. Install Audora with the installer first.";
+                StartupMessage = "Start with Windows is available only in the installed or portable version, not in a source build.";
             }
             else
             {

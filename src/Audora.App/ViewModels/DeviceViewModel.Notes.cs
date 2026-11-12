@@ -6,6 +6,6 @@ public sealed partial class DeviceViewModel
     public bool IsVirtualInput => _name.Contains("CABLE Input", StringComparison.OrdinalIgnoreCase);
 
     public string DefaultNote => IsVirtualInput
-        ? "This is the virtual cable Audora listens to. It makes no sound itself: Audora plays everything on your other devices, so each of them has full control."
-        : "This is your Windows default device, so it plays directly. Its volume is the master volume above. To use the equalizer, boost and delay on this device too, turn on Full control in Settings.";
+        ? "This is the virtual cable Audora listens to. It makes no sound itself; Audora plays everything on your other devices, so each has full control."
+        : "This is the Windows default device, so it plays directly and its volume is the master volume. To apply the equalizer, boost and delay to it, turn on Full control in Settings.";
 }

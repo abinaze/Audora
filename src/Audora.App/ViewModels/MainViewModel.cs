@@ -202,9 +202,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public bool CanTurnOnFullControl => CableFound && !FullControlOn;
 
     public string FullControlStatus =>
-        FullControlOn ? "On: Audora plays every device itself, so each one has full control."
+        FullControlOn ? "On: Audora plays every device itself, so all have full control."
         : CableFound ? "Ready: a virtual cable is installed. Turn this on to control every device."
-        : "Needs a free virtual cable, which was not found on this PC.";
+        : "Requires a free virtual cable, which was not found.";
 
     public string Search
     {

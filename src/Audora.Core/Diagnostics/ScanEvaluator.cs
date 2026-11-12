@@ -34,13 +34,13 @@ public static partial class ScanEvaluator
         if (!s.Found)
         {
             return new ScanFinding(ScanLevel.Problem, ServicesArea, $"{s.DisplayName} was not found",
-                "Windows has no service with this name. Sound normally cannot work without it.");
+                "This service is not installed. Windows audio normally requires it.");
         }
 
         if (s.Startup == ServiceStartup.Disabled)
         {
             return new ScanFinding(ScanLevel.Problem, ServicesArea, $"{s.DisplayName} is disabled",
-                "It is set to Disabled, so Windows cannot start it. Audora does not change this on its own.");
+                "The service is disabled and cannot start. Audora does not change this.");
         }
 
         return s.State switch
@@ -49,9 +49,9 @@ public static partial class ScanEvaluator
             ServiceRunState.StartPending => new ScanFinding(ScanLevel.Info, ServicesArea, $"{s.DisplayName} is starting",
                 "Wait a few seconds and scan again."),
             ServiceRunState.Stopped => new ScanFinding(ScanLevel.Problem, ServicesArea, $"{s.DisplayName} is stopped",
-                "Sound cannot work while this service is stopped."),
+                "Windows audio cannot work while this service is stopped."),
             _ => new ScanFinding(ScanLevel.Warning, ServicesArea, $"{s.DisplayName}: the state could not be read",
-                "Windows did not report a clear state for this service.")
+                "The service state could not be determined.")
         };
     }
 
@@ -69,9 +69,9 @@ public static partial class ScanEvaluator
         {
             findings.Add(required
                 ? new ScanFinding(ScanLevel.Problem, area, "No sound output is connected",
-                    "Windows reports no working playback device. Check the cable or the Bluetooth connection, and the Windows Sound settings.")
+                    "No working playback device is reported. Check the cable or Bluetooth connection and the Windows Sound settings.")
                 : new ScanFinding(ScanLevel.Info, area, "No microphone is connected",
-                    "Windows reports no working input device. This is normal on a PC without a microphone."));
+                    "No working input device is reported. This is normal on a PC without a microphone."));
         }
         else
         {
@@ -81,7 +81,7 @@ public static partial class ScanEvaluator
             if (!active.Any(d => d.IsDefault))
             {
                 findings.Add(new ScanFinding(ScanLevel.Warning, area, $"No default {singular} is set",
-                    "Windows has devices but none is chosen as the default. Pick one in the Windows Sound settings."));
+                    "No default device is set. Choose one in the Windows Sound settings."));
             }
         }
 
@@ -106,7 +106,7 @@ public static partial class ScanEvaluator
         {
             findings.Add(new ScanFinding(ScanLevel.Info, area,
                 $"Windows keeps {remembered} old {Noun(remembered, singular, plural)} on record",
-                "These are devices that were connected before and are gone. Windows keeps them so settings return when a device comes back. Audora does not remove them."));
+                "Devices connected in the past. Windows keeps these records so settings return when a device reconnects. Audora does not remove them."));
         }
     }
 

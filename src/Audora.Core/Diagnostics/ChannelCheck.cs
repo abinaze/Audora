@@ -73,16 +73,16 @@ public static class ChannelCheck
     public static string Describe(ChannelVerdict verdict) => verdict switch
     {
         ChannelVerdict.Matches =>
-            "That matches the test. If you still hear it wrongly, the cause is after this point: the driver, the Bluetooth link or the headphones.",
+            "Matches the test. If the sound still seems wrong, the cause lies after Windows: the driver, the Bluetooth link or the headphones.",
         ChannelVerdict.MonoMix =>
-            "Both sides measured the same level, so something is mixing left and right into one (mono). The Windows Mono audio setting does this, and so can a driver or sound enhancement. Check Windows Settings, Accessibility, Audio, Mono audio, and the device's Audio enhancements. Audora does not change these.",
+            "Both sides measured the same, so left and right are being mixed into mono. The Windows Mono audio setting, a driver or a sound enhancement can cause this. Check Settings, Accessibility, Audio, and the device's Audio enhancements. Audora does not change these.",
         ChannelVerdict.LeaksToOtherSide =>
-            "Windows already showed sound on the other side too. Something before the device is mixing left and right: an app, a Windows setting, or Audora's own sound profile on this device. Other sound playing on the device, including copies made by Audora, also counts.",
+            "Sound also appeared on the other side, so left and right are being mixed before the device: an app, a Windows setting, or Audora's sound profile. Other audio on this device, including copies made by Audora, also counts.",
         ChannelVerdict.ExpectedSideSilent =>
-            "Windows showed no sound on the side that should play.",
+            "No sound was measured on the expected side.",
         ChannelVerdict.Unbalanced =>
-            "Windows showed clearly different levels on the two sides.",
+            "The two sides measured clearly different levels.",
         _ =>
-            "Windows showed no signal on this device during the tone. The device may be muted, in use by another app, or not receiving sound."
+            "No signal was measured during the tone. The device may be muted, in use by another app, or not receiving sound."
     };
 }

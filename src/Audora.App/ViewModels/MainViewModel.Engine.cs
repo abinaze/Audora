@@ -43,8 +43,8 @@ public sealed partial class MainViewModel
     public string EngineText => _engineOn ? "Audora is on" : "Audora is off";
 
     public string EngineHint => _engineOn
-        ? "Playing on the devices you switched on. Turn it off to give Windows full control again."
-        : "Audora is not touching your audio. Windows works exactly as usual.";
+        ? "Playing on the selected devices. Turn off to return full control to Windows."
+        : "Audora is not processing audio. Windows works as usual.";
 
     /// <summary>Turn the engine on by itself when Audora starts. Off by default.</summary>
     public bool StartEngineOn
@@ -65,7 +65,7 @@ public sealed partial class MainViewModel
         TurnOnEngineCommand = new RelayCommand(() => _ = TurnOnEngineAsync());
         RestoreWindowsAudioCommand = new RelayCommand(RestoreWindowsAudio);
 
-        RoutingText = "Audora is off. Windows audio works normally.";
+        RoutingText = "Audora is off. Windows audio is unchanged.";
         Status = "Audora is off. Turn it on to play on several devices.";
 
         if (_startEngineOn)
@@ -150,7 +150,7 @@ public sealed partial class MainViewModel
         });
 
         Status = "Audora is off.";
-        RoutingText = "Audora is off. Windows audio works normally.";
+        RoutingText = "Audora is off. Windows audio is unchanged.";
         Raise(nameof(EngineOn));
     }
 
@@ -159,7 +159,7 @@ public sealed partial class MainViewModel
         var point = _settings.RestorePoint;
         if (point is null)
         {
-            EngineMessage = "There is nothing to restore yet. Audora saves how Windows audio looks each time you turn it on.";
+            EngineMessage = "Nothing to restore yet. Audora saves the Windows audio state each time it is turned on.";
             return;
         }
 
@@ -195,7 +195,7 @@ public sealed partial class MainViewModel
         catch (Exception ex)
         {
             Log.Error("Restore failed", ex);
-            result = "Windows would not accept the change. Open Windows Sound settings and choose your device there.";
+            result = "Windows rejected the change. Choose the device in Windows Sound settings.";
         }
 
         EngineMessage = result;

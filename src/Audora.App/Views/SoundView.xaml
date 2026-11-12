@@ -36,7 +36,7 @@
     <StackPanel>
       <TextBlock Text="Sound" FontSize="22" FontWeight="SemiBold"/>
       <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
-                 Text="Pick a profile for what you are doing, or let Smart choose. Sound changes apply to the devices Audora plays on. Your Windows default device plays directly, so it cannot be processed (turn on Full control in Settings to change that)."/>
+                 Text="Choose a profile, or let Smart choose for you. Changes apply to the devices Audora plays on. The Windows default device plays directly and cannot be processed; turn on Full control in Settings to change that."/>
 
       <TextBlock Text="Edit sound for" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,8"/>
       <ItemsControl ItemsSource="{Binding Targets}" ItemTemplate="{StaticResource TargetTemplate}">
@@ -209,7 +209,7 @@
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <TextBlock Text="Frequency in Hz. Drag a band up to boost it or down to cut it (range plus or minus 12 dB)."
+            <TextBlock Text="Frequency in Hz. Drag a band up to boost or down to cut (plus or minus 12 dB)."
                        FontSize="11" HorizontalAlignment="Center" Margin="0,8,0,0" Foreground="{DynamicResource MutedBrush}"/>
           </StackPanel>
         </Grid>

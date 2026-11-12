@@ -174,9 +174,9 @@ public sealed partial class MainViewModel
         BluetoothMessage = result switch
         {
             BluetoothResult.Done when connect && item.IsConnected => $"{item.Name} is connected. It shows up in the device list above.",
-            BluetoothResult.Done when connect => $"Windows accepted the request for {item.Name}. If it does not appear in a few seconds, check that it is switched on and close to the PC.",
+            BluetoothResult.Done when connect => $"Connection requested for {item.Name}. If it does not appear shortly, check that it is on and near the PC.",
             BluetoothResult.Done => $"{item.Name} was disconnected.",
-            BluetoothResult.NotFound => $"Windows does not list {item.Name} as paired. Pair it again in Bluetooth settings.",
+            BluetoothResult.NotFound => $"{item.Name} is not paired in Windows. Pair it again in Bluetooth settings.",
             _ => $"Windows could not {(connect ? "connect" : "disconnect")} {item.Name}. Make sure it is switched on, close to the PC and not connected to a phone."
         };
     }
@@ -186,7 +186,7 @@ public sealed partial class MainViewModel
         var waiting = BluetoothDevices.Where(b => !b.IsConnected).ToList();
         if (waiting.Count == 0)
         {
-            BluetoothMessage = "All your paired Bluetooth devices are already connected.";
+            BluetoothMessage = "All paired Bluetooth devices are already connected.";
             return;
         }
 
@@ -195,7 +195,7 @@ public sealed partial class MainViewModel
             await ToggleBluetoothAsync(item);
         }
 
-        BluetoothMessage = "Finished. Devices that did not connect may be off or out of range. Most PCs can keep two to four connected at once.";
+        BluetoothMessage = "Done. Devices that did not connect may be off or out of range. Most PCs support two to four at once.";
     }
 
     // The "Connect" button on a saved device: match it to a paired Bluetooth device by name.

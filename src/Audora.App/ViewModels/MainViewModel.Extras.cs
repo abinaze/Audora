@@ -255,7 +255,7 @@ public sealed partial class MainViewModel
         RefreshBluetoothSoon();
         var bluetooth = Devices.Count(d => d.IsBluetooth && d.IsSelected);
         BluetoothHint = bluetooth >= 2
-            ? "Several Bluetooth devices are playing at once. Most PCs handle two or three. If the sound stutters, switch one off."
+            ? "Several Bluetooth devices are active. Most PCs handle two or three; if the sound stutters, turn one off."
             : string.Empty;
     }
 
@@ -297,7 +297,7 @@ public sealed partial class MainViewModel
         var playing = Devices.Where(d => d.IsSelected).ToList();
         if (playing.Count == 0)
         {
-            GroupMessage = "Turn on the devices you want in the group on the Devices tab first, then save them here.";
+            GroupMessage = "Select the group devices on the Devices tab first, then save.";
             return;
         }
 
@@ -373,7 +373,7 @@ public sealed partial class MainViewModel
         var playing = Devices.Where(d => d.IsSelected).ToList();
         if (playing.Count == 0)
         {
-            GroupMessage = "No devices are playing right now. Turn some on first.";
+            GroupMessage = "No devices are playing. Select some first.";
             return;
         }
 

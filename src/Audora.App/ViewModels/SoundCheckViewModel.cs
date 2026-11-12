@@ -41,7 +41,7 @@ public sealed class SoundDeviceChoice : ObservableObject
 /// </summary>
 public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
 {
-    private const string Intro = "Pick a device, then press a test and listen.";
+    private const string Intro = "Select a device, then run a test.";
 
     private readonly DeviceEnumerator _devices;
     private readonly Dispatcher _ui;
@@ -149,7 +149,7 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
     public bool ShowEngineNote => _isEngineOn() && _selected is { IsDefault: true } && _copiesTo().Length > 0;
 
     public string EngineNote =>
-        $"Audora is on, so this tone is also copied to: {_copiesTo()}. Press Turn Audora off for testing to hear only the device you picked.";
+        $"Audora is on: this tone is also copied to {_copiesTo()}. Turn Audora off to test only the selected device.";
 
     /// <summary>Called when the page is shown, so the engine note, device list and volume are current.</summary>
     public void RefreshState()
@@ -220,7 +220,7 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Log.Error("Sound Check could not list the devices", ex);
-            Message = "Windows would not list the sound outputs. Details are in the log.";
+            Message = "Sound outputs could not be listed. See the log for details.";
         }
     }
 
@@ -258,7 +258,7 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
     {
         if (state is null)
         {
-            VolumeText = "The Windows volume of this device could not be read.";
+            VolumeText = "Windows volume unavailable for this device.";
             VolumeWarning = false;
         }
         else if (state.Muted)
@@ -271,8 +271,8 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
             var percent = state.Volume * 100;
             VolumeWarning = state.Volume > SoundCheckGuard.LoudVolume;
             VolumeText = VolumeWarning
-                ? $"Windows volume of this device: {percent:0}%. Above 50% a tone could be loud. Lower it first, or press Play anyway after a refusal."
-                : $"Windows volume of this device: {percent:0}%.";
+                ? $"Windows volume: {percent:0}%. Above 50%, a tone may be loud. Lower the volume, or use Play anyway."
+                : $"Windows volume: {percent:0}%.";
         }
     }
 
@@ -296,17 +296,17 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
         switch (SoundCheckGuard.Decide(state, allowLoud))
         {
             case GuardDecision.Muted:
-                Message = $"{device.Name} is muted in Windows, so you would hear nothing. Unmute it first.";
+                Message = $"{device.Name} is muted in Windows. Unmute it to run the test.";
                 Log.Info($"Sound Check refused: {device.Name} is muted in Windows.");
                 return;
 
             case GuardDecision.TooLoud:
-                Message = $"The Windows volume of this device is {percent:0}%, which is above 80%. Sound Check will not play. Lower it first (for the default device, use the Master volume slider). Audora never changes your volume.";
+                Message = $"Windows volume is {percent:0}%, above the 80% limit. Lower it first (for the default device, use the master volume slider). Audora never changes your volume.";
                 Log.Info($"Sound Check refused: the Windows volume of {device.Name} is {percent:0}%, above the 80% limit.");
                 return;
 
             case GuardDecision.Loud:
-                Message = $"The Windows volume of this device is {percent:0}%. A test tone could be loud. Lower it to 50% or less first (for the default device, use the Master volume slider), or press Play anyway. Audora never changes your volume.";
+                Message = $"Windows volume is {percent:0}%. A test tone may be loud. Lower it to 50% or less (for the default device, use the master volume slider), or choose Play anyway. Audora never changes your volume.";
                 Log.Info($"Sound Check refused: the Windows volume of {device.Name} is {percent:0}%.");
                 SetRefused(key);
                 return;
@@ -333,7 +333,7 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
         {
             Log.Error("Sound Check could not play", ex);
             SetPlaying(false);
-            Message = "Windows would not let Audora play the test on this device. Nothing was changed. Details are in the log.";
+            Message = "The test could not play on this device. No settings were changed. See the log for details.";
         }
     }
 
@@ -368,8 +368,8 @@ public sealed partial class SoundCheckViewModel : ObservableObject, IDisposable
         RaiseQuestion();
         Raise(nameof(HasResults));
         Message = heard
-            ? "Noted. Try another test."
-            : "Noted. A test that is not as expected is worth a closer look. Repairs will come later and will always ask you first.";
+            ? "Recorded."
+            : "Recorded. An unexpected result is worth investigating: check the device and the Windows sound settings.";
     }
 
     private void SetRefused(string? key)

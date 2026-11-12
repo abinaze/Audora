@@ -43,7 +43,7 @@ public sealed partial class HealthViewModel
     public string PendingTitle => _pending is null ? string.Empty : $"Unmute {_pending.DeviceName}?";
 
     public string PendingText =>
-        "Audora will turn off the Windows mute for this device. Nothing else changes, and you can undo it.";
+        "Turns off the Windows mute for this device only. You can undo it.";
 
     public string RepairMessage
     {
@@ -78,13 +78,13 @@ public sealed partial class HealthViewModel
         try
         {
             Process.Start(new ProcessStartInfo("ms-settings:easeofaccess-audio") { UseShellExecute = true });
-            RepairMessage = "Opened Windows Settings. Switch Mono audio off there, then press Scan now again. Audora does not change it for you.";
+            RepairMessage = "Windows Settings opened. Turn Mono audio off, then scan again. Audora does not change this setting.";
             Log.Info("Repair: opened the Windows Mono audio settings page.");
         }
         catch (Exception ex)
         {
             Log.Error("Could not open Windows Settings", ex);
-            RepairMessage = "Audora could not open Windows Settings. Open Settings, Accessibility, Audio, and switch Mono audio off.";
+            RepairMessage = "Settings could not be opened. Go to Settings, Accessibility, Audio and turn Mono audio off.";
         }
     }
 
@@ -129,8 +129,8 @@ public sealed partial class HealthViewModel
         var undone = await Task.Run(() => _unmute.Undo(id, true));
         Log.Info(undone ? $"Repair: {name} is muted again, as before." : $"Repair: could not put the mute back on {name}.");
         RepairMessage = undone
-            ? $"{name} is muted again, as it was before."
-            : $"Windows would not let Audora put the mute back on {name}.";
+            ? $"{name} is muted again."
+            : $"The mute on {name} could not be restored.";
 
         await ScanAsync();
     }

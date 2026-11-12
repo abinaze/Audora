@@ -82,7 +82,7 @@
       <!-- Scan -->
       <StackPanel Visibility="{Binding IsScanPage, Converter={StaticResource BoolToVis}}">
         <TextBlock Margin="0,0,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
-                   Text="A scan looks at your Windows audio services, sound outputs, microphones and drivers. It only reads: it changes nothing, and it works even when Audora is off."/>
+                   Text="Checks Windows audio services, outputs, microphones, drivers and key settings. The scan is read-only and works while Audora is off."/>
 
         <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
           <Button Content="{Binding ButtonText}" Command="{Binding ScanCommand}"
@@ -120,16 +120,16 @@
         </Border>
 
         <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,24"
-                   Text="A scan can find software problems. It cannot tell whether a speaker, cable or port is physically damaged. Fixing problems comes later and will always ask you first."/>
+                   Text="A scan finds software and configuration problems. It cannot detect damaged speakers, cables or ports. Fixes always ask for your approval first."/>
       </StackPanel>
 
       <!-- Sound Check -->
       <StackPanel Visibility="{Binding IsSoundCheckPage, Converter={StaticResource BoolToVis}}">
         <StackPanel DataContext="{Binding SoundCheck}">
           <TextBlock Margin="0,0,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
-                     Text="Play a short, quiet tone and listen. Tones are made on this PC, start softly and stop by themselves. Stop ends one at once. Audora never changes your volume."/>
+                     Text="Play a short, quiet test tone and listen. Tones are generated locally, fade in, and stop on their own; Stop ends one immediately. Audora never changes your volume."/>
 
-          <TextBlock Text="Test this device" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
+          <TextBlock Text="Output device" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
           <ItemsControl ItemsSource="{Binding Devices}" ItemTemplate="{StaticResource DeviceChoiceTemplate}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
@@ -165,13 +165,13 @@
           </StackPanel>
 
           <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,8"/>
-          <Button Content="Play anyway (the tone is quiet)" Command="{Binding PlayAnywayCommand}"
+          <Button Content="Play anyway" Command="{Binding PlayAnywayCommand}"
                   Style="{StaticResource AudoraButton}" HorizontalAlignment="Left" Margin="0,0,0,12"
                   Visibility="{Binding CanPlayAnyway, Converter={StaticResource BoolToVis}}"/>
           <TextBlock Text="{Binding EngineNote}" TextWrapping="Wrap" FontSize="12" Margin="0,0,0,12"
                      Foreground="{DynamicResource MutedBrush}"
                      Visibility="{Binding ShowEngineNote, Converter={StaticResource BoolToVis}}"/>
-          <Button Content="Turn Audora off for testing" Command="{Binding TurnEngineOffCommand}"
+          <Button Content="Turn Audora off for this test" Command="{Binding TurnEngineOffCommand}"
                   Style="{StaticResource AudoraButton}" HorizontalAlignment="Left" Margin="0,0,0,12"
                   Visibility="{Binding ShowEngineNote, Converter={StaticResource BoolToVis}}"/>
 
@@ -190,13 +190,13 @@
           <Border Style="{StaticResource Card}" Margin="0,0,0,14"
                   Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}">
             <StackPanel>
-              <TextBlock Text="Your answers this session" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
+              <TextBlock Text="Results this session" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
               <ItemsControl ItemsSource="{Binding Results}" ItemTemplate="{StaticResource ResultTemplate}"/>
             </StackPanel>
           </Border>
 
           <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource MutedBrush}" Margin="0,0,0,24"
-                     Text="These tests record what you heard. They cannot prove that a speaker is damaged or healthy. Nothing is saved to disk."/>
+                     Text="Results reflect what you heard. They cannot prove a speaker is healthy or damaged. Nothing is saved to disk."/>
         </StackPanel>
       </StackPanel>
     </StackPanel>

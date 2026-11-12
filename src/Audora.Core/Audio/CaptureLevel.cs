@@ -16,7 +16,7 @@ public sealed record CaptureLevel(string? Source, float Peak, int Outputs)
         var outputs = Outputs == 1 ? "1 output" : $"{Outputs} outputs";
 
         return IsSilent
-            ? $"Level check: heard only silence on {where} since the last check ({outputs} ready). If something was playing, Windows is not sending it to this device."
+            ? $"Level check: only silence on {where} since the last check ({outputs} ready). If audio was playing, Windows is not sending it to this device."
             : $"Level check: heard sound on {where} (peak {Peak.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}, {outputs} playing).";
     }
 }

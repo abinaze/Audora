@@ -94,7 +94,7 @@
                          HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
             </Grid>
             <TextBlock Margin="0,10,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                       Text="Delay lines this device up with a slower one. Bluetooth is usually the slowest. Give it no delay and add delay to the others. Sound (equalizer) for this device is on the Sound tab."/>
+                       Text="Delay aligns this device with a slower one. Bluetooth is usually the slowest: leave it at zero and delay the others. Equalizer settings are on the Sound tab."/>
           </StackPanel>
         </StackPanel>
       </Border>
@@ -140,7 +140,7 @@
                        Foreground="{DynamicResource MutedBrush}"/>
           </Grid>
           <TextBlock Margin="0,6,0,0" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                     Text="Group volume changes the devices Audora plays on. The Windows default device follows the master volume."/>
+                     Text="Group volume applies to the devices Audora plays on. The Windows default device follows the master volume."/>
 
           <ItemsControl ItemsSource="{Binding Members}" Margin="0,16,0,0">
             <ItemsControl.ItemTemplate>
@@ -182,7 +182,7 @@
                     <StackPanel VerticalAlignment="Center">
                       <TextBlock Text="Bluetooth devices" FontSize="16" FontWeight="SemiBold"/>
                       <TextBlock Margin="0,4,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                                 Text="Connect your paired Bluetooth speakers and headphones from here, as many as your PC allows (usually two to four). Pair a new device once in Windows."/>
+                                 Text="Connect paired Bluetooth speakers and headphones here. Most PCs support two to four at once. Pair new devices in Windows first."/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
                       <Button Content="Connect all" Style="{StaticResource AudoraButton}" Command="{Binding ConnectAllBluetoothCommand}"/>
@@ -193,7 +193,7 @@
 
                   <TextBlock Text="{Binding BluetoothMessage}" FontSize="12" TextWrapping="Wrap" Margin="0,10,0,0"
                              Foreground="{DynamicResource MutedBrush}"/>
-                  <TextBlock Text="No paired Bluetooth speakers or headphones found. Pair one in Windows first." FontSize="12"
+                  <TextBlock Text="No paired Bluetooth audio devices found. Pair a device in Windows first." FontSize="12"
                              Margin="0,10,0,0" Foreground="{DynamicResource MutedBrush}"
                              Visibility="{Binding HasNoBluetooth, Converter={StaticResource BoolToVis}}"/>
 
@@ -223,7 +223,7 @@
               <StackPanel Margin="0,8,0,16" Visibility="{Binding HasKnownDevices, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="Saved devices (not connected now)" FontSize="16" FontWeight="SemiBold"/>
                 <TextBlock Margin="0,4,0,10" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                           Text="Audora remembers devices you used before, with their volume and sound. Connect one in Windows and it comes back by itself."/>
+                           Text="Devices used before keep their volume and sound settings and return automatically when reconnected."/>
                 <ItemsControl ItemsSource="{Binding KnownDevices}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -366,7 +366,7 @@
                             IsChecked="{Binding IsMasterMuted, Mode=TwoWay}"/>
               <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
                 <TextBlock Text="Master volume" FontSize="16" FontWeight="SemiBold"/>
-                <TextBlock Text="Windows volume bar, and all your other devices" FontSize="12"
+                <TextBlock Text="Windows volume and all devices" FontSize="12"
                            Foreground="{DynamicResource MutedBrush}"/>
               </StackPanel>
             </StackPanel>
@@ -389,7 +389,7 @@
             <RowDefinition Height="*"/>
           </Grid.RowDefinitions>
 
-          <TextBlock Text="Turn on the devices you want to play on. Your Windows default device is always on."
+          <TextBlock Text="Select the devices to play on. The Windows default device is always included."
                      Foreground="{DynamicResource MutedBrush}" FontSize="13" Margin="0,0,0,12"/>
 
           <Grid Grid.Row="1" Margin="0,0,0,14">
@@ -410,7 +410,7 @@
 
           <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel>
-              <TextBlock Text="No audio devices found yet. Connect a speaker or headphones and it appears here."
+              <TextBlock Text="No audio devices found. Connect a speaker or headphones to begin."
                          Foreground="{DynamicResource MutedBrush}" Margin="0,24,0,0"
                          Visibility="{Binding HasNoDevices, Converter={StaticResource BoolToVis}}"/>
               <ItemsControl ItemsSource="{Binding View}" ItemTemplate="{StaticResource DeviceCard}">
@@ -430,7 +430,7 @@
             <StackPanel>
               <TextBlock Text="Groups" FontSize="22" FontWeight="SemiBold"/>
               <TextBlock Margin="0,6,0,14" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource MutedBrush}"
-                         Text="Save the devices you play on together as a group, such as Living room or Headphones only. Play a group in one click and control its volume on its own. Turn the devices on in the Devices tab first, then save them here."/>
+                         Text="Save the devices you play on together as a group, for example Living room or Headphones only. A group plays in one click and has its own volume. Select the devices on the Devices tab first, then save them here."/>
 
               <Border Style="{StaticResource Card}" Margin="0,0,0,12">
                 <Grid>
@@ -492,7 +492,7 @@
                     <StackPanel VerticalAlignment="Center">
                       <TextBlock Text="Keep running in the tray when I close the window"/>
                       <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                                 Text="Your devices keep playing. Use the tray icon to open Audora again or to quit."/>
+                                 Text="Playback continues. Use the tray icon to reopen Audora or to quit."/>
                     </StackPanel>
                     <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
                                   IsChecked="{Binding CloseToTray, Mode=TwoWay}" AutomationProperties.Name="Keep running in the tray"/>
@@ -520,7 +520,7 @@
                     <StackPanel VerticalAlignment="Center">
                       <TextBlock Text="Start Audora with Windows"/>
                       <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                                 Text="Opens quietly in the tray when you sign in. Adds one entry to your own Windows startup list."/>
+                                 Text="Starts in the tray when you sign in. Adds one entry to your Windows startup list."/>
                     </StackPanel>
                     <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
                                   IsChecked="{Binding StartWithWindows, Mode=TwoWay}" AutomationProperties.Name="Start with Windows"/>
@@ -532,7 +532,7 @@
                 <StackPanel>
                   <TextBlock Text="Audora engine and Windows audio" FontSize="16" FontWeight="SemiBold"/>
                   <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                             Text="When Audora is off it does nothing to your audio: it does not listen, copy or change anything, and Windows works as usual. When it is on, it only changes Windows audio when you ask it to: the master volume, Mute all, Make Windows default and Full control."/>
+                             Text="When Audora is off it does not capture, copy or change any audio, and Windows behaves as usual. When it is on, it changes Windows audio only on your request: master volume, Mute all, Make Windows default and Full control."/>
 
                   <Grid Margin="0,14,0,0">
                     <Grid.ColumnDefinitions>
@@ -542,7 +542,7 @@
                     <StackPanel VerticalAlignment="Center">
                       <TextBlock Text="Turn Audora on when it starts"/>
                       <TextBlock FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                                 Text="Off by default, so Audora never starts changing audio by itself after you sign in."/>
+                                 Text="Off by default, so Audora does not touch audio after sign-in unless you choose."/>
                     </StackPanel>
                     <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
                                   IsChecked="{Binding StartEngineOn, Mode=TwoWay}" AutomationProperties.Name="Turn Audora on when it starts"/>
@@ -554,7 +554,7 @@
                   <Button Content="Restore Windows audio" Style="{StaticResource AudoraButton}" HorizontalAlignment="Left"
                           Margin="0,14,0,0" Command="{Binding RestoreWindowsAudioCommand}"/>
                   <TextBlock Margin="0,8,0,0" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                             Text="Turns Audora off and puts the default output, volume and mute back as they were when you last turned Audora on."/>
+                             Text="Turns Audora off and restores the default output, volume and mute from the last time Audora was turned on."/>
                   <TextBlock Text="{Binding EngineMessage}" Margin="0,8,0,0" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
                 </StackPanel>
               </Border>
@@ -563,7 +563,7 @@
                 <StackPanel>
                   <TextBlock Text="Full control" FontSize="16" FontWeight="SemiBold"/>
                   <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
-                             Text="Windows plays your default device directly, so Audora cannot change its sound. With a free virtual audio cable, Audora plays every device itself: the equalizer, boost, balance and delay then work on all of them, and you can line up Bluetooth with the rest."/>
+                             Text="Windows plays the default device directly, so Audora cannot process its sound. With a free virtual audio cable, Audora plays every device itself, so the equalizer, boost, balance and delay apply to all of them and Bluetooth can be aligned."/>
                   <TextBlock Text="{Binding FullControlStatus}" Margin="0,10,0,0" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"/>
                   <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                     <Button Content="Get the free virtual cable" Style="{StaticResource AudoraButton}" Margin="0,0,8,0"
@@ -578,7 +578,7 @@
                   </StackPanel>
                   <TextBlock Margin="0,10,0,0" FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
                              Visibility="{Binding CableMissing, Converter={StaticResource BoolToVis}}"
-                             Text="The virtual cable (VB-CABLE by VB-Audio) is separate software with its own license, so check its terms. Audora does not include it. Installing it needs administrator rights and a restart."/>
+                             Text="The virtual cable (VB-CABLE by VB-Audio) is separate software under its own license. Audora does not include it. Installation needs administrator rights and a restart."/>
                 </StackPanel>
               </Border>
 
@@ -600,7 +600,7 @@
             <TextBlock Text="Audora is off" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center"/>
             <TextBlock Margin="0,10,0,18" TextWrapping="Wrap" TextAlignment="Center"
                        Foreground="{DynamicResource MutedBrush}"
-                       Text="Windows audio is working as usual and Audora is not touching it. Turn Audora on to play on several devices, with sound profiles and groups. Your settings and groups are kept."/>
+                       Text="Windows audio is unchanged. Turn Audora on to play on several devices, with sound profiles and groups. Your settings and groups are kept."/>
             <Button Content="Turn Audora on" Style="{StaticResource AudoraButton}" HorizontalAlignment="Center"
                     Padding="22,10" Command="{Binding TurnOnEngineCommand}"/>
           </StackPanel>

@@ -10,25 +10,25 @@ public static class SoundCheckTests
         new SoundCheckTest(
             "left",
             "Left side",
-            "You should hear a steady tone from the LEFT side only.",
+            "Expect a steady tone on the left side only.",
             "Did you hear the tone from the left side only?",
             new ToneRequest(ToneChannel.Left, ToneShape.Steady, 440, 3)),
         new SoundCheckTest(
             "right",
             "Right side",
-            "You should hear a steady tone from the RIGHT side only.",
+            "Expect a steady tone on the right side only.",
             "Did you hear the tone from the right side only?",
             new ToneRequest(ToneChannel.Right, ToneShape.Steady, 440, 3)),
         new SoundCheckTest(
             "both",
             "Both sides",
-            "You should hear the same steady tone from BOTH sides.",
+            "Expect the same steady tone on both sides.",
             "Did you hear the same tone from both sides?",
             new ToneRequest(ToneChannel.Both, ToneShape.Steady, 440, 3)),
         new SoundCheckTest(
             "sweep",
             "Sweep",
-            "You should hear a smooth tone that rises from low to high.",
+            "Expect a smooth tone that rises from low to high.",
             "Did you hear a smooth tone rising from low to high, with no crackle or buzzing?",
             new ToneRequest(ToneChannel.Both, ToneShape.Sweep, 0, 6))
     };

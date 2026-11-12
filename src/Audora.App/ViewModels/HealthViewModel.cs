@@ -71,7 +71,7 @@ public sealed partial class HealthViewModel : ObservableObject, IDisposable
     private readonly HealthPage _scanPage = new("Scan") { IsActive = true };
     private readonly HealthPage _soundCheckPage = new("Sound Check");
     private bool _scanning;
-    private string _summary = "Not scanned yet. Press Scan now.";
+    private string _summary = "Not scanned yet.";
 
     public HealthViewModel(DeviceEnumerator devices, Dispatcher ui, Func<bool> isEngineOn, Func<string> copiesTo, Action turnEngineOff)
     {
@@ -159,7 +159,7 @@ public sealed partial class HealthViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Log.Error("Health scan failed", ex);
-            Summary = "The scan could not finish. Windows audio was not changed. Details are in the log.";
+            Summary = "The scan could not complete. No settings were changed. See the log for details.";
         }
         finally
         {
