@@ -18,9 +18,24 @@ It plays your sound on the devices you switched on. It changes Windows audio onl
 | Make Windows default, or Full control | The default output (not the calls device) |
 | Connect or Disconnect a Bluetooth device | That device's audio connection |
 | Start with Windows | One entry in your own Windows startup list |
+| Fix: Unmute (Health page, after you approve it) | The Windows mute of that one device |
 
 Audora never changes sample rates or sound enhancements, never takes exclusive control of a device, never
 disables a device, and never installs drivers.
+
+## Health page and Sound Check
+
+The scan only reads. It changes nothing, and it works with Audora turned off.
+
+Sound Check plays a quiet tone and never changes the Windows volume. If the Windows volume is high it refuses to
+play: above 50% you can choose **Play anyway**, and above 80% it never plays. It shows what Windows measured at
+the device and asks what you heard. The answers stay in the window and are not saved.
+
+A Fix button asks first, changes one thing on one device, checks the result and has an **Undo**. **Unmute** changes
+the mute of that device. **Open Settings** only opens the Windows Mono audio page. Audora does not change that setting.
+
+If you press Mute in Audora and Windows then changes the default output, Audora unmutes the old device it muted,
+so nothing stays muted behind your back.
 
 ## Put things back
 
