@@ -37,6 +37,9 @@ internal static class Program
             case "tone":
                 return ToneCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray(), args.Contains("--ok", StringComparer.OrdinalIgnoreCase));
 
+            case "calibrate":
+                return CalibrateCommand.Run(devices, args.Contains("--ok", StringComparer.OrdinalIgnoreCase));
+
             case "dump":
                 foreach (var line in devices.DumpProperties())
                 {
@@ -45,7 +48,7 @@ internal static class Program
                 return 0;
 
             default:
-                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror|probe|setdefault|run|scan|tone] [--all]");
+                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror|probe|setdefault|run|scan|tone|calibrate] [--all]");
                 return 1;
         }
     }
