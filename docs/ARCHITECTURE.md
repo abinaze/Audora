@@ -71,4 +71,4 @@ The details and the reasons are in [DIAGNOSTICS.md](DIAGNOSTICS.md).
   a slow device, make it the default and delay the others.
 - Bluetooth delay varies by device, so lining up is manual for now.
 - Some copy-protected audio cannot be captured.
-- When the Windows default output applies the Windows volume before Audora hears the sound, the volume can be applied twice on the other devices, so they are quieter than expected at a low master volume. Some outputs, such as a laptop's built-in speakers, do this. The USB device we tested does not. Volume calibration is planned.
+- Audora assumes the default output gives it the sound before the Windows volume, so the master volume is applied once. That is what we measured on a Realtek output and a USB output. A driver that gives the sound after the volume would make the other devices quieter than expected at a low master volume. If you see that, run `dotnet run --project tools/Audora.Cli -- calibrate` with that output as the default and send the RESULT line.

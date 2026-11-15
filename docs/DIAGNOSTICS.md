@@ -100,9 +100,13 @@ Windows audio service. Those need a snapshot, approval, and administrator rights
 ## Verified findings
 
 - **Windows volume and loopback.** Loopback audio is taken before the endpoint volume and mute by default, but the
-  tap point depends on the driver. On the test PC the USB headphones' loopback ignored the Windows volume, and the
-  Realtek speakers' loopback followed it. When the default device is the Realtek output, the master volume is
-  therefore applied twice on mirrored devices. A per-device calibration is planned.
+  tap point depends on the driver, so it was measured on the test PC with `Audora.Cli calibrate`. That command plays
+  one quiet tone (peak 0.100) on the default output and compares the loopback peak with the Windows volume. The USB
+  output gave 0.100 at 22% and at 42%. The Realtek speakers gave 0.124 at 30% and 0.118 at 49%. Neither follows the
+  Windows volume, so on both outputs Audora gets the sound before the volume and the master volume is applied once.
+  The Windows meter at the device read the same value as loopback every time. The Realtek peak is a little above the
+  tone, which points to sound processing in the driver. Other drivers may differ. If another device seems far too
+  quiet, run `calibrate` on it and send the RESULT line.
 - **Windows Mono audio** is stored as AccessibilityMonoMixState under HKCU\Software\Microsoft\Multimedia\Audio.
   The scan reads it. Its signature: a one-sided tone measures half on both sides in the engine's capture while the
   device meter shows one side only.

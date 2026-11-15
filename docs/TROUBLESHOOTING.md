@@ -21,6 +21,13 @@ Bluetooth always adds delay. Audora's default device plays instantly, so the oth
 be behind. For the best result make your slowest device (usually Bluetooth) the Windows
 default, then add delay to the faster devices until everything lines up.
 
+## Other devices get too quiet when I lower the Windows volume
+
+Audora gets the sound before the Windows volume and applies your master volume once. That is exact on the outputs
+we measured. If the other devices drop much more than the default one, check their own sliders and their Windows
+volume first. Then close Audora and run `dotnet run --project tools/Audora.Cli -- calibrate` with your default
+output at 50% volume or less, and send us the `RESULT` line.
+
 ## Bluetooth headphones show up twice
 
 Windows creates two entries for each Bluetooth headset: **Headphones** (stereo music, the
