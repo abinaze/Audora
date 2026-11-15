@@ -17,3 +17,6 @@ jobs:
       - name: Validate
         shell: bash
         run: bash scripts/validate.sh
+      - name: Build the website
+        shell: bash
+        run: bash scripts/build-site.sh
