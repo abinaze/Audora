@@ -22,6 +22,7 @@ All notable changes are listed here. The format follows
 - Dependabot leaves major versions of System packages alone and groups the rest
 - The release script only accepts a new, higher version number, so a released version is never replaced
 - Dependabot waits on NAudio minor updates until the engine is checked against them
+- The website lists every feature, has a safety section, more questions, sharing tags, a 404 page and a sitemap, and the build checks the pages
 
 ### Fixed
 - A device muted with the Mute button is unmuted when the Windows default device changes

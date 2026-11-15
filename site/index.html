@@ -4,10 +4,46 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Audora: play your Windows audio on many devices at once</title>
-  <meta name="description" content="Audora plays your Windows audio on many speakers and headphones at once, with a separate volume for each. Free for personal use.">
-  <meta name="theme-color" content="#0B1528">
+  <meta name="description" content="Play your Windows audio on many speakers and headphones at once, each with its own volume. Free for personal use.">
+  <meta name="theme-color" content="#0B1528" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F6F8FD" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="dark light">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+  <link rel="canonical" href="{{SITE_URL}}/">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="style.css">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Audora">
+  <meta property="og:title" content="Audora: play your Windows audio on many devices at once">
+  <meta property="og:description" content="Play your Windows audio on many speakers and headphones at once, each with its own volume. Free for personal use.">
+  <meta property="og:url" content="{{SITE_URL}}/">
+  <meta property="og:image" content="{{SITE_URL}}/social-preview.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:image:alt" content="The Audora logo">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Audora: play your Windows audio on many devices at once">
+  <meta name="twitter:description" content="Play your Windows audio on many speakers and headphones at once, each with its own volume. Free for personal use.">
+  <meta name="twitter:image" content="{{SITE_URL}}/social-preview.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Audora",
+    "description": "Play your Windows audio on many speakers and headphones at once, each with its own volume.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Windows 10, Windows 11",
+    "url": "{{SITE_URL}}/",
+    "image": "{{SITE_URL}}/social-preview.png",
+    "downloadUrl": "https://github.com/abinaze/Audora/releases/latest",
+    "license": "https://polyformproject.org/licenses/noncommercial/1.0.0/",
+    "author": { "@type": "Person", "name": "abinaze" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
 </head>
 <body>
   <!-- The logo lives inside the page, so it can never be missing. The build script fills in the shapes. -->
@@ -32,6 +68,7 @@
       </a>
       <nav aria-label="Main">
         <a href="#features">Features</a>
+        <a href="#safety">Safety</a>
         <a href="#download">Download</a>
         <a href="#faq">Questions</a>
         <a href="https://github.com/abinaze/Audora">GitHub</a>
@@ -62,11 +99,24 @@
       <div class="grid">
         <div class="item"><h3>Many devices at once</h3><p>Bluetooth, USB, wired and HDMI together.</p></div>
         <div class="item"><h3>A volume for each</h3><p>Up to 200%, plus mute, balance and delay.</p></div>
-        <div class="item"><h3>Sound profiles</h3><p>Music, Movie, Calls and Gaming. Or let Smart pick.</p></div>
+        <div class="item"><h3>Sound profiles</h3><p>Music, Movie, Communication and Gaming. Or let Smart pick.</p></div>
+        <div class="item"><h3>Equalizer</h3><p>Ten bands and presets, for every device or one at a time. Save your own.</p></div>
         <div class="item"><h3>Groups</h3><p>Save a set of devices and play it in one click.</p></div>
         <div class="item"><h3>Bluetooth</h3><p>Connect your paired devices from the app.</p></div>
-        <div class="item"><h3>Private</h3><p>No account. No tracking. No internet needed.</p></div>
+        <div class="item"><h3>Health check</h3><p>Scan your Windows audio and play quiet test tones to hear each side.</p></div>
+        <div class="item"><h3>Tray and startup</h3><p>Quick controls in the tray. Start with Windows if you want.</p></div>
+        <div class="item"><h3>Private</h3><p>No account. No tracking. Audora does not use the internet.</p></div>
       </div>
+    </section>
+
+    <section class="wrap" id="safety">
+      <h2>Windows stays in control</h2>
+      <div class="grid">
+        <div class="item"><h3>Off by default</h3><p>Audora starts off. While it is off, it does nothing to your audio.</p></div>
+        <div class="item"><h3>Changes only when you ask</h3><p>Volume, mute and the default device change only when you press something. Fixes ask first and can be undone.</p></div>
+        <div class="item"><h3>One button to go back</h3><p>Restore Windows audio puts the default device, its volume and its mute back.</p></div>
+      </div>
+      <p class="small">Read exactly what Audora can change in the <a href="https://github.com/abinaze/Audora/blob/main/docs/SAFETY.md">safety guide</a>.</p>
     </section>
 
     <section class="wrap" id="how">
@@ -95,15 +145,21 @@
         </div>
       </div>
       <p class="small">Needs Windows 10 (1809 or newer) or Windows 11, 64-bit. Nothing else to install.</p>
-      <p class="small">If Windows says "unknown publisher", choose <b>More info</b>, then <b>Run anyway</b>. The installer is not signed yet. See the <a href="https://github.com/abinaze/Audora/blob/main/docs/INSTALL.md">install guide</a> to check your download.</p>
+      <p class="small">If Windows says "unknown publisher", choose <b>More info</b>, then <b>Run anyway</b>. The installer is not signed yet.</p>
+      <p class="small">Check your download: every release has a <b>SHA256SUMS.txt</b> file. In PowerShell, run <code>Get-FileHash .\Audora-Setup.exe</code> and compare the result with the line for that file. More in the <a href="https://github.com/abinaze/Audora/blob/main/docs/INSTALL.md">install guide</a>.</p>
     </section>
 
     <section class="wrap" id="faq">
       <h2>Questions</h2>
-      <details><summary>Is it free?</summary><p>Yes, for personal and other noncommercial use. Selling it or using it in a paid product needs the author's permission.</p></details>
-      <details><summary>Does it send any data?</summary><p>No. There is no account, no tracking and no internet connection. Your audio is never saved or sent anywhere.</p></details>
+      <details><summary>Is it free?</summary><p>Yes, for personal and other noncommercial use. Selling it or using it in a paid product or service needs the author's permission.</p></details>
+      <details><summary>Does Audora send any data?</summary><p>No. There is no account, no tracking and no telemetry. Audora does not use the internet, and your audio is never saved or sent anywhere.</p></details>
+      <details><summary>Does this website track me?</summary><p>No cookies and no analytics. The page only asks GitHub which version is the newest and how big the downloads are. The download buttons work without that.</p></details>
+      <details><summary>Will it change my Windows sound?</summary><p>Audora starts off, and while it is off it does nothing to your audio. When it is on, it changes the Windows volume, mute or default device only when you ask. Restore Windows audio puts them back.</p></details>
       <details><summary>How many Bluetooth devices can play at once?</summary><p>That depends on your PC's Bluetooth adapter, usually two to four. Audora has no limit of its own.</p></details>
+      <details><summary>Why is one device a little behind the others?</summary><p>Windows plays the default device directly, and Audora copies the sound to the rest. Bluetooth is usually the most behind. Each device has its own delay setting to line them up.</p></details>
       <details><summary>Why can't I change the sound of my default device?</summary><p>Windows plays that device directly. Turn on Full control in Settings, with a free virtual audio cable, and every device can be changed.</p></details>
+      <details><summary>Why does Windows warn me about the installer?</summary><p>The installer is not code-signed yet, so Windows SmartScreen may say "unknown publisher". Choose <b>More info</b>, then <b>Run anyway</b>. You can check the file with the SHA-256 line in the Download section.</p></details>
+      <details><summary>Which versions of Windows work?</summary><p>Windows 10 (1809 or newer) and Windows 11, 64-bit. There is nothing else to install.</p></details>
       <details><summary>How do I uninstall it?</summary><p>Windows Settings, Apps, Audora, Uninstall. For the portable version, delete the folder.</p></details>
     </section>
   </main>
@@ -114,7 +170,7 @@
         <svg class="mark" aria-hidden="true"><use href="#mark"/></svg>
         <svg class="wordmark" role="img" aria-label="Audora"><use href="#wordmark"/></svg>
       </a>
-      <p>Free for personal and noncommercial use · <a href="https://github.com/abinaze/Audora/blob/main/LICENSE">License</a> · <a href="https://github.com/abinaze/Audora/blob/main/PRIVACY.md">Privacy</a> · <a href="https://github.com/abinaze/Audora/blob/main/docs/TROUBLESHOOTING.md">Help</a> · <a href="https://github.com/abinaze/Audora">GitHub</a></p>
+      <p>Free for personal and noncommercial use · <a href="https://github.com/abinaze/Audora/blob/main/LICENSE">License</a> · <a href="https://github.com/abinaze/Audora/blob/main/THIRD-PARTY-NOTICES.md">Notices</a> · <a href="https://github.com/abinaze/Audora/blob/main/PRIVACY.md">Privacy</a> · <a href="https://github.com/abinaze/Audora/blob/main/SECURITY.md">Security</a> · <a href="https://github.com/abinaze/Audora/blob/main/docs/TROUBLESHOOTING.md">Help</a> · <a href="https://github.com/abinaze/Audora">GitHub</a></p>
     </div>
   </footer>
 
