@@ -22,6 +22,18 @@ public sealed class DefaultVolumeWatcher : IDisposable
 
     public string? DeviceId { get; private set; }
 
+    /// <summary>True while the Windows mute of the default output was set by Audora's Mute button.</summary>
+    public bool MutedByAudora
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _mutedByUs;
+            }
+        }
+    }
+
     public void Attach(string? deviceId)
     {
         VolumeState? current = null;
@@ -107,6 +119,7 @@ public sealed class DefaultVolumeWatcher : IDisposable
             }
 
             _disposed = true;
+            ReleaseOurMute();
             Detach();
             try { _enumerator.Dispose(); } catch { }
         }

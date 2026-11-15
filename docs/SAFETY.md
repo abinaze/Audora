@@ -36,6 +36,7 @@ the mute of that device. **Open Settings** only opens the Windows Mono audio pag
 
 If you press Mute in Audora and Windows then changes the default output, Audora unmutes the old device it muted,
 so nothing stays muted behind your back.
+Quitting Audora gives back the sound its Mute button muted, and so does turning Audora off.
 
 ## Put things back
 

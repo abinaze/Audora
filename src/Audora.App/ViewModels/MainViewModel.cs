@@ -186,6 +186,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 _lastMasterInput = DateTime.UtcNow;
                 var muted = value;
                 SerialWorker.Run(() => _watcher.SetMuted(muted));
+                LogMute(muted);
                 ApplyMasterToDevices();
             }
         }
@@ -252,6 +253,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var cleanup = Task.Run(() =>
         {
             try { _controller.Dispose(); } catch (Exception ex) { Log.Error("Stopping audio failed", ex); }
+            if (_watcher.MutedByAudora) { Log.Info("Quit: giving back the Windows sound that Audora muted."); }
             try { _watcher.Dispose(); } catch (Exception ex) { Log.Error("Releasing the volume watcher failed", ex); }
             try { _devices.Dispose(); } catch (Exception ex) { Log.Error("Releasing audio devices failed", ex); }
         });
