@@ -14,8 +14,16 @@ fi
 [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ] || { echo "Switch to the main branch first."; exit 1; }
 [ -z "$(git status --porcelain)" ] || { echo "You have uncommitted changes. Commit or stash them first."; exit 1; }
 git pull --ff-only
+# A release is always a new, higher version. An existing release is never replaced.
+git fetch --tags --quiet
+LATEST="$(git tag --list 'v*' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//' | sort -V | tail -n 1 || true)"
+if [ -n "$LATEST" ] && [ "$VERSION" != "$LATEST" ] && [ "$(printf '%s\n%s\n' "$LATEST" "$VERSION" | sort -V | tail -n 1)" != "$VERSION" ]; then
+  echo "Version $VERSION is lower than the latest release v$LATEST."
+  echo "Every release gets a new, higher number. Old releases are never replaced."
+  exit 1
+fi
 if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-  echo "The tag v$VERSION already exists."
+  echo "The tag v$VERSION already exists. Releases are never replaced, so use the next version number."
   exit 1
 fi
 

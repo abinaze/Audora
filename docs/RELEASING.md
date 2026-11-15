@@ -34,3 +34,9 @@ The release notes are the changelog section for that version, followed by the do
 
 Audora uses [semantic versioning](https://semver.org): `MAJOR.MINOR.PATCH`. While the major number is 0 the
 app is still young and things may change.
+
+## Old versions stay as they are
+
+Every release is a new version number. A released version is never replaced or tagged again.
+`scripts/release.sh` refuses a number that is not higher than the newest tag, and GitHub refuses a second
+release for the same tag. Installing a newer Audora over an older one updates it and keeps your settings.
