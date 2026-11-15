@@ -26,15 +26,20 @@ dotnet publish src/Audora.App -c Release -r win-x64 --self-contained true \
   -p:Version="$VERSION" -p:DebugType=none -p:DebugSymbols=false -o "$PUBLISH" --nologo -v q
 [ -f "$PUBLISH/Audora.exe" ] || { echo "Audora.exe was not produced."; exit 1; }
 
+# The licence and the third-party notices go into every download (installer and portable zip).
+[ -f THIRD-PARTY-NOTICES.md ] || { echo "THIRD-PARTY-NOTICES.md is missing."; exit 1; }
+cp LICENSE "$PUBLISH/LICENSE.txt"
+cp THIRD-PARTY-NOTICES.md "$PUBLISH/THIRD-PARTY-NOTICES.txt"
+
 echo "==> Portable zip"
 cp -r "$PUBLISH"/. "$PORTABLE"/
-cp LICENSE "$PORTABLE/LICENSE.txt"
 cat > "$PORTABLE/README.txt" <<TXT
 Audora $VERSION (portable)
 
 Run Audora.exe. Nothing is installed and nothing is added to Windows.
 Your settings are saved in %LOCALAPPDATA%\Audora.
 Free for personal and noncommercial use. See LICENSE.txt.
+Third-party software notices: THIRD-PARTY-NOTICES.txt
 https://github.com/abinaze/Audora
 TXT
 powershell.exe -NoProfile -Command "Compress-Archive -Path '$(cygpath -w "$PORTABLE")' -DestinationPath '$(cygpath -w "$OUT/Audora-Portable.zip")' -Force"
