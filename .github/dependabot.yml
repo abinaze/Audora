@@ -13,6 +13,10 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "Microsoft.Extensions.*"
         update-types: ["version-update:semver-major"]
+      # NAudio 2.4 makes BufferedWaveProvider.BufferDuration read-only, and the engine sets it.
+      # Moving needs a code change and a listening test, so minor updates wait. Patches of 2.2.x still arrive.
+      - dependency-name: "NAudio"
+        update-types: ["version-update:semver-minor"]
     groups:
       test-tools:
         patterns:
