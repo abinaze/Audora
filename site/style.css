@@ -128,3 +128,10 @@ footer { border-top: 1px solid var(--border); padding-block: 28px; color: var(--
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+code { font: .9em/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; }
+
+/* page not found */
+.notfound { text-align: center; padding-block: 96px; }
+.notfound .hero-mark { margin-inline: auto; }
+.notfound .lead { margin-inline: auto; }
