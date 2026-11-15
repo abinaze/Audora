@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Creates a release: checks everything, sets the version, updates the changelog, tags it and (after you
 # confirm) pushes. GitHub then builds the installer and portable zip and publishes them.
-# Usage: scripts/release.sh 0.1.0
+# Usage: scripts/release.sh 1.0.0
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VERSION="${1:-}"
 if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Usage: scripts/release.sh <version>   for example: scripts/release.sh 0.1.0"
+  echo "Usage: scripts/release.sh <version>   for example: scripts/release.sh 1.0.0"
   exit 1
 fi
 
