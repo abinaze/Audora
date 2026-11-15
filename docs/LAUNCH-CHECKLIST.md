@@ -9,7 +9,8 @@ Use this when you decide to make the repository public.
       (passwords, tokens, personal paths). Nothing like that should be in this project.
 - [ ] `README.md`, `PRIVACY.md`, `SECURITY.md` and `docs/` say what you want them to.
 - [ ] You tried `bash scripts/package.sh` and installed the result on a clean user account.
-- [ ] Add screenshots (`devices.png`, `sound.png`, `groups.png`) to `assets/screenshots/`.
+- [ ] `THIRD-PARTY-NOTICES.md` matches the licence text of each project it lists.
+- [ ] Optional: add screenshots (`devices.png`, `sound.png`, `groups.png`) to `assets/screenshots/`.
 
 ## Switch it on
 
@@ -18,7 +19,7 @@ Use this when you decide to make the repository public.
 - [ ] Settings → Pages → Source: **GitHub Actions**, then run the **Website** workflow from the Actions tab.
 - [ ] Settings → Code security → turn on **Private vulnerability reporting**.
 - [ ] Settings → General → Features: Discussions on, Wikis off.
-- [ ] Run `bash scripts/release.sh 0.1.0` to publish the first release.
+- [ ] Run `bash scripts/release.sh <new version>` to publish the first public release. The number must be higher than v0.1.0.
 - [ ] Check the website's download buttons work, and set the website address in the repository's **About** box.
 
 ## Later

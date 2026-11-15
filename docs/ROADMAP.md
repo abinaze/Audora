@@ -16,10 +16,12 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 - Installer, portable download, release build and website (ready; first release pending)
 - Remembers devices, volumes, sound and theme
 - Optional Full control mode with a virtual audio cable
+- An on/off switch for Audora itself, Restore Windows audio and a safe Start with Windows
+- Health page: a read-only scan of Windows audio, Sound Check test tones with the left and right levels Windows measured, and Fix buttons (unmute a device, open the Mono audio setting) that ask first and can be undone
 
 ## Next
 
-- Diagnostics and Repair Center: scan, Sound Check (test tones, microphone level) and targeted repairs with backup and rollback
+- Diagnostics, next steps: a microphone check, scan history and a report export, and more repairs (each asks first, checks the result and can be undone)
 - More read-only checks: apps using each device, recent Windows audio errors, Bluetooth call mode, microphone privacy
 - Volume calibration: detect when the Windows volume is already in the captured sound, so mirrored devices follow it only once
 
@@ -31,6 +33,7 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 
 - Choose which app each profile belongs to in Smart mode
 - Reverb (the engine is ready, the controls are hidden for now)
+- Move to NAudio 2.4 (it makes the buffer size read-only, so the engine needs a small change and a listening test)
 
 ## Not planned
 

@@ -14,11 +14,14 @@ All notable changes are listed here. The format follows
 - Sound Check now shows the left and right levels Windows measured at the device, with a plain verdict
 - The scan notes when Windows Mono audio is on, and Sound Check names the devices a tone is copied to and can turn Audora off for testing
 - The log now records when Audora turns on or off, every 15 seconds whether it hears sound while on, and what Sound Check does
+- Third-party software notices (THIRD-PARTY-NOTICES.md). The licence and the notices are now inside the installer and the portable zip
 
 ### Changed
 - Clearer, shorter wording across the app
 - The log records level checks only when something changes, and once every five minutes otherwise
 - Dependabot leaves major versions of System packages alone and groups the rest
+- The release script only accepts a new, higher version number, so a released version is never replaced
+- Dependabot waits on NAudio minor updates until the engine is checked against them
 
 ### Fixed
 - A device muted with the Mute button is unmuted when the Windows default device changes

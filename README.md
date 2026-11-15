@@ -53,10 +53,6 @@ The installer, the portable download and the website are ready; the first releas
 - Optional **Full control** mode (with a free virtual audio cable) so the equalizer and
   delay also work on the device that Windows uses by default
 
-## Coming next
-
-- An installer and a portable download
-
 ## Download
 
 Installer and portable versions for Windows 10 and 11 (64-bit) are published on the
