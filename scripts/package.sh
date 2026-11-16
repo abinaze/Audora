@@ -25,6 +25,7 @@ echo "==> Publishing Audora $VERSION (self-contained, 64-bit)"
 dotnet publish src/Audora.App -c Release -r win-x64 --self-contained true \
   -p:Version="$VERSION" -p:DebugType=none -p:DebugSymbols=false -o "$PUBLISH" --nologo -v q
 [ -f "$PUBLISH/Audora.exe" ] || { echo "Audora.exe was not produced."; exit 1; }
+[ -f "$PUBLISH/rnnoise.dll" ] || { echo "rnnoise.dll was not published."; exit 1; }
 
 # The licence and the third-party notices go into every download (installer and portable zip).
 [ -f THIRD-PARTY-NOTICES.md ] || { echo "THIRD-PARTY-NOTICES.md is missing."; exit 1; }
