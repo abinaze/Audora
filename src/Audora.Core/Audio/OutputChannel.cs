@@ -1,5 +1,6 @@
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using Audora.Core.Cleanup;
 
 namespace Audora.Core.Audio;
 
@@ -14,14 +15,16 @@ public sealed partial class OutputChannel : IDisposable
     private readonly GainBalanceSampleProvider _gain;
     private readonly DelaySampleProvider _delay;
     private readonly EqualizerSampleProvider _eq;
+    private readonly VoiceCleanupSampleProvider _noise;
     private readonly WasapiOut _out;
     private bool _disposed;
 
-    internal OutputChannel(MMDevice device, string name, WaveFormat sourceFormat)
+    internal OutputChannel(MMDevice device, string name, WaveFormat sourceFormat, bool resampleForNoiseRemoval = false)
     {
         _device = device;
         DeviceId = device.ID;
         Name = name;
+        SourceSampleRate = sourceFormat.SampleRate;
 
         _buffer = new BufferedWaveProvider(sourceFormat)
         {
@@ -30,7 +33,8 @@ public sealed partial class OutputChannel : IDisposable
             ReadFully = true
         };
 
-        _eq = new EqualizerSampleProvider(_buffer.ToSampleProvider());
+        _noise = new VoiceCleanupSampleProvider(_buffer.ToSampleProvider(), resampleForNoiseRemoval);
+        _eq = new EqualizerSampleProvider(_noise);
         _gain = new GainBalanceSampleProvider(_eq);
         _delay = new DelaySampleProvider(_gain);
         _out = new WasapiOut(device, AudioClientShareMode.Shared, true, 100);
@@ -85,6 +89,7 @@ public sealed partial class OutputChannel : IDisposable
         _out.PlaybackStopped -= OnPlaybackStopped;
         try { _out.Stop(); } catch { }
         try { _out.Dispose(); } catch { }
+        try { _noise.Dispose(); } catch { }
         try { _device.Dispose(); } catch { }
     }
 

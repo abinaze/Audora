@@ -201,6 +201,7 @@ public sealed partial class MirrorController : IDisposable
         channel.IsMuted = settings.Muted;
         channel.Balance = settings.Balance;
         channel.DelayMilliseconds = settings.DelayMilliseconds;
+        channel.ApplyNoiseRemoval(settings.NoiseRemoval, settings.NoiseStrength);
     }
 
     private void DisposeEngine()
@@ -462,7 +463,7 @@ public sealed partial class MirrorController : IDisposable
             var timer = Stopwatch.StartNew();
             try
             {
-                var channel = engine.AddOutput(id, NameOf(id));
+                var channel = engine.AddOutput(id, NameOf(id), NeedsResampling(engine, GetOrCreate(id)));
                 Apply(channel, GetOrCreate(id));
                 channel.ApplySound(SoundFor(id));
                 channel.Faulted += OnChannelFaulted;

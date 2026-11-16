@@ -57,7 +57,7 @@ public sealed partial class MirrorEngine : IDisposable
         _capture = capture;
     }
 
-    public OutputChannel AddOutput(string deviceId, string? displayName = null)
+    public OutputChannel AddOutput(string deviceId, string? displayName = null, bool resampleForNoiseRemoval = false)
     {
         ThrowIfDisposed();
         if (_capture is null || _format is null || _source is null)
@@ -81,7 +81,7 @@ public sealed partial class MirrorEngine : IDisposable
             var device = _devices.GetDevice(deviceId);
             try
             {
-                var channel = new OutputChannel(device, displayName ?? device.FriendlyName, _format);
+                var channel = new OutputChannel(device, displayName ?? device.FriendlyName, _format, resampleForNoiseRemoval);
                 _outputs = _outputs.Append(channel).ToArray();
                 return channel;
             }
