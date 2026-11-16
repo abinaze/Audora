@@ -8,9 +8,11 @@ public sealed partial class MirrorController
     public void SetNoiseRemoval(string deviceId, bool enabled, float strength)
     {
         var rebuild = false;
+        string? note = null;
         lock (_gate)
         {
             var settings = GetOrCreate(deviceId);
+            var changed = settings.NoiseRemoval != enabled;
             settings.NoiseRemoval = enabled;
             if (float.IsFinite(strength))
             {
@@ -31,11 +33,26 @@ public sealed partial class MirrorController
                 engine.RemoveOutput(deviceId);
                 _addedAt.Remove(deviceId);
                 rebuild = true;
+                note = $"Noise removal is {StateWord(enabled)} for {channel.Name}. The output is rebuilt.";
             }
             else
             {
                 channel.ApplyNoiseRemoval(settings.NoiseRemoval, settings.NoiseStrength);
+                if (changed)
+                {
+                    var converted = channel.NoiseRemovalResampled
+                        ? $" (the sound is converted from {channel.SourceSampleRate} Hz)"
+                        : string.Empty;
+                    note = channel.NoiseRemovalFailed
+                        ? $"Noise removal could not start for {channel.Name}: {channel.NoiseRemovalMessage}"
+                        : $"Noise removal is {StateWord(enabled)} for {channel.Name}{converted}.";
+                }
             }
+        }
+
+        if (note is not null)
+        {
+            Raise(note);
         }
 
         if (rebuild)
@@ -57,6 +74,8 @@ public sealed partial class MirrorController
             }
         }
     }
+
+    private static string StateWord(bool enabled) => enabled ? "on" : "off";
 
     private static bool NeedsResampling(MirrorEngine engine, DeviceSettings settings) =>
         settings.NoiseRemoval

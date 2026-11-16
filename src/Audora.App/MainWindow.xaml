@@ -95,6 +95,32 @@
             </Grid>
             <TextBlock Margin="0,10,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
                        Text="Delay aligns this device with a slower one. Bluetooth is usually the slowest: leave it at zero and delay the others. Equalizer settings are on the Sound tab."/>
+            <Grid Margin="0,16,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                <TextBlock Text="Noise removal" FontWeight="SemiBold"/>
+                <TextBlock Margin="0,3,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                           Text="{Binding NoiseHint}"/>
+              </StackPanel>
+              <ToggleButton Grid.Column="1" Style="{StaticResource AudoraSwitch}" VerticalAlignment="Center"
+                            IsChecked="{Binding NoiseRemoval, Mode=TwoWay}" IsEnabled="{Binding CanUseNoiseRemoval}"
+                            AutomationProperties.Name="Noise removal"/>
+            </Grid>
+            <Grid Margin="0,10,0,0" Visibility="{Binding NoiseRemoval, Converter={StaticResource BoolToVis}}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="70"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="Strength" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+              <Slider Grid.Column="1" Style="{StaticResource AudoraSlider}" Minimum="0" Maximum="100"
+                      Value="{Binding NoiseStrength, Mode=TwoWay}" AutomationProperties.Name="Noise removal strength"/>
+              <TextBlock Grid.Column="2" Text="{Binding NoiseStrength, StringFormat={}{0:0}%}" HorizontalAlignment="Right"
+                         VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+            </Grid>
           </StackPanel>
         </StackPanel>
       </Border>

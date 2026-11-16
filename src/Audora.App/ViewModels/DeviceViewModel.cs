@@ -268,6 +268,8 @@ public sealed partial class DeviceViewModel : ObservableObject
             Raise(nameof(CanMakeDefault));
             Raise(nameof(ShowMirrorControls));
             Raise(nameof(ShowDefaultNote));
+            Raise(nameof(CanUseNoiseRemoval));
+            Raise(nameof(NoiseHint));
 
             if (wasDefault && !nowDefault)
             {

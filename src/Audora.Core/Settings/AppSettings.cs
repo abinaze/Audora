@@ -82,6 +82,12 @@ public sealed class SavedDevice
 
     public double Delay { get; set; }
 
+    /// <summary>Noise removal was on for this device.</summary>
+    public bool NoiseRemoval { get; set; }
+
+    /// <summary>How much of the sound is the cleaned one, 0 to 100.</summary>
+    public double NoiseStrength { get; set; } = 100;
+
     /// <summary>Set when this device has its own sound instead of the shared one.</summary>
     public SavedSound? OwnSound { get; set; }
 }
