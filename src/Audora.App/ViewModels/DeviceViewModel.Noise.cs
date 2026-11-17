@@ -39,7 +39,7 @@ public sealed partial class DeviceViewModel
     public bool CanUseNoiseRemoval => !_isDefault && NoiseUnavailableReason is null;
 
     public string NoiseHint => NoiseUnavailableReason
-        ?? "Removes fans, hum and keyboard noise from voices in what this device plays. It adds about 10 ms and can dull music, so use it for calls and talk.";
+        ?? "For calls and talk only. It removes fans, hum and keyboard noise from voices, but it treats music as noise and dulls it, so keep it off for songs. It adds about 10 ms.";
 
     /// <summary>Shows and applies what was saved on disk.</summary>
     public void RestoreNoise(bool enabled, double strength)
