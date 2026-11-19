@@ -40,6 +40,9 @@ internal static class Program
             case "calibrate":
                 return CalibrateCommand.Run(devices, args.Contains("--ok", StringComparer.OrdinalIgnoreCase));
 
+            case "mic":
+                return MicCommand.Run(devices, args.Skip(1).Where(a => !a.StartsWith("--")).ToArray());
+
             case "dump":
                 foreach (var line in devices.DumpProperties())
                 {
@@ -48,7 +51,7 @@ internal static class Program
                 return 0;
 
             default:
-                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror|probe|setdefault|run|scan|tone|calibrate] [--all]");
+                Console.WriteLine("Usage: Audora.Cli [list|watch|dump|mirror|probe|setdefault|run|scan|tone|calibrate|mic] [--all]");
                 return 1;
         }
     }
