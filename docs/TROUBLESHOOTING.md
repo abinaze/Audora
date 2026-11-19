@@ -40,6 +40,11 @@ Windows reset the audio device, for example when it was unplugged or the default
 changed. Audora restarts capture and your devices by itself. If it keeps happening, run
 `dotnet run --project tools/Audora.Cli -- list` and tell us what you see.
 
+## Songs sound dull or cut out with noise removal on
+
+Switch **Noise removal** off for that device. It keeps voices and removes the rest, so music suffers.
+It is meant for calls and talk. See [Noise removal](NOISE.md).
+
 ## Information to include in a bug report
 
 ```bash

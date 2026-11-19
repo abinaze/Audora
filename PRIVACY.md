@@ -34,6 +34,11 @@ The Health page reads the state of the Windows audio services, the list of sound
 and each connected device's driver status and sound format. It only reads, it changes nothing, and the
 result stays on your computer.
 
+## Noise removal
+
+When you switch noise removal on for a device, the sound for that device is cleaned in memory on your computer.
+Nothing is recorded to disk or sent anywhere. It does not use the internet.
+
 ## Sound Check
 
 Sound Check plays short test tones that are made on your computer. It does not record anything.

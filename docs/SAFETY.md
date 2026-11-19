@@ -38,6 +38,12 @@ If you press Mute in Audora and Windows then changes the default output, Audora 
 so nothing stays muted behind your back.
 Quitting Audora gives back the sound its Mute button muted, and so does turning Audora off.
 
+## Noise removal
+
+It is off by default and set per device. It changes only the copy of the sound that Audora plays on that device.
+It never changes the Windows default device's sound, any Windows setting or the volume. If it fails, it switches
+itself off and the sound passes through untouched. It is for voices. See [Noise removal](NOISE.md).
+
 ## Put things back
 
 Settings → **Restore Windows audio** turns Audora off and puts back the default output, its volume and mute as
