@@ -39,6 +39,19 @@ works: it keeps speech and removes the rest, and music is not speech. Keep it **
 - The default Windows device plays directly, so Audora cannot clean it.
 - If the cleaner fails for any reason, it switches itself off and the sound passes through untouched.
 
+## Microphone
+
+The Microphone page tries noise removal on a microphone. Pick one, switch noise removal on and press Test. It
+listens for 15 seconds, shows the level before and after cleaning, and says how much quieter the sound became.
+Nothing listens until you press Test. The sound is only measured. It is never saved, played or sent.
+
+In our tests with a USB microphone, speech passed through within about 0.2 dB, while hiss and some sudden
+non-speech sounds dropped by 13 to 37 dB. Background talk or music may show little change, because the model
+treats them like speech.
+
+If the meter stays empty, the microphone may be muted in Windows or blocked in Settings, Privacy and security,
+Microphone. Audora does not change either.
+
 ## Planned
 
-Noise removal for the microphone is planned. It is not built yet.
+Sending the cleaned voice to other apps needs a virtual cable that you install yourself. It is planned and is not built yet.

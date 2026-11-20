@@ -39,6 +39,9 @@ result stays on your computer.
 When you switch noise removal on for a device, the sound for that device is cleaned in memory on your computer.
 Nothing is recorded to disk or sent anywhere. It does not use the internet.
 
+The Microphone page listens to a microphone only while you press Test, for up to 15 seconds. It measures how loud
+the sound is and shows it. Nothing is recorded, saved, played or sent.
+
 ## Sound Check
 
 Sound Check plays short test tones that are made on your computer. It does not record anything.

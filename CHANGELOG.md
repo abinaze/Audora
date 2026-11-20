@@ -17,6 +17,7 @@ All notable changes are listed here. The format follows
 - Third-party software notices (THIRD-PARTY-NOTICES.md). The licence and the notices are now inside the installer and the portable zip
 - A `calibrate` command in the command-line tool. It measures whether Windows gives Audora the sound before or after the Windows volume
 - A `mic` command in the command-line tool. It listens to a microphone with noise removal on, once while you stay quiet and once while you talk, and prints how much the cleaning changed the room noise and your voice. It saves and plays nothing
+- A Microphone page: pick a microphone, switch noise removal on and press Test to see the level before and after cleaning. Nothing listens until you press Test, and no sound is saved, played or sent. The choices are remembered per microphone
 - Noise removal for the sound a device plays: off by default, set per device, with a Strength slider. It is for calls and talk, not music. See docs/NOISE.md
 
 ### Changed
