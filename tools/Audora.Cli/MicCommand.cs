@@ -14,6 +14,7 @@ namespace Audora.Cli;
 internal static class MicCommand
 {
     private const int PhaseSeconds = 5;
+    private const double QuietRoomDb = -60.0;
 
     public static int Run(DeviceEnumerator devices, string[] args)
     {
@@ -129,6 +130,11 @@ internal static class MicCommand
         {
             Console.WriteLine($"Noise removal stopped: {cleaner.UnavailableReason}");
             return;
+        }
+
+        if (Db(MeanRms(quiet.Select(l => l.InputRms))) < QuietRoomDb)
+        {
+            Console.WriteLine("The room was almost silent, so the room noise number is not a real test. Run a fan or play steady noise near the microphone and try again.");
         }
 
         Console.WriteLine($"Room noise changed by {Change(quiet):0.0} dB. Your voice changed by {Change(talk):0.0} dB.");
