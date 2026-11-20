@@ -59,6 +59,16 @@ public sealed class SettingsStore
         s.Devices ??= new();
         s.Presets ??= new();
         s.Groups ??= new();
+        s.Microphones ??= new();
+        foreach (var microphone in s.Microphones)
+        {
+            microphone.Id ??= string.Empty;
+            microphone.Name ??= string.Empty;
+            microphone.NoiseStrength = double.IsFinite(microphone.NoiseStrength)
+                ? Math.Clamp(microphone.NoiseStrength, 0, 100)
+                : 100;
+        }
+
         s.SharedSound = Fix(s.SharedSound);
 
         foreach (var device in s.Devices)

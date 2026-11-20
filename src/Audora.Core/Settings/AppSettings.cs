@@ -17,6 +17,9 @@ public sealed class AppSettings
 
     public List<SavedGroup> Groups { get; set; } = new();
 
+    /// <summary>What Audora remembers about each microphone.</summary>
+    public List<SavedMicrophone> Microphones { get; set; } = new();
+
     public string? ActiveGroupId { get; set; }
 
     /// <summary>Closing the window keeps Audora running in the tray.</summary>
