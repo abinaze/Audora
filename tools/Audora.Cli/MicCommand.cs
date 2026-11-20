@@ -1,8 +1,6 @@
 using Audora.Core.Audio;
 using Audora.Core.Cleanup;
 using Audora.Core.Devices;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
 
 namespace Audora.Cli;
 
@@ -44,74 +42,49 @@ internal static class MicCommand
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Windows could not open the microphone: {ex.Message}");
-            Console.WriteLine("Check Settings > Privacy & security > Microphone.");
+            Console.WriteLine(MicrophoneSession.DescribeStartError(ex));
             return 1;
         }
     }
 
     private static int Measure(AudioDeviceInfo chosen)
     {
-        using var enumerator = new MMDeviceEnumerator();
-        using var device = enumerator.GetDevice(chosen.Id);
-        using var capture = new WasapiCapture(device);
+        using var session = new MicrophoneSession(chosen.Id);
+        session.NoiseRemoval = true;
 
-        var format = capture.WaveFormat;
-        if (format.BitsPerSample != 32)
+        var error = session.Start();
+        if (error is not null)
         {
-            Console.WriteLine($"This microphone's format ({format}) is not supported by this test.");
+            Console.WriteLine(error);
             return 1;
         }
 
-        using var cleaner = new MicrophoneCleaner(format.SampleRate, format.Channels, () => new RnNoiseDenoiser());
-        if (!cleaner.IsSupported)
+        if (session.NoiseRemovalFailed)
         {
-            Console.WriteLine(cleaner.UnavailableReason);
+            Console.WriteLine($"Noise removal could not start: {session.NoiseRemovalReason}");
             return 1;
         }
 
-        cleaner.Enabled = true;
-        if (cleaner.Failed)
-        {
-            Console.WriteLine($"Noise removal could not start: {cleaner.UnavailableReason}");
-            return 1;
-        }
-
-        capture.DataAvailable += (_, e) =>
-        {
-            cleaner.Push(e.Buffer, e.BytesRecorded);
-            cleaner.ReadAvailable();
-        };
-
-        Console.WriteLine($"Microphone: {chosen.Name} ({format.SampleRate} Hz, {format.Channels} channel(s))");
+        Console.WriteLine($"Microphone: {chosen.Name} ({session.SampleRate} Hz, {session.Channels} channel(s))");
         Console.WriteLine("Noise removal is ON. Each line compares the same sound before (in) and after (out) cleaning.");
         Console.WriteLine("Nothing is saved or played. For a fair test, run a fan or play steady noise nearby.");
         Console.WriteLine();
 
-        capture.StartRecording();
-        try
-        {
-            var quiet = Listen(cleaner, "Part 1: stay quiet, only the room noise", PhaseSeconds);
-            var talk = Listen(cleaner, "Part 2: talk normally", PhaseSeconds);
-            Summarize(cleaner, quiet, talk);
-        }
-        finally
-        {
-            capture.StopRecording();
-        }
-
+        var quiet = Listen(session, "Part 1: stay quiet, only the room noise", PhaseSeconds);
+        var talk = Listen(session, "Part 2: talk normally", PhaseSeconds);
+        Summarize(session, quiet, talk);
         return 0;
     }
 
-    private static List<MicrophoneLevels> Listen(MicrophoneCleaner cleaner, string label, int seconds)
+    private static List<MicrophoneLevels> Listen(MicrophoneSession session, string label, int seconds)
     {
         Console.WriteLine(label);
-        cleaner.TakeLevels();
+        session.TakeLevels();
         var rows = new List<MicrophoneLevels>();
         for (var second = 1; second <= seconds; second++)
         {
             Thread.Sleep(1000);
-            var levels = cleaner.TakeLevels();
+            var levels = session.TakeLevels();
             rows.Add(levels);
             var change = Db(levels.OutputRms) - Db(levels.InputRms);
             Console.WriteLine($"  {second}s  in {Db(levels.InputRms),6:0.0} dB   out {Db(levels.OutputRms),6:0.0} dB   change {change,5:0.0} dB");
@@ -120,15 +93,15 @@ internal static class MicCommand
         return rows;
     }
 
-    private static void Summarize(MicrophoneCleaner cleaner, List<MicrophoneLevels> quiet, List<MicrophoneLevels> talk)
+    private static void Summarize(MicrophoneSession session, List<MicrophoneLevels> quiet, List<MicrophoneLevels> talk)
     {
         var peak = quiet.Concat(talk).Select(l => l.InputPeak).DefaultIfEmpty(0f).Max();
         Console.WriteLine();
         Console.WriteLine(MicrophoneCheck.Describe(MicrophoneCheck.Judge(peak)));
 
-        if (cleaner.Failed)
+        if (session.NoiseRemovalFailed)
         {
-            Console.WriteLine($"Noise removal stopped: {cleaner.UnavailableReason}");
+            Console.WriteLine($"Noise removal stopped: {session.NoiseRemovalReason}");
             return;
         }
 
