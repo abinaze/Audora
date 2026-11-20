@@ -91,6 +91,9 @@ public sealed class SavedDevice
     /// <summary>How much of the sound is the cleaned one, 0 to 100.</summary>
     public double NoiseStrength { get; set; } = 100;
 
+    /// <summary>Noise removal works only while a call app is in front, so music is never touched. On unless switched off.</summary>
+    public bool NoiseOnlyInCalls { get; set; } = true;
+
     /// <summary>Set when this device has its own sound instead of the shared one.</summary>
     public SavedSound? OwnSound { get; set; }
 }

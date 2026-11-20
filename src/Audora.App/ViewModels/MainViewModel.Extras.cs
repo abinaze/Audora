@@ -182,6 +182,7 @@ public sealed partial class MainViewModel
             return; // came back during this run; the audio engine still holds its settings
         }
 
+        vm.SetCallActive(_callActive);
         var saved = FindRecord(info.Id, info.Name);
         if (saved is not null)
         {

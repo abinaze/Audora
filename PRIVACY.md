@@ -42,6 +42,10 @@ Nothing is recorded to disk or sent anywhere. It does not use the internet.
 The Microphone page listens to a microphone only while you press Test, for up to 15 seconds. It measures how loud
 the sound is and shows it. Nothing is recorded, saved, played or sent.
 
+Noise removal on a device works only while a call app is in front, unless you switch Only during calls off. To tell,
+Audora reads the name and window title of the app in front of you, on your computer, as Smart mode does. Nothing is
+stored or sent.
+
 ## Sound Check
 
 Sound Check plays short test tones that are made on your computer. It does not record anything.

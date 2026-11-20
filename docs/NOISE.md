@@ -26,6 +26,17 @@ chip that answers in a fraction of a millisecond. A PC and ordinary headphones c
 
 If your headphones have their own noise cancelling, use their button or app. Windows has no switch for it.
 
+## Only during calls
+
+By default, noise removal on a device works only while a call app is in front (Teams, Zoom, Meet, Discord, Skype,
+Webex, Slack, WhatsApp or Telegram). The rest of the time the sound plays untouched, so music is never changed.
+The device card says "Waiting" or "Cleaning now". Switch **Only during calls** off to clean all the time, but music
+will sound dull.
+
+To tell which app is in front, Audora reads its name and window title on this computer, as Smart mode does.
+Nothing is stored or sent. Cleaning starts or stops after two checks in a row agree, about 4 seconds, so a quick
+glance at another window does not change it.
+
 ## Music
 
 With noise removal on, music can sound dull, parts can cut out and the sound can get quieter. This is how RNNoise

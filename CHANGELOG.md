@@ -19,6 +19,7 @@ All notable changes are listed here. The format follows
 - A `mic` command in the command-line tool. It listens to a microphone with noise removal on, once while you stay quiet and once while you talk, and prints how much the cleaning changed the room noise and your voice. It saves and plays nothing
 - A Microphone page: pick a microphone, switch noise removal on and press Test to see the level before and after cleaning. Nothing listens until you press Test, and no sound is saved, played or sent. The choices are remembered per microphone
 - Noise removal for the sound a device plays: off by default, set per device, with a Strength slider. It is for calls and talk, not music. See docs/NOISE.md
+- Noise removal on a device now works only while a call app is in front, so music is never touched. The device card says Waiting or Cleaning now. A new Only during calls switch turns this off. It is on by default, also for devices saved before
 
 ### Changed
 - Clearer, shorter wording across the app

@@ -40,6 +40,12 @@ Windows reset the audio device, for example when it was unplugged or the default
 changed. Audora restarts capture and your devices by itself. If it keeps happening, run
 `dotnet run --project tools/Audora.Cli -- list` and tell us what you see.
 
+## Noise removal does nothing on a device
+
+By default it works only while a call app (Teams, Zoom, Meet, Discord and similar) is in front. The device card says
+"Waiting" or "Cleaning now". Switch **Only during calls** off to clean all the time, but music will sound dull.
+See [Noise removal](NOISE.md).
+
 ## Songs sound dull or cut out with noise removal on
 
 Switch **Noise removal** off for that device. It keeps voices and removes the rest, so music suffers.

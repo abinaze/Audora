@@ -20,6 +20,7 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 - Health page: a read-only scan of Windows audio, Sound Check test tones with the left and right levels Windows measured, and Fix buttons (unmute a device, open the Mono audio setting) that ask first and can be undone
 - Noise removal for the sound a device plays (for calls and talk, off by default, set per device)
 - A Microphone page to test noise removal on a microphone with a live level meter
+- A calls-only mode for noise removal on playback, so music is never touched
 
 ## Next
 
@@ -29,7 +30,6 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 
 - First public release, a winget package and a code-signed installer
 - A clean microphone for other apps through a virtual cable you install
-- A calls-only mode for noise removal on playback, so music is never touched
 - Per-app volume (like EarTrumpet)
 
 ## Later, if there is demand

@@ -37,7 +37,7 @@ public sealed partial class DeviceViewModel
         var muted = saved.Muted;
         var balance = (float)(saved.Balance / 100.0);
         var delay = (int)saved.Delay;
-        RestoreNoise(saved.NoiseRemoval, saved.NoiseStrength);
+        RestoreNoise(saved.NoiseRemoval, saved.NoiseStrength, saved.NoiseOnlyInCalls);
 
         ApplyAudio();
         SerialWorker.Run(() =>
@@ -66,5 +66,6 @@ public sealed partial class DeviceViewModel
         target.Delay = _delay;
         target.NoiseRemoval = _noiseRemoval;
         target.NoiseStrength = _noiseStrength;
+        target.NoiseOnlyInCalls = _noiseOnlyInCalls;
     }
 }
