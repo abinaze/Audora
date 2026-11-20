@@ -7,8 +7,9 @@ using NAudio.Wave;
 namespace Audora.Cli;
 
 /// <summary>
-/// Listens to a microphone for a few seconds, first without and then with noise removal, and prints how loud the
-/// room noise was each time. It only measures. No sound is saved, played or sent.
+/// Listens to a microphone with noise removal on, once while you stay quiet and once while you talk, and prints how
+/// much the cleaning changed the loudness each time. Every line compares the same sound before and after cleaning.
+/// It only measures. No sound is saved, played or sent.
 /// </summary>
 internal static class MicCommand
 {
@@ -68,6 +69,13 @@ internal static class MicCommand
             return 1;
         }
 
+        cleaner.Enabled = true;
+        if (cleaner.Failed)
+        {
+            Console.WriteLine($"Noise removal could not start: {cleaner.UnavailableReason}");
+            return 1;
+        }
+
         capture.DataAvailable += (_, e) =>
         {
             cleaner.Push(e.Buffer, e.BytesRecorded);
@@ -75,17 +83,16 @@ internal static class MicCommand
         };
 
         Console.WriteLine($"Microphone: {chosen.Name} ({format.SampleRate} Hz, {format.Channels} channel(s))");
-        Console.WriteLine($"Listening for {PhaseSeconds} seconds twice. Nothing is saved or played.");
-        Console.WriteLine("Keep the room as it is, and do not talk.");
+        Console.WriteLine("Noise removal is ON. Each line compares the same sound before (in) and after (out) cleaning.");
+        Console.WriteLine("Nothing is saved or played. For a fair test, run a fan or play steady noise nearby.");
         Console.WriteLine();
 
         capture.StartRecording();
         try
         {
-            var before = Listen(cleaner, "Noise removal OFF", PhaseSeconds);
-            cleaner.Enabled = true;
-            var after = Listen(cleaner, "Noise removal ON", PhaseSeconds);
-            Summarize(cleaner, before, after);
+            var quiet = Listen(cleaner, "Part 1: stay quiet, only the room noise", PhaseSeconds);
+            var talk = Listen(cleaner, "Part 2: talk normally", PhaseSeconds);
+            Summarize(cleaner, quiet, talk);
         }
         finally
         {
@@ -105,15 +112,16 @@ internal static class MicCommand
             Thread.Sleep(1000);
             var levels = cleaner.TakeLevels();
             rows.Add(levels);
-            Console.WriteLine($"  {second}s  in {Db(levels.InputRms),6:0.0} dB   out {Db(levels.OutputRms),6:0.0} dB   peak in {levels.InputPeak:0.000}");
+            var change = Db(levels.OutputRms) - Db(levels.InputRms);
+            Console.WriteLine($"  {second}s  in {Db(levels.InputRms),6:0.0} dB   out {Db(levels.OutputRms),6:0.0} dB   change {change,5:0.0} dB");
         }
 
         return rows;
     }
 
-    private static void Summarize(MicrophoneCleaner cleaner, List<MicrophoneLevels> before, List<MicrophoneLevels> after)
+    private static void Summarize(MicrophoneCleaner cleaner, List<MicrophoneLevels> quiet, List<MicrophoneLevels> talk)
     {
-        var peak = before.Count == 0 ? 0f : before.Max(l => l.InputPeak);
+        var peak = quiet.Concat(talk).Select(l => l.InputPeak).DefaultIfEmpty(0f).Max();
         Console.WriteLine();
         Console.WriteLine(MicrophoneCheck.Describe(MicrophoneCheck.Judge(peak)));
 
@@ -123,11 +131,13 @@ internal static class MicCommand
             return;
         }
 
-        var offDb = Db(MeanRms(before.Select(l => l.OutputRms)));
-        var onDb = Db(MeanRms(after.Select(l => l.OutputRms)));
-        Console.WriteLine($"Room noise without noise removal: {offDb:0.0} dB. With it: {onDb:0.0} dB. Change: {onDb - offDb:0.0} dB.");
-        Console.WriteLine("About -10 dB sounds roughly half as loud. Voices are kept, so this only describes steady room noise.");
+        Console.WriteLine($"Room noise changed by {Change(quiet):0.0} dB. Your voice changed by {Change(talk):0.0} dB.");
+        Console.WriteLine("It works well when the room noise goes clearly below 0 dB and the voice stays close to 0 dB.");
+        Console.WriteLine("About -10 dB sounds roughly half as loud. A very quiet room leaves little to remove.");
     }
+
+    private static double Change(List<MicrophoneLevels> rows) =>
+        Db(MeanRms(rows.Select(l => l.OutputRms))) - Db(MeanRms(rows.Select(l => l.InputRms)));
 
     private static float MeanRms(IEnumerable<float> values)
     {

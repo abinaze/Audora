@@ -16,7 +16,7 @@ All notable changes are listed here. The format follows
 - The log now records when Audora turns on or off, every 15 seconds whether it hears sound while on, and what Sound Check does
 - Third-party software notices (THIRD-PARTY-NOTICES.md). The licence and the notices are now inside the installer and the portable zip
 - A `calibrate` command in the command-line tool. It measures whether Windows gives Audora the sound before or after the Windows volume
-- A `mic` command in the command-line tool. It listens to a microphone for ten seconds, without and then with noise removal, and prints how much the room noise changed. It saves and plays nothing
+- A `mic` command in the command-line tool. It listens to a microphone with noise removal on, once while you stay quiet and once while you talk, and prints how much the cleaning changed the room noise and your voice. It saves and plays nothing
 - Noise removal for the sound a device plays: off by default, set per device, with a Strength slider. It is for calls and talk, not music. See docs/NOISE.md
 
 ### Changed
