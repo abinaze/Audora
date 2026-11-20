@@ -31,6 +31,7 @@ All notable changes are listed here. The format follows
 - A device muted with the Mute button is unmuted when the Windows default device changes
 - The scan describes a muted microphone as not recording
 - Quitting Audora gives back the Windows sound that its Mute button muted, and the log now says when Audora mutes or unmutes
+- Quitting Audora gives back the Windows mute first, before the slower shutdown steps, and the log says when Audora is closing
 
 ## [0.1.0] - 2026-11-08
 

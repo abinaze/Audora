@@ -241,6 +241,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         _disposed = true;
+        // Give back the Windows mute first, before anything slow can delay or stop the shutdown.
+        Log.Info("Quit: closing Audora.");
+        if (_watcher.MutedByAudora) { Log.Info("Quit: giving back the Windows sound that Audora muted."); }
+        try { _watcher.Dispose(); } catch (Exception ex) { Log.Error("Releasing the volume watcher failed", ex); }
         _health?.Dispose();
         StopLevelLog();
         _devices.DevicesChanged -= OnDevicesChanged;
@@ -253,7 +257,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         var cleanup = Task.Run(() =>
         {
             try { _controller.Dispose(); } catch (Exception ex) { Log.Error("Stopping audio failed", ex); }
-            if (_watcher.MutedByAudora) { Log.Info("Quit: giving back the Windows sound that Audora muted."); }
             try { _watcher.Dispose(); } catch (Exception ex) { Log.Error("Releasing the volume watcher failed", ex); }
             try { _devices.Dispose(); } catch (Exception ex) { Log.Error("Releasing audio devices failed", ex); }
         });
