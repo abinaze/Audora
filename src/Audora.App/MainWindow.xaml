@@ -328,6 +328,14 @@
                     Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
             </RadioButton.Tag>
           </RadioButton>
+          <RadioButton Content="Microphone" GroupName="nav" Style="{StaticResource NavButton}"
+                       IsChecked="{Binding IsMicrophoneTab, Mode=TwoWay}">
+            <RadioButton.Tag>
+              <Path Data="M9 6A3 3 0 0 1 15 6V12A3 3 0 0 1 9 12Z M6 11V12A6 6 0 0 0 18 12V11 M12 18V21 M9 21H15" StrokeThickness="2" Width="24" Height="24"
+                    Stretch="None" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                    Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"/>
+            </RadioButton.Tag>
+          </RadioButton>
           <RadioButton Content="Health" GroupName="nav" Style="{StaticResource NavButton}"
                        IsChecked="{Binding IsHealthTab, Mode=TwoWay}">
             <RadioButton.Tag>
@@ -485,6 +493,11 @@
         <!-- Sound -->
         <Grid Visibility="{Binding IsSoundTab, Converter={StaticResource BoolToVis}}">
           <views:SoundView DataContext="{Binding Sound}"/>
+        </Grid>
+
+        <!-- Microphone -->
+        <Grid Visibility="{Binding IsMicrophoneTab, Converter={StaticResource BoolToVis}}">
+          <views:MicrophoneView DataContext="{Binding Microphone}"/>
         </Grid>
 
         <!-- Health -->

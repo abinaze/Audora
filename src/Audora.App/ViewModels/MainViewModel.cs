@@ -151,6 +151,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         Raise(nameof(IsSettingsTab));
         Raise(nameof(IsGroupsTab));
         Raise(nameof(IsHealthTab));
+        Raise(nameof(IsMicrophoneTab));
         Raise(nameof(ShowOffPanel));
     }
 
@@ -246,6 +247,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (_watcher.MutedByAudora) { Log.Info("Quit: giving back the Windows sound that Audora muted."); }
         try { _watcher.Dispose(); } catch (Exception ex) { Log.Error("Releasing the volume watcher failed", ex); }
         _health?.Dispose();
+        _microphone?.Dispose();
         StopLevelLog();
         _devices.DevicesChanged -= OnDevicesChanged;
         _controller.Message -= OnMessage;

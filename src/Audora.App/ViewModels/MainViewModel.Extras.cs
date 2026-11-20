@@ -110,6 +110,7 @@ public sealed partial class MainViewModel
         {
             DarkTheme = _isDark,
             Devices = _settings.Devices.ToList(),
+            Microphones = _settings.Microphones.ToList(),
             Groups = Groups.Select(g => g.ToSaved()).ToList(),
             ActiveGroupId = _activeGroupId,
             CloseToTray = _closeToTray,
