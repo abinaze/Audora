@@ -55,6 +55,21 @@ The Health page works with the engine off. It never changes a setting by itself.
 
 The details and the reasons are in [DIAGNOSTICS.md](DIAGNOSTICS.md).
 
+## Noise removal
+
+Noise removal cleans voices. It uses RNNoise, a small model that keeps speech and removes the rest, through a native
+library that comes with the app. It works on 48 kHz sound in frames of 10 ms, one stream for each channel.
+
+- **Playback.** Each copied device has a cleaning step after its buffer. It is off by default. A device whose sound is
+  not 48 kHz gets a conversion to 48 kHz and back, so switching it on or off rebuilds that output. Surround sound is not
+  supported, and the default device cannot be cleaned because Windows plays it directly. If the cleaner fails, it
+  switches itself off and the sound passes through. By default it works only while a call app is in front: a call gate
+  reads the app in front every 2 seconds, needs two checks in a row to agree, and runs only while Audora is on.
+- **Microphone.** The Microphone page opens one microphone only while you press Test, cleans its sound in memory and
+  shows the level before and after. Nothing is saved, played or sent.
+
+It is not noise cancelling like noise-cancelling headphones. See [Noise removal](NOISE.md).
+
 ## Folders
 
 | Project | Purpose |

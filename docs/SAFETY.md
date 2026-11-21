@@ -44,6 +44,9 @@ It is off by default and set per device. It changes only the copy of the sound t
 It never changes the Windows default device's sound, any Windows setting or the volume. If it fails, it switches
 itself off and the sound passes through untouched. It is for voices. See [Noise removal](NOISE.md).
 
+The Microphone page listens only while you press Test, and for at most 15 seconds. It does not change any Windows
+microphone setting, such as mute or the privacy switch.
+
 ## Put things back
 
 Settings → **Restore Windows audio** turns Audora off and puts back the default output, its volume and mute as
