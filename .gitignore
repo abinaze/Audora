@@ -22,3 +22,6 @@ Desktop.ini
 
 # Website build output
 _site/
+
+# Recordings made by the lab commands
+*.wav

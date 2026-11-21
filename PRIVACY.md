@@ -46,6 +46,11 @@ Noise removal on a device works only while a call app is in front, unless you sw
 Audora reads the name and window title of the app in front of you, on your computer, as Smart mode does. Nothing is
 stored or sent.
 
+## Lab commands
+
+The lab commands in the command-line tool write a file only when you run `lab record`, and only the file you name. It
+holds what your microphone heard and stays on your computer. Delete it when you are done. See [Lab commands](docs/LAB.md).
+
 ## Sound Check
 
 Sound Check plays short test tones that are made on your computer. It does not record anything.
