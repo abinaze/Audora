@@ -3,7 +3,7 @@ namespace Audora.Core.Cleanup;
 /// <summary>
 /// Cleans the voice in 48 kHz sound of one or two channels, in place. It fades in and out when it is switched,
 /// so switching never clicks. While it is off it does nothing and adds no delay. While it is on, the sound is
-/// delayed by one denoiser frame (10 ms for RNNoise). <see cref="Strength"/> mixes the cleaned and the original
+/// delayed by one denoiser frame plus the denoiser's own delay (20 ms for RNNoise). <see cref="Strength"/> mixes the cleaned and the original
 /// sound, both delayed the same, so the mix does not colour the sound. If anything goes wrong it switches itself
 /// off and the sound passes through untouched.
 /// </summary>
@@ -192,7 +192,7 @@ public sealed class VoiceCleaner : IDisposable
     {
         var denoisers = _denoisers!;
         _wet = denoisers.Select(d => new FrameStreamProcessor(d)).ToArray();
-        _dry = denoisers.Select(d => new FixedDelayLine(d.FrameSize)).ToArray();
+        _dry = denoisers.Select(d => new FixedDelayLine(d.FrameSize + d.AlgorithmicDelaySamples)).ToArray();
         _needsReset = false;
     }
 

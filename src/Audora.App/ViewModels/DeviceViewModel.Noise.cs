@@ -88,7 +88,7 @@ public sealed partial class DeviceViewModel
     public bool CanUseNoiseRemoval => !_isDefault && NoiseUnavailableReason is null;
 
     public string NoiseHint => NoiseUnavailableReason
-        ?? "For calls and talk. By default it works only while a call app is in front, so music is never touched. It adds about 10 ms.";
+        ?? "For calls and talk. By default it works only while a call app is in front, so music is never touched. It adds about 20 ms.";
 
     /// <summary>Shows and applies what was saved on disk.</summary>
     public void RestoreNoise(bool enabled, double strength, bool onlyInCalls = true)

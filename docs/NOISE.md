@@ -44,7 +44,7 @@ works: it keeps speech and removes the rest, and music is not speech. Keep it **
 
 ## Good to know
 
-- A cleaned device plays about 10 ms later. Use the Delay setting to line it up with the others.
+- A cleaned device plays about 20 ms later. Use the Delay setting to line it up with the others.
 - A device whose sound is not 48 kHz gets a short gap when you switch noise removal on or off.
 - Surround sound (more than two channels) is not supported.
 - The default Windows device plays directly, so Audora cannot clean it.

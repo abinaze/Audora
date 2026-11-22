@@ -33,6 +33,9 @@ public sealed class RnNoiseDenoiser : IFrameDenoiser
 
     public int FrameSize => Frame;
 
+    /// <summary>RNNoise overlaps its 20 ms windows, so its cleaned sound comes out one frame (10 ms) late.</summary>
+    public int AlgorithmicDelaySamples => Frame;
+
     /// <summary>True when the native library loads and starts on this computer.</summary>
     public static bool IsAvailable()
     {

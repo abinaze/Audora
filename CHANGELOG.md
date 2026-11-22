@@ -21,6 +21,7 @@ All notable changes are listed here. The format follows
 - A Microphone page: pick a microphone, switch noise removal on and press Test to see the level before and after cleaning. Nothing listens until you press Test, and no sound is saved, played or sent. The choices are remembered per microphone
 - Noise removal for the sound a device plays: off by default, set per device, with a Strength slider. It is for calls and talk, not music. See docs/NOISE.md
 - Noise removal on a device now works only while a call app is in front, so music is never touched. The device card says Waiting or Cleaning now. A new Only during calls switch turns this off. It is on by default, also for devices saved before
+- Fixed noise removal below 100% strength: the original and the cleaned sound were 10 ms out of step, which coloured the sound. They now line up. The real delay of a cleaned device is 20 ms, not 10 ms
 
 ### Changed
 - Clearer, shorter wording across the app
