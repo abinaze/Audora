@@ -14,3 +14,16 @@ use them.
 
 The files hold what your microphone heard. Audora does not send them anywhere, and `*.wav` files are ignored by Git.
 Delete them when you are done.
+
+## Testing with a public dataset
+
+Your own recordings are only a rough check. For a fair test, use clean speech and the same speech with noise added.
+A well known set is the Voice Bank + DEMAND test set from the University of Edinburgh (48 kHz, Creative Commons
+Attribution 4.0 licence): Valentini-Botinhao, C. (2017), "Noisy speech database for training speech enhancement
+algorithms and TTS models", DOI 10.7488/ds/2117. Download the clean test set and the noisy test set from that page,
+unpack each into its own folder, then run:
+
+    dotnet run --project tools/Audora.Cli -- lab bench-set <clean folder> <noisy folder> 60
+
+The command pairs clips by file name, runs a spread of up to 60 clips, and prints the average clarity before and after
+cleaning, how well the engine keeps clean speech, the delay and the speed. Keep the dataset outside the repository.

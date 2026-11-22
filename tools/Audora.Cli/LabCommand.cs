@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Audora.Core.Audio;
 using Audora.Core.Cleanup;
 using Audora.Core.Devices;
@@ -9,13 +10,21 @@ namespace Audora.Cli;
 
 /// <summary>
 /// Test tools for comparing noise removal engines with numbers. "record" saves a short clip from a microphone to a file
-/// you name. "bench" mixes your own noise into your own voice and prints how each engine does. Everything stays on this
-/// computer, and only the file you ask for is written.
+/// you name. "bench" mixes your own noise into your own voice. "bench-set" runs a folder of matching clean and noisy clips
+/// (for example a public speech enhancement test set) and averages the results. Everything stays on this computer, and
+/// only the file you ask for is written.
 /// </summary>
 internal static class LabCommand
 {
     private const int Rate = 48000;
     private const int MaxDelaySamples = 4800;
+    private const int SetMaxDelaySamples = 1500;
+
+    private static readonly (string Name, Func<IFrameDenoiser> Factory, float Strength)[] Engines =
+    {
+        ("RNNoise, strength 100%", () => new RnNoiseDenoiser(), 1f),
+        ("RNNoise, strength 70%", () => new RnNoiseDenoiser(), 0.7f),
+    };
 
     public static int Run(DeviceEnumerator devices, string[] args)
     {
@@ -29,9 +38,16 @@ internal static class LabCommand
             return Bench(args[1], args[2]);
         }
 
+        if (args.Length >= 3 && args[0].Equals("bench-set", StringComparison.OrdinalIgnoreCase))
+        {
+            var max = args.Length > 3 && int.TryParse(args[3], out var parsed) && parsed > 0 ? parsed : 60;
+            return BenchSet(args[1], args[2], max);
+        }
+
         Console.WriteLine("Usage:");
         Console.WriteLine("  Audora.Cli lab record <seconds 1-60> <file.wav> [part of microphone name]");
         Console.WriteLine("  Audora.Cli lab bench <voice.wav> <noise.wav>");
+        Console.WriteLine("  Audora.Cli lab bench-set <clean folder> <noisy folder> [number of clips, default 60]");
         return 1;
     }
 
@@ -122,13 +138,7 @@ internal static class LabCommand
 
         Console.WriteLine($"Voice {voice.Length / (double)Rate:0.0} s, noise {noise.Length / (double)Rate:0.0} s. Measured on this computer; nothing is sent.");
 
-        var engines = new (string Name, Func<IFrameDenoiser> Factory, float Strength)[]
-        {
-            ("RNNoise, strength 100%", () => new RnNoiseDenoiser(), 1f),
-            ("RNNoise, strength 70%", () => new RnNoiseDenoiser(), 0.7f),
-        };
-
-        foreach (var engine in engines)
+        foreach (var engine in Engines)
         {
             Console.WriteLine();
             Console.WriteLine(engine.Name);
@@ -144,8 +154,105 @@ internal static class LabCommand
 
         Console.WriteLine();
         Console.WriteLine("How to read it: a higher clarity gain is better. For the voice alone, a level change near 0 dB and a similarity");
-        Console.WriteLine("above about 20 dB mean the voice is kept. A smaller delay is better.");
+        Console.WriteLine("above about 20 dB mean the voice is kept, if your voice clip was recorded in a quiet room. A smaller delay is better.");
         return 0;
+    }
+
+    private static int BenchSet(string cleanDir, string noisyDir, int maxClips)
+    {
+        if (!Directory.Exists(cleanDir) || !Directory.Exists(noisyDir))
+        {
+            Console.WriteLine("Both folders must exist. Usage: Audora.Cli lab bench-set <clean folder> <noisy folder> [number of clips]");
+            return 1;
+        }
+
+        var all = Directory.GetFiles(noisyDir, "*.wav").OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
+        var pairs = all
+            .Select(noisy => (Noisy: noisy, Clean: Path.Combine(cleanDir, Path.GetFileName(noisy))))
+            .Where(p => File.Exists(p.Clean))
+            .ToList();
+        if (pairs.Count == 0)
+        {
+            Console.WriteLine("No clip with the same file name was found in both folders.");
+            return 1;
+        }
+
+        var step = Math.Max(1, pairs.Count / maxClips);
+        var chosen = pairs.Where((_, i) => i % step == 0).Take(maxClips).ToList();
+        Console.WriteLine($"{pairs.Count} matching clips found, using {chosen.Count} spread across the set. Measured on this computer; nothing is sent.");
+
+        var clips = new List<(float[] Clean, float[] Noisy)>();
+        foreach (var pair in chosen)
+        {
+            try
+            {
+                clips.Add((LoadMono48k(pair.Clean), LoadMono48k(pair.Noisy)));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Skipped {Path.GetFileName(pair.Noisy)}: {ex.Message}");
+            }
+        }
+
+        if (clips.Count == 0)
+        {
+            Console.WriteLine("No clip could be read.");
+            return 1;
+        }
+
+        var audioSeconds = clips.Sum(c => c.Noisy.Length) / (double)Rate;
+        Console.WriteLine($"{clips.Count} clips, {audioSeconds:0} seconds of noisy speech in total.");
+
+        foreach (var engine in Engines)
+        {
+            Console.WriteLine();
+            Console.WriteLine(engine.Name);
+            try
+            {
+                MeasureSet(clips, engine.Factory, engine.Strength, audioSeconds);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Could not run: {ex.Message}");
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("How to read it: clarity is how close the sound is to the clean recording (higher is better, gain is the change).");
+        Console.WriteLine("Clean speech kept: the same engine run on clean recordings. A level change near 0 dB and a high similarity mean");
+        Console.WriteLine("it does not damage speech. Speed is how many times faster than real time it runs on one core.");
+        return 0;
+    }
+
+    private static void MeasureSet(List<(float[] Clean, float[] Noisy)> clips, Func<IFrameDenoiser> factory, float strength, double audioSeconds)
+    {
+        var delay = SignalMetrics.BestDelay(clips[0].Clean, RunEngine(clips[0].Clean, factory, strength), SetMaxDelaySamples);
+        double before = 0;
+        double after = 0;
+        double kept = 0;
+        double levelChange = 0;
+        var processing = new Stopwatch();
+
+        foreach (var (clean, noisy) in clips)
+        {
+            processing.Start();
+            var noisyOut = RunEngine(noisy, factory, strength);
+            processing.Stop();
+            var length = Math.Min(clean.Length, Math.Min(noisy.Length, noisyOut.Length - delay));
+            before += SignalMetrics.SiSdr(clean.AsSpan(0, length), noisy.AsSpan(0, length));
+            after += SignalMetrics.SiSdr(clean.AsSpan(0, length), noisyOut.AsSpan(delay, length));
+
+            var cleanOut = RunEngine(clean, factory, strength);
+            var cleanLength = Math.Min(clean.Length, cleanOut.Length - delay);
+            kept += SignalMetrics.SiSdr(clean.AsSpan(0, cleanLength), cleanOut.AsSpan(delay, cleanLength));
+            levelChange += SignalMetrics.Db(SignalMetrics.Rms(cleanOut.AsSpan(delay, cleanLength)) / Math.Max(SignalMetrics.Rms(clean.AsSpan(0, cleanLength)), 1e-9));
+        }
+
+        var n = clips.Count;
+        var speed = audioSeconds / Math.Max(processing.Elapsed.TotalSeconds, 1e-6);
+        Console.WriteLine($"  Noisy speech: clarity {before / n:0.0} to {after / n:0.0} dB (gain {(after - before) / n:+0.0;-0.0} dB)");
+        Console.WriteLine($"  Clean speech kept: similarity {kept / n:0.0} dB, level change {levelChange / n:0.0} dB");
+        Console.WriteLine($"  Delay {delay / 48.0:0.0} ms, speed {speed:0} times real time");
     }
 
     private static void MeasureEngine(float[] voice, float[] noise, Func<IFrameDenoiser> factory, float strength)
