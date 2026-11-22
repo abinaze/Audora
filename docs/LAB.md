@@ -27,3 +27,18 @@ unpack each into its own folder, then run:
 
 The command pairs clips by file name, runs a spread of up to 60 clips, and prints the average clarity before and after
 cleaning, how well the engine keeps clean speech, the delay and the speed. Keep the dataset outside the repository.
+
+## Comparing another engine
+
+`lab subset` copies a spread of matching clean and noisy clips into a small folder, so a slower tool can be run on just
+those clips. `lab compare-set` then scores sound that another program has already cleaned, in the same way as
+`lab bench-set`. For example, with the DeepFilterNet command-line tool (published by its authors on GitHub, under an
+open licence; check the licence and download only from the official release page):
+
+    dotnet run --project tools/Audora.Cli -- lab subset <clean folder> <noisy folder> <subset folder> 60
+    dotnet run --project tools/Audora.Cli -- lab bench-set <subset folder>/clean <subset folder>/noisy
+    deep-filter -D -o enhanced-noisy <subset folder>/noisy/*.wav
+    deep-filter -D -o enhanced-clean <subset folder>/clean/*.wav
+    dotnet run --project tools/Audora.Cli -- lab compare-set <subset folder>/clean <subset folder>/noisy enhanced-noisy enhanced-clean
+
+Both commands print the same kind of numbers, so the engines can be compared side by side.

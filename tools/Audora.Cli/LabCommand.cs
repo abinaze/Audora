@@ -14,7 +14,7 @@ namespace Audora.Cli;
 /// (for example a public speech enhancement test set) and averages the results. Everything stays on this computer, and
 /// only the file you ask for is written.
 /// </summary>
-internal static class LabCommand
+internal static partial class LabCommand
 {
     private const int Rate = 48000;
     private const int MaxDelaySamples = 4800;
@@ -23,7 +23,10 @@ internal static class LabCommand
     private static readonly (string Name, Func<IFrameDenoiser> Factory, float Strength)[] Engines =
     {
         ("RNNoise, strength 100%", () => new RnNoiseDenoiser(), 1f),
+        ("RNNoise, strength 85%", () => new RnNoiseDenoiser(), 0.85f),
         ("RNNoise, strength 70%", () => new RnNoiseDenoiser(), 0.7f),
+        ("RNNoise, strength 55%", () => new RnNoiseDenoiser(), 0.55f),
+        ("RNNoise, strength 40%", () => new RnNoiseDenoiser(), 0.4f),
     };
 
     public static int Run(DeviceEnumerator devices, string[] args)
@@ -44,10 +47,23 @@ internal static class LabCommand
             return BenchSet(args[1], args[2], max);
         }
 
+        if (args.Length >= 4 && args[0].Equals("subset", StringComparison.OrdinalIgnoreCase))
+        {
+            var count = args.Length > 4 && int.TryParse(args[4], out var parsedCount) && parsedCount > 0 ? parsedCount : 60;
+            return Subset(args[1], args[2], args[3], count);
+        }
+
+        if (args.Length >= 4 && args[0].Equals("compare-set", StringComparison.OrdinalIgnoreCase))
+        {
+            return CompareSet(args[1], args[2], args[3], args.Length > 4 ? args[4] : null);
+        }
+
         Console.WriteLine("Usage:");
         Console.WriteLine("  Audora.Cli lab record <seconds 1-60> <file.wav> [part of microphone name]");
         Console.WriteLine("  Audora.Cli lab bench <voice.wav> <noise.wav>");
         Console.WriteLine("  Audora.Cli lab bench-set <clean folder> <noisy folder> [number of clips, default 60]");
+        Console.WriteLine("  Audora.Cli lab subset <clean folder> <noisy folder> <output folder> [number of clips, default 60]");
+        Console.WriteLine("  Audora.Cli lab compare-set <clean folder> <noisy folder> <enhanced noisy folder> [enhanced clean folder]");
         return 1;
     }
 
