@@ -58,12 +58,18 @@ internal static partial class LabCommand
             return CompareSet(args[1], args[2], args[3], args.Length > 4 ? args[4] : null);
         }
 
+        if (args.Length >= 2 && args[0].Equals("exports", StringComparison.OrdinalIgnoreCase))
+        {
+            return Exports(args[1]);
+        }
+
         Console.WriteLine("Usage:");
         Console.WriteLine("  Audora.Cli lab record <seconds 1-60> <file.wav> [part of microphone name]");
         Console.WriteLine("  Audora.Cli lab bench <voice.wav> <noise.wav>");
         Console.WriteLine("  Audora.Cli lab bench-set <clean folder> <noisy folder> [number of clips, default 60]");
         Console.WriteLine("  Audora.Cli lab subset <clean folder> <noisy folder> <output folder> [number of clips, default 60]");
         Console.WriteLine("  Audora.Cli lab compare-set <clean folder> <noisy folder> <enhanced noisy folder> [enhanced clean folder]");
+        Console.WriteLine("  Audora.Cli lab exports <library.dll>");
         return 1;
     }
 

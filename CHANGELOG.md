@@ -20,6 +20,7 @@ All notable changes are listed here. The format follows
 - `lab record` and `lab bench` commands in the command-line tool. They save a short clip from a microphone to a file you name, and compare noise removal on your own voice and noise clips with numbers. They write only the file you ask for and send nothing. See docs/LAB.md
 - A `lab bench-set` command that runs a folder of clean clips and a folder of matching noisy clips, such as a public speech enhancement test set, and prints average results for each engine. See docs/LAB.md
 - `lab subset` and `lab compare-set` commands, and a wider RNNoise strength sweep in `lab bench` and `lab bench-set`. They let another engine's cleaned files be scored the same way. See docs/LAB.md
+- A `lab exports` command that lists the function names of a native library by reading its file, without loading it, and the results of the first public-dataset benchmark in docs/LAB.md
 - A Microphone page: pick a microphone, switch noise removal on and press Test to see the level before and after cleaning. Nothing listens until you press Test, and no sound is saved, played or sent. The choices are remembered per microphone
 - Noise removal for the sound a device plays: off by default, set per device, with a Strength slider. It is for calls and talk, not music. See docs/NOISE.md
 - Noise removal on a device now works only while a call app is in front, so music is never touched. The device card says Waiting or Cleaning now. A new Only during calls switch turns this off. It is on by default, also for devices saved before

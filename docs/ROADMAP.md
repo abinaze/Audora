@@ -30,6 +30,7 @@ What Audora does, what is next, and what we decided not to do. Ideas come from s
 
 - First public release, a winget package and a code-signed installer
 - A clean microphone for other apps through a virtual cable you install
+- A second noise removal engine (DeepFilterNet), if its licence and model files allow it. In the lab it scored about twice the clarity gain of RNNoise and kept clean speech much better
 - Per-app volume (like EarTrumpet)
 
 ## Later, if there is demand
