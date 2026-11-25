@@ -18,7 +18,7 @@ internal static partial class LabCommand
 {
     private const int Rate = 48000;
     private const int MaxDelaySamples = 4800;
-    private const int SetMaxDelaySamples = 1500;
+    private const int SetMaxDelaySamples = 4800;
 
     private static readonly (string Name, Func<IFrameDenoiser> Factory, float Strength)[] BaseEngines =
     {
