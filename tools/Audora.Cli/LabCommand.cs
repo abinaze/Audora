@@ -20,7 +20,7 @@ internal static partial class LabCommand
     private const int MaxDelaySamples = 4800;
     private const int SetMaxDelaySamples = 1500;
 
-    private static readonly (string Name, Func<IFrameDenoiser> Factory, float Strength)[] Engines =
+    private static readonly (string Name, Func<IFrameDenoiser> Factory, float Strength)[] BaseEngines =
     {
         ("RNNoise, strength 100%", () => new RnNoiseDenoiser(), 1f),
         ("RNNoise, strength 85%", () => new RnNoiseDenoiser(), 0.85f),

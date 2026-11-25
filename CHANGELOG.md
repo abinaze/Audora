@@ -21,6 +21,7 @@ All notable changes are listed here. The format follows
 - A `lab bench-set` command that runs a folder of clean clips and a folder of matching noisy clips, such as a public speech enhancement test set, and prints average results for each engine. See docs/LAB.md
 - `lab subset` and `lab compare-set` commands, and a wider RNNoise strength sweep in `lab bench` and `lab bench-set`. They let another engine's cleaned files be scored the same way. See docs/LAB.md
 - A `lab exports` command that lists the function names of a native library by reading its file, without loading it, and the results of the first public-dataset benchmark in docs/LAB.md
+- A DeepFilterNet3 engine that can load its native library and model from a folder named in AUDORA_DFN_DIR. It is used only by the lab benchmark for now, and the app does not use it or ship it yet
 - A Microphone page: pick a microphone, switch noise removal on and press Test to see the level before and after cleaning. Nothing listens until you press Test, and no sound is saved, played or sent. The choices are remembered per microphone
 - Noise removal for the sound a device plays: off by default, set per device, with a Strength slider. It is for calls and talk, not music. See docs/NOISE.md
 - Noise removal on a device now works only while a call app is in front, so music is never touched. The device card says Waiting or Cleaning now. A new Only during calls switch turns this off. It is on by default, also for devices saved before

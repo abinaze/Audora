@@ -67,3 +67,10 @@ kept is the SI-SDR of the engine's output on the clean clips (higher is better).
 What this does not show: only 60 clips; SI-SDR is one measure and not a listening test; DeepFilterNet was run on files, so
 its delay and processor use in live use were not measured; and either model may have seen similar speech or noise in its
 training, so the margin on other noises may be smaller.
+
+## Trying the DeepFilterNet library in the benchmark
+
+The benchmark can also run DeepFilterNet3 through its native library. Put `deepfilter.dll` and
+`DeepFilterNet3_onnx.tar.gz` in one folder, set `AUDORA_DFN_DIR` to that folder, and run `lab bench` or `lab bench-set`.
+A row for DeepFilterNet3 then appears next to the RNNoise rows. This is for testing only: the app does not use it yet, and
+Audora does not ship these files yet.

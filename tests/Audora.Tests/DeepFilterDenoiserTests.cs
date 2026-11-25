@@ -1,0 +1,34 @@
+using Audora.Core.Cleanup;
+
+namespace Audora.Tests;
+
+public class DeepFilterDenoiserTests
+{
+    [Fact]
+    public void AMissingLibraryIsReportedClearly()
+    {
+        var missing = Path.Combine(Path.GetTempPath(), "audora-no-such-" + Guid.NewGuid().ToString("N") + ".dll");
+
+        var error = Assert.Throws<FileNotFoundException>(() => DeepFilterDenoiser.Create(missing, missing));
+
+        Assert.Contains("library", error.Message);
+    }
+
+    [Fact]
+    public void AMissingModelIsReportedBeforeAnythingIsLoaded()
+    {
+        var library = Path.GetTempFileName();
+        try
+        {
+            var missingModel = Path.Combine(Path.GetTempPath(), "audora-no-such-" + Guid.NewGuid().ToString("N") + ".tar.gz");
+
+            var error = Assert.Throws<FileNotFoundException>(() => DeepFilterDenoiser.Create(library, missingModel));
+
+            Assert.Contains("model", error.Message);
+        }
+        finally
+        {
+            File.Delete(library);
+        }
+    }
+}
