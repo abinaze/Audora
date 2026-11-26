@@ -19,6 +19,7 @@ internal static partial class LabCommand
                 if (File.Exists(library) && File.Exists(model))
                 {
                     list.Add(("DeepFilterNet3 (C library), strength 100%", () => DeepFilterDenoiser.Create(library, model), 1f));
+                    list.Add(("DeepFilterNet3 (C library), strength 85%", () => DeepFilterDenoiser.Create(library, model), 0.85f));
                 }
                 else
                 {
