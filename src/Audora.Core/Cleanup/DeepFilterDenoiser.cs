@@ -23,6 +23,7 @@ public sealed class DeepFilterDenoiser : IFrameDenoiser
     private readonly Api _api;
     private readonly IntPtr _input;
     private readonly IntPtr _output;
+    private readonly float[] _scratch = new float[Frame];
     private IntPtr _state;
     private bool _disposed;
 
@@ -114,10 +115,31 @@ public sealed class DeepFilterDenoiser : IFrameDenoiser
         ArgumentNullException.ThrowIfNull(output);
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        Marshal.Copy(input, 0, _input, Frame);
+        if (input.Length != Frame || output.Length != Frame)
+        {
+            throw new ArgumentException($"A frame holds exactly {Frame} samples.");
+        }
+
+        KeepInRange(input, _scratch);
+        Marshal.Copy(_scratch, 0, _input, Frame);
         _api.Process(_state, _input, _output);
         Marshal.Copy(_output, output, 0, Frame);
+        KeepInRange(output, output);
         return 0f;
+    }
+
+    /// <summary>Copies samples, turns anything that is not a number into silence and holds the rest between -1 and 1. It may copy a frame onto itself.</summary>
+    public static void KeepInRange(float[] source, float[] result)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(result);
+
+        var count = Math.Min(source.Length, result.Length);
+        for (var i = 0; i < count; i++)
+        {
+            var value = source[i];
+            result[i] = float.IsFinite(value) ? Math.Clamp(value, -1f, 1f) : 0f;
+        }
     }
 
     public void Dispose()

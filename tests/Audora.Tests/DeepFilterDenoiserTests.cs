@@ -41,4 +41,14 @@ public class DeepFilterDenoiserTests
         Assert.Equal(1920, total);
         Assert.Equal(40.0, total / 48.0, 6);
     }
+
+    [Fact]
+    public void KeepInRangeFixesBrokenSamplesAndLeavesGoodOnesAlone()
+    {
+        var samples = new[] { 0.25f, -0.5f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, 1.5f, -2f };
+
+        DeepFilterDenoiser.KeepInRange(samples, samples);
+
+        Assert.Equal(new[] { 0.25f, -0.5f, 0f, 0f, 0f, 1f, -1f }, samples);
+    }
 }
