@@ -31,4 +31,14 @@ public class DeepFilterDenoiserTests
             File.Delete(library);
         }
     }
+
+    [Fact]
+    public void DeepFilterNetSaysHowMuchSoundItHoldsBack()
+    {
+        var total = DeepFilterDenoiser.Frame + DeepFilterDenoiser.AlgorithmicDelay;
+
+        Assert.Equal(1440, DeepFilterDenoiser.AlgorithmicDelay);
+        Assert.Equal(1920, total);
+        Assert.Equal(40.0, total / 48.0, 6);
+    }
 }

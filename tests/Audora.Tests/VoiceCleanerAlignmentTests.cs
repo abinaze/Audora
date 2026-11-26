@@ -45,6 +45,31 @@ public class VoiceCleanerAlignmentTests
         }
     }
 
+    // Like DeepFilterNet: frames of 480, and the cleaned sound comes out 1440 samples late on top of the wrapper's frame.
+    private sealed class LongDelayDenoiser : IFrameDenoiser
+    {
+        private readonly Queue<float> _queue = new(new float[DeepFilterDenoiser.AlgorithmicDelay]);
+
+        public int FrameSize => DeepFilterDenoiser.Frame;
+
+        public int AlgorithmicDelaySamples => DeepFilterDenoiser.AlgorithmicDelay;
+
+        public float Process(float[] input, float[] output)
+        {
+            for (var i = 0; i < FrameSize; i++)
+            {
+                _queue.Enqueue(input[i]);
+                output[i] = _queue.Dequeue();
+            }
+
+            return 0f;
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
     private static float[] Noise(int count)
     {
         var random = new Random(11);
@@ -97,5 +122,22 @@ public class VoiceCleanerAlignmentTests
         using var denoiser = new RnNoiseDenoiser();
 
         Assert.Equal(480, denoiser.AlgorithmicDelaySamples);
+    }
+
+    [Fact]
+    public void ADenoiserThatHoldsBackAsMuchAsDeepFilterNetStillLinesUp()
+    {
+        using var cleaner = new VoiceCleaner(1, () => new LongDelayDenoiser(), fadeSamples: 1);
+        cleaner.Strength = 0.5f;
+        cleaner.Enabled = true;
+
+        var input = Noise(8000);
+        var buffer = (float[])input.Clone();
+        cleaner.Process(buffer, 0, buffer.Length);
+
+        for (var n = 2500; n < 7900; n++)
+        {
+            Assert.Equal((double)input[n - 1920], (double)buffer[n], 4);
+        }
     }
 }

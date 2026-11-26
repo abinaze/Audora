@@ -12,6 +12,13 @@ public sealed class DeepFilterDenoiser : IFrameDenoiser
 {
     public const int Frame = 480;
 
+    /// <summary>
+    /// Samples the library holds back on top of the one frame that the stream wrapper adds. The lab measured 40 ms in all
+    /// (1920 samples), so this is 1920 minus the 480 of the wrapper. The cleaner delays the original sound by the same
+    /// amount, which keeps the original and the cleaned copy in step when the strength is below 100%.
+    /// </summary>
+    public const int AlgorithmicDelay = 1440;
+
     private readonly IntPtr _library;
     private readonly Api _api;
     private readonly IntPtr _input;
@@ -41,6 +48,9 @@ public sealed class DeepFilterDenoiser : IFrameDenoiser
     private delegate void FreeFunction(IntPtr state);
 
     public int FrameSize => Frame;
+
+    /// <summary>The library's own delay, see <see cref="AlgorithmicDelay"/>.</summary>
+    public int AlgorithmicDelaySamples => AlgorithmicDelay;
 
     /// <summary>Loads the library and the model. Throws a clear error if anything is missing or does not fit.</summary>
     public static DeepFilterDenoiser Create(string libraryPath, string modelPath, float attenuationLimitDb = 100f)
