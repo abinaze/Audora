@@ -26,6 +26,7 @@ All notable changes are listed here. The format follows
 - Noise removal for the sound a device plays: off by default, set per device, with a Strength slider. It is for calls and talk, not music. See docs/NOISE.md
 - Noise removal on a device now works only while a call app is in front, so music is never touched. The device card says Waiting or Cleaning now. A new Only during calls switch turns this off. It is on by default, also for devices saved before
 - Fixed noise removal below 100% strength: the original and the cleaned sound were 10 ms out of step, which coloured the sound. They now line up. The real delay of a cleaned device is 20 ms, not 10 ms
+- The DeepFilterNet3 engine now reports its own 40 ms delay, so the original and cleaned sound line up below 100% strength too. The library results (+10.6 dB at 100%, +9.3 dB at 85%, about 5 times faster than real time) are in docs/LAB.md
 
 ### Changed
 - Clearer, shorter wording across the app

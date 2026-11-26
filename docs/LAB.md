@@ -63,10 +63,17 @@ kept is the SI-SDR of the engine's output on the clean clips (higher is better).
 | RNNoise, strength 55% | +4.1 dB | 21.2 dB |
 | RNNoise, strength 40% | +3.1 dB | 24.0 dB |
 | DeepFilterNet command-line tool 0.5.4, default model, run offline | +10.2 dB | 39.4 dB |
+| DeepFilterNet3 native library, strength 100% | +10.6 dB | 37.4 dB |
+| DeepFilterNet3 native library, strength 85% | +9.3 dB | 38.8 dB |
 
-What this does not show: only 60 clips; SI-SDR is one measure and not a listening test; DeepFilterNet was run on files, so
-its delay and processor use in live use were not measured; and either model may have seen similar speech or noise in its
-training, so the margin on other noises may be smaller.
+Delay and speed, measured through Audora's own cleaner on one core: RNNoise adds 20 ms and runs 45 to 70 times faster
+than real time. The DeepFilterNet3 library adds 40 ms and runs 4 to 5 times faster than real time, which is about 20 to
+25% of one processor core for each sound stream it cleans. That is fine for one microphone and heavy for several
+playback devices. At 85% the cleaned and the original sound line up, and the delay stays at 40 ms.
+
+What this does not show: only 60 clips; SI-SDR is one measure and not a listening test; either model may have seen
+similar speech or noise in its training, so the margin on other noises may be smaller; the DeepFilterNet command-line
+tool ran on files; and the speed numbers come from one PC, not from a call with other programs running.
 
 ## Trying the DeepFilterNet library in the benchmark
 
