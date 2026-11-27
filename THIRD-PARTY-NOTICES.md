@@ -9,9 +9,24 @@ The software below was made by other people. It is included in the Audora downlo
 | [.NET 8 runtime](https://github.com/dotnet/runtime), including Windows Desktop (WPF and Windows Forms) | Runs the app. It is included, so you do not need to install .NET | MIT | .NET Foundation and Contributors |
 | System.ServiceProcess.ServiceController 8.0.1 | Checking that the Windows audio services are running | MIT | .NET Foundation and Contributors |
 | [RNNoise](https://github.com/xiph/rnnoise), as rnnoise.dll from the [YellowDogMan.RRNoise.NET](https://github.com/Yellow-Dog-Man/RNNoise.Net) 0.1.6 package | Removes background noise from speech | BSD 3-Clause (RNNoise), MIT (the package) | Mozilla, Jean-Marc Valin, Xiph.Org Foundation and Mark Borgerding (RNNoise). Yellow Dog Man Studios S.r.o. (the package) |
+| [DeepFilterNet](https://github.com/Rikorose/DeepFilterNet): the DeepFilterNet3 model and its C runtime library (deepfilter.dll), packaged by [deepfilternet-slim](https://github.com/kiwi-data/deepfilternet-slim) 0.1.0 | Removes background noise from speech in the Studio engine on the Microphone page | MIT or Apache-2.0, at your choice | Hendrik Schröter and contributors |
 
 The .NET runtime also contains smaller parts from other projects. Their notices are listed in the
 [.NET third-party notices](https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT).
+
+## DeepFilterNet (Studio noise removal)
+
+The Studio engine uses DeepFilterNet3 by Hendrik Schröter and contributors. It is available under the MIT or the
+Apache-2.0 licence. Audora ships these files in a `studio` folder beside the program: `deepfilter.dll` (the runtime
+library), `DeepFilterNet3_onnx.tar.gz` (the model), the packager's `NOTICE`, and the full licence texts
+(`LICENSE-MIT` and `LICENSE-APACHE`).
+
+The library and the model come unchanged from the deepfilternet-slim 0.1.0 Windows package on PyPI, made by
+kiwi-data. Its page says the runtime was built from DeepFilterNet's `main` branch at commit
+`d375b2d8309e0935d165700c91da9de862a99c31`, which is after the v0.5.6 release. Before Audora ships them, it checks the
+SHA256 of the package and of both files against `third-party/studio.sha256`. The library is built with other
+open-source Rust libraries, including the tract inference engine. The package's NOTICE does not list their licences
+one by one.
 
 ## Not included
 

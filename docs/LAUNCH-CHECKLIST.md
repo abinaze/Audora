@@ -10,6 +10,7 @@ Use this when you decide to make the repository public.
 - [ ] `README.md`, `PRIVACY.md`, `SECURITY.md` and `docs/` say what you want them to.
 - [ ] You tried `bash scripts/package.sh` and installed the result on a clean user account.
 - [ ] `THIRD-PARTY-NOTICES.md` matches the licence text of each project it lists.
+- [ ] `bash scripts/studio.sh` passes, so `third-party/studio.sha256` still matches the DeepFilterNet files. The installer's `studio` folder holds the library, the model, `NOTICE` and both licence texts.
 - [ ] Optional: add screenshots (`devices.png`, `sound.png`, `groups.png`) to `assets/screenshots/`.
 
 ## Switch it on

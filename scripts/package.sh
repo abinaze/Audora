@@ -27,6 +27,13 @@ dotnet publish src/Audora.App -c Release -r win-x64 --self-contained true \
 [ -f "$PUBLISH/Audora.exe" ] || { echo "Audora.exe was not produced."; exit 1; }
 [ -f "$PUBLISH/rnnoise.dll" ] || { echo "rnnoise.dll was not published."; exit 1; }
 
+# The Studio noise removal files (DeepFilterNet3), checked against third-party/studio.sha256.
+echo "==> Studio files (DeepFilterNet3)"
+bash scripts/studio.sh "$PUBLISH/studio"
+for f in deepfilter.dll DeepFilterNet3_onnx.tar.gz LICENSE-MIT LICENSE-APACHE NOTICE; do
+  [ -f "$PUBLISH/studio/$f" ] || { echo "studio/$f was not published."; exit 1; }
+done
+
 # The licence and the third-party notices go into every download (installer and portable zip).
 [ -f THIRD-PARTY-NOTICES.md ] || { echo "THIRD-PARTY-NOTICES.md is missing."; exit 1; }
 cp LICENSE "$PUBLISH/LICENSE.txt"

@@ -17,6 +17,9 @@ jobs:
       - name: Validate
         shell: bash
         run: bash scripts/validate.sh
+      - name: Check the Studio files
+        shell: bash
+        run: bash scripts/studio.sh "$(cygpath -u "$RUNNER_TEMP")/studio"
       - name: Build the website
         shell: bash
         run: bash scripts/build-site.sh

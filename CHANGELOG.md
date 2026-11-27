@@ -27,6 +27,8 @@ All notable changes are listed here. The format follows
 - Noise removal on a device now works only while a call app is in front, so music is never touched. The device card says Waiting or Cleaning now. A new Only during calls switch turns this off. It is on by default, also for devices saved before
 - Fixed noise removal below 100% strength: the original and the cleaned sound were 10 ms out of step, which coloured the sound. They now line up. The real delay of a cleaned device is 20 ms, not 10 ms
 - The DeepFilterNet3 engine now reports its own 40 ms delay, so the original and cleaned sound line up below 100% strength too. The library results (+10.6 dB at 100%, +9.3 dB at 85%, about 5 times faster than real time) are in docs/LAB.md
+- A Studio engine (DeepFilterNet3) for microphone noise removal, chosen for each microphone on the Microphone page. It uses more of the processor and adds 40 ms. If its files are missing or it cannot start, Standard (RNNoise) is used and the page says why
+- The installer and the portable zip include the Studio files in a `studio` folder, with their notice and licence texts. They are checked against pinned SHA256 checksums, and the build stops if one does not match
 
 ### Changed
 - Clearer, shorter wording across the app
