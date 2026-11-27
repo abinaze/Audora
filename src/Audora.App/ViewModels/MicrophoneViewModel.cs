@@ -3,6 +3,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Audora.App.Infrastructure;
 using Audora.Core.Audio;
+using Audora.Core.Cleanup;
 using Audora.Core.Devices;
 using Audora.Core.Settings;
 
@@ -45,6 +46,8 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
     private MicrophoneChoice? _selected;
     private bool _noiseRemoval;
     private double _noiseStrength = 100;
+    private string _engine = NoiseEngines.Default;
+    private string _engineText = string.Empty;
     private bool _applying;
     private bool _testing;
     private int _elapsedMs;
@@ -74,6 +77,15 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
             }
         });
         TestCommand = new RelayCommand(ToggleTest, () => _selected is not null);
+        ChooseEngineCommand = new RelayCommand(
+            p =>
+            {
+                if (p is string engine)
+                {
+                    NoiseEngine = engine;
+                }
+            },
+            _ => CanChangeEngine);
     }
 
     public ObservableCollection<MicrophoneChoice> Microphones { get; } = new();
@@ -81,6 +93,8 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
     public RelayCommand ChooseCommand { get; }
 
     public RelayCommand TestCommand { get; }
+
+    public RelayCommand ChooseEngineCommand { get; }
 
     public bool HasMicrophones => Microphones.Count > 0;
 
@@ -136,6 +150,7 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
                 if (_session is not null)
                 {
                     _session.NoiseRemoval = value;
+                    UpdateEngineText();
                 }
             }
         }
@@ -156,6 +171,37 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
                 }
             }
         }
+    }
+
+    /// <summary>"Studio" or "Standard". It is used from the next test and saved with the microphone.</summary>
+    public string NoiseEngine
+    {
+        get => _engine;
+        set
+        {
+            var engine = NoiseEngines.Normalize(value);
+            if (_testing || !Set(ref _engine, engine))
+            {
+                return;
+            }
+
+            if (!_applying)
+            {
+                Remember();
+            }
+
+            UpdateEngineText();
+        }
+    }
+
+    /// <summary>The engine can be changed while no test is running.</summary>
+    public bool CanChangeEngine => _selected is not null && !_testing;
+
+    /// <summary>A plain sentence about the engine in use, or why Standard is used instead.</summary>
+    public string EngineText
+    {
+        get => _engineText;
+        private set => Set(ref _engineText, value);
     }
 
     /// <summary>Lists the microphones that are connected now. Called when the page is shown.</summary>
@@ -210,6 +256,7 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
                 : _saved.FirstOrDefault(s => string.Equals(s.Id, choice.Id, StringComparison.OrdinalIgnoreCase));
             Set(ref _noiseRemoval, record?.NoiseRemoval ?? false, nameof(NoiseRemoval));
             Set(ref _noiseStrength, record?.NoiseStrength ?? 100, nameof(NoiseStrength));
+            Set(ref _engine, NoiseEngines.Normalize(record?.NoiseEngine), nameof(NoiseEngine));
         }
         finally
         {
@@ -217,6 +264,8 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
         }
 
         Raise(nameof(SelectedText));
+        Raise(nameof(CanChangeEngine));
+        UpdateEngineText();
         Raise(nameof(HasSelection));
         CommandManager.InvalidateRequerySuggested();
     }
@@ -239,6 +288,7 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
         record.LastSeenUtc = DateTime.UtcNow;
         record.NoiseRemoval = _noiseRemoval;
         record.NoiseStrength = _noiseStrength;
+        record.NoiseEngine = _engine;
     }
 
     private void ToggleTest()
@@ -264,9 +314,12 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
         {
             NoiseRemoval = _noiseRemoval,
             Strength = (float)(_noiseStrength / 100.0),
+            Engine = _engine,
         };
 
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         var error = session.Start();
+        watch.Stop();
         if (error is not null)
         {
             session.Dispose();
@@ -284,7 +337,13 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
         _testing = true;
         Status = NoiseRemovalNote(session) ?? $"Listening for {TestSeconds} seconds. Speak, or make the noise you want to remove.";
         _timer.Start();
-        Log.Info($"Microphone test started on {_selected.Name}.");
+        Log.Info($"Microphone test started on {_selected.Name} with the {session.ActiveEngine} engine, ready in {watch.ElapsedMilliseconds} ms.");
+        if (session.EngineNote is not null)
+        {
+            Log.Info(session.EngineNote);
+        }
+
+        UpdateEngineText();
         RaiseTestState();
     }
 
@@ -376,10 +435,17 @@ public sealed class MicrophoneViewModel : ObservableObject, IDisposable
         RaiseTestState();
     }
 
+    private void UpdateEngineText()
+    {
+        var note = _session?.EngineNote ?? NoiseEngineSelector.ForMicrophone(_engine, AppContext.BaseDirectory).FallbackReason;
+        EngineText = NoiseEngines.Describe(_engine, note);
+    }
+
     private void RaiseTestState()
     {
         Raise(nameof(IsTesting));
         Raise(nameof(TestButtonText));
+        Raise(nameof(CanChangeEngine));
         CommandManager.InvalidateRequerySuggested();
     }
 }

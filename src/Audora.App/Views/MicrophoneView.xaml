@@ -59,6 +59,19 @@
             <TextBlock Grid.Column="2" Text="{Binding NoiseStrength, StringFormat={}{0:0}%}" HorizontalAlignment="Right"
                        VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
           </Grid>
+          <StackPanel Margin="0,10,0,0" Visibility="{Binding NoiseRemoval, Converter={StaticResource BoolToVis}}">
+            <StackPanel Orientation="Horizontal" IsEnabled="{Binding CanChangeEngine}">
+              <TextBlock Text="Engine" Width="80" VerticalAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
+              <Button Content="Studio" Style="{StaticResource PresetChip}"
+                      Command="{Binding ChooseEngineCommand}" CommandParameter="Studio"
+                      ToolTip="DeepFilterNet3. Cleanest in our tests. Uses more of the processor."/>
+              <Button Content="Standard" Style="{StaticResource PresetChip}"
+                      Command="{Binding ChooseEngineCommand}" CommandParameter="Standard"
+                      ToolTip="RNNoise. Light on the processor."/>
+            </StackPanel>
+            <TextBlock Margin="80,6,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}"
+                       Text="{Binding EngineText}"/>
+          </StackPanel>
         </StackPanel>
       </Border>
 
