@@ -1,0 +1,9 @@
+# SHA256 of the DeepFilterNet files that Audora's Studio noise removal ships with.
+# They come from the deepfilternet-slim 0.1.0 Windows wheel on PyPI:
+#   https://pypi.org/project/deepfilternet-slim/0.1.0/
+# The wheel line is the hash that PyPI's signed publishing record names for that file.
+# The two files inside it are the ones the lab benchmark used (docs/LAB.md).
+# scripts/studio.sh stops when any of them does not match. To change a line, check the new file first.
+de8f866bebdb52b41026aee3be2ee081bb8bfeabf371e642c487950f469fa777  deepfilternet_slim-0.1.0-py3-none-win_amd64.whl
+cf117e4e6b40ea302a64f600e32449e58d0a2313fc24372de0f0b3698936d14d  deepfilter.dll
+c94d91f70911001c946e0fabb4aa9adc37045f45a03b56008cb0c8244cb63616  DeepFilterNet3_onnx.tar.gz

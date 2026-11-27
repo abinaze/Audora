@@ -25,3 +25,6 @@ _site/
 
 # Recordings made by the lab commands
 *.wav
+
+# Downloaded Studio files (see scripts/studio.sh)
+.cache/
