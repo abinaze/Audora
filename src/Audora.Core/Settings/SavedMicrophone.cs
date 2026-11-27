@@ -1,3 +1,5 @@
+using Audora.Core.Cleanup;
+
 namespace Audora.Core.Settings;
 
 /// <summary>What Audora remembers about one microphone, found again by its Windows endpoint id.</summary>
@@ -14,4 +16,10 @@ public sealed class SavedMicrophone
 
     /// <summary>How much of the sound is the cleaned one, 0 to 100.</summary>
     public double NoiseStrength { get; set; } = 100;
+
+    /// <summary>
+    /// Which engine cleans this microphone: "Standard" (RNNoise) or "Studio" (DeepFilterNet3). Studio gives way to
+    /// Standard when its files are missing. Older settings files have no value and load as Studio.
+    /// </summary>
+    public string NoiseEngine { get; set; } = NoiseEngines.Default;
 }

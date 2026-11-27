@@ -203,4 +203,28 @@ public class NoiseEngineSelectorTests
         Assert.Equal(NoiseEngines.Standard, selector.ActiveEngine);
         Assert.Contains("not installed", selector.FallbackReason);
     }
+
+    [Fact]
+    public void StudioIsDescribedWithItsCost()
+    {
+        var text = NoiseEngines.Describe("Studio", null);
+
+        Assert.Contains("DeepFilterNet3", text);
+        Assert.Contains("40 ms", text);
+    }
+
+    [Fact]
+    public void StandardIsDescribedAsLight()
+    {
+        var text = NoiseEngines.Describe("Standard", null);
+
+        Assert.Contains("RNNoise", text);
+        Assert.Contains("20 ms", text);
+    }
+
+    [Fact]
+    public void AFallbackReasonReplacesTheDescription()
+    {
+        Assert.Equal("The files are not here.", NoiseEngines.Describe("Studio", "The files are not here."));
+    }
 }

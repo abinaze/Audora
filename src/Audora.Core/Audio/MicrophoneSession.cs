@@ -19,12 +19,16 @@ public sealed class MicrophoneSession : IDisposable
     private volatile MicrophoneCleaner? _cleaner;
     private bool _noiseRemoval;
     private float _strength = 1f;
+    private readonly string _appFolder;
+    private string _engine = NoiseEngines.Default;
+    private NoiseEngineSelector? _selector;
     private bool _disposed;
 
-    public MicrophoneSession(string deviceId)
+    public MicrophoneSession(string deviceId, string? appFolder = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(deviceId);
         DeviceId = deviceId;
+        _appFolder = string.IsNullOrWhiteSpace(appFolder) ? AppContext.BaseDirectory : appFolder;
     }
 
     /// <summary>Raised on a background thread when the microphone stops by itself, for example when it is unplugged.</summary>
@@ -104,6 +108,53 @@ public sealed class MicrophoneSession : IDisposable
         }
     }
 
+    /// <summary>
+    /// Which engine cleans the voice, "Standard" or "Studio". Studio falls back to Standard when its files are missing
+    /// or it fails to start. It is read when the microphone starts, so set it before <see cref="Start"/>.
+    /// </summary>
+    public string Engine
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _engine;
+            }
+        }
+
+        set
+        {
+            lock (_gate)
+            {
+                _engine = NoiseEngines.Normalize(value);
+            }
+        }
+    }
+
+    /// <summary>The engine in use, or the one that will be tried first.</summary>
+    public string ActiveEngine
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _selector?.ActiveEngine ?? _engine;
+            }
+        }
+    }
+
+    /// <summary>A plain sentence when Studio was wanted but Standard is used instead. Null otherwise, and before the microphone starts.</summary>
+    public string? EngineNote
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _selector?.FallbackReason;
+            }
+        }
+    }
+
     /// <summary>True when noise removal could not start or stopped working. The sound is then left untouched.</summary>
     public bool NoiseRemovalFailed
     {
@@ -156,7 +207,9 @@ public sealed class MicrophoneSession : IDisposable
                     return $"This microphone's sound format ({format.BitsPerSample}-bit) is not supported.";
                 }
 
-                var cleaner = new MicrophoneCleaner(format.SampleRate, format.Channels, () => new RnNoiseDenoiser());
+                var selector = NoiseEngineSelector.ForMicrophone(_engine, _appFolder);
+                _selector = selector;
+                var cleaner = new MicrophoneCleaner(format.SampleRate, format.Channels, selector.Create);
                 _cleaner = cleaner;
                 if (!cleaner.IsSupported)
                 {
@@ -251,6 +304,7 @@ public sealed class MicrophoneSession : IDisposable
         var enumerator = _enumerator;
         _capture = null;
         _cleaner = null;
+        _selector = null;
         _device = null;
         _enumerator = null;
 

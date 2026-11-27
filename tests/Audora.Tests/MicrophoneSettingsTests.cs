@@ -91,4 +91,51 @@ public class MicrophoneSettingsTests
         Assert.Equal(100, loaded.Microphones[0].NoiseStrength);
         Assert.Equal(0, loaded.Microphones[1].NoiseStrength);
     }
+
+    [Fact]
+    public void AMicrophoneStartsWithTheStudioEngine()
+    {
+        Assert.Equal("Studio", new SavedMicrophone().NoiseEngine);
+    }
+
+    [Fact]
+    public void TheEngineChoiceSurvivesSavingAndLoading()
+    {
+        var file = TempFile();
+        try
+        {
+            var store = new SettingsStore(file);
+            var settings = new AppSettings();
+            settings.Microphones.Add(new SavedMicrophone { Id = "m1", NoiseEngine = "Standard" });
+
+            store.Save(store.Serialize(settings));
+            var loaded = store.Load();
+
+            Assert.Equal("Standard", loaded.Microphones[0].NoiseEngine);
+        }
+        finally
+        {
+            Cleanup(file);
+        }
+    }
+
+    [Fact]
+    public void AnOlderMicrophoneRecordWithoutAnEngineLoadsAsStudio()
+    {
+        var loaded = LoadJson("{ \"Microphones\": [ { \"Id\": \"a\", \"NoiseRemoval\": true, \"NoiseStrength\": 70 } ] }");
+
+        Assert.Equal("Studio", loaded.Microphones[0].NoiseEngine);
+        Assert.True(loaded.Microphones[0].NoiseRemoval);
+        Assert.Equal(70, loaded.Microphones[0].NoiseStrength);
+    }
+
+    [Fact]
+    public void ADamagedEngineNameIsRepairedAndAStandardOneIsKept()
+    {
+        var loaded = LoadJson("{ \"Microphones\": [ { \"Id\": \"a\", \"NoiseEngine\": \"banana\" }, { \"Id\": \"b\", \"NoiseEngine\": null }, { \"Id\": \"c\", \"NoiseEngine\": \"standard\" } ] }");
+
+        Assert.Equal("Studio", loaded.Microphones[0].NoiseEngine);
+        Assert.Equal("Studio", loaded.Microphones[1].NoiseEngine);
+        Assert.Equal("Standard", loaded.Microphones[2].NoiseEngine);
+    }
 }

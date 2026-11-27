@@ -28,4 +28,17 @@ public static class NoiseEngines
 
         return Default;
     }
+
+    /// <summary>One plain sentence about an engine for the Microphone page. A fallback reason, when there is one, replaces it.</summary>
+    public static string Describe(string engine, string? fallbackReason)
+    {
+        if (!string.IsNullOrWhiteSpace(fallbackReason))
+        {
+            return fallbackReason;
+        }
+
+        return Normalize(engine) == Standard
+            ? "Standard (RNNoise): light on the processor, adds 20 ms."
+            : "Studio (DeepFilterNet3): cleanest in our tests, uses about 20% of one processor core, adds 40 ms.";
+    }
 }

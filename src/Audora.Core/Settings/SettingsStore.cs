@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Audora.Core.Cleanup;
 
 namespace Audora.Core.Settings;
 
@@ -67,6 +68,7 @@ public sealed class SettingsStore
             microphone.NoiseStrength = double.IsFinite(microphone.NoiseStrength)
                 ? Math.Clamp(microphone.NoiseStrength, 0, 100)
                 : 100;
+            microphone.NoiseEngine = NoiseEngines.Normalize(microphone.NoiseEngine);
         }
 
         s.SharedSound = Fix(s.SharedSound);

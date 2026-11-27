@@ -87,4 +87,27 @@ public class MicrophoneSessionTests
     {
         Assert.Equal("It broke.", MicrophoneSession.DescribeStartError(new InvalidOperationException("It broke.")));
     }
+
+    [Fact]
+    public void ASessionStartsWithTheStudioEngineWanted()
+    {
+        using var session = new MicrophoneSession("some-id");
+
+        Assert.Equal("Studio", session.Engine);
+        Assert.Equal("Studio", session.ActiveEngine);
+        Assert.Null(session.EngineNote);
+    }
+
+    [Fact]
+    public void TheEngineIsRememberedBeforeTheMicrophoneStarts()
+    {
+        using var session = new MicrophoneSession("some-id");
+
+        session.Engine = "standard";
+        Assert.Equal("Standard", session.Engine);
+        Assert.Equal("Standard", session.ActiveEngine);
+
+        session.Engine = "nonsense";
+        Assert.Equal("Studio", session.Engine);
+    }
 }
