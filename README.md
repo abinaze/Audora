@@ -62,7 +62,7 @@ until then you can run Audora from source (below). Install steps are in [docs/IN
 
 ## Try it
 
-You need Windows 10 or 11, [Git](https://git-scm.com/) and the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+You need Windows 10 or 11, [Git](https://git-scm.com/) and the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 
 ```bash
 git clone https://github.com/abinaze/Audora.git

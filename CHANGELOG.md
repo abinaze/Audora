@@ -29,6 +29,7 @@ All notable changes are listed here. The format follows
 - The DeepFilterNet3 engine now reports its own 40 ms delay, so the original and cleaned sound line up below 100% strength too. The library results (+10.6 dB at 100%, +9.3 dB at 85%, about 5 times faster than real time) are in docs/LAB.md
 - A Studio engine (DeepFilterNet3) for microphone noise removal, chosen for each microphone on the Microphone page. It uses more of the processor and adds 40 ms. If its files are missing or it cannot start, Standard (RNNoise) is used and the page says why
 - The installer and the portable zip include the Studio files in a `studio` folder, with their notice and licence texts. They are checked against pinned SHA256 checksums, and the build stops if one does not match
+- Audora now runs on .NET 10, the long-term release that Microsoft still supports. .NET 8 reached the end of its support on 10 November 2026
 
 ### Changed
 - Clearer, shorter wording across the app

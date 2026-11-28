@@ -6,8 +6,8 @@ The software below was made by other people. It is included in the Audora downlo
 | Component | What Audora uses it for | Licence | Copyright holders |
 |---|---|---|---|
 | [NAudio](https://github.com/naudio/NAudio) 2.2.1 | Reading and playing audio on Windows | MIT | Mark Heath |
-| [.NET 8 runtime](https://github.com/dotnet/runtime), including Windows Desktop (WPF and Windows Forms) | Runs the app. It is included, so you do not need to install .NET | MIT | .NET Foundation and Contributors |
-| System.ServiceProcess.ServiceController 8.0.1 | Checking that the Windows audio services are running | MIT | .NET Foundation and Contributors |
+| [.NET 10 runtime](https://github.com/dotnet/runtime), including Windows Desktop (WPF and Windows Forms) | Runs the app. It is included, so you do not need to install .NET | MIT | .NET Foundation and Contributors |
+| System.ServiceProcess.ServiceController 10.0.14 | Checking that the Windows audio services are running | MIT | .NET Foundation and Contributors |
 | [RNNoise](https://github.com/xiph/rnnoise), as rnnoise.dll from the [YellowDogMan.RRNoise.NET](https://github.com/Yellow-Dog-Man/RNNoise.Net) 0.1.6 package | Removes background noise from speech | BSD 3-Clause (RNNoise), MIT (the package) | Mozilla, Jean-Marc Valin, Xiph.Org Foundation and Mark Borgerding (RNNoise). Yellow Dog Man Studios S.r.o. (the package) |
 | [DeepFilterNet](https://github.com/Rikorose/DeepFilterNet): the DeepFilterNet3 model and its C runtime library (deepfilter.dll), packaged by [deepfilternet-slim](https://github.com/kiwi-data/deepfilternet-slim) 0.1.0 | Removes background noise from speech in the Studio engine on the Microphone page | MIT or Apache-2.0, at your choice | Hendrik Schröter and contributors |
 

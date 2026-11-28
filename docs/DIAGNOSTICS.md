@@ -112,5 +112,5 @@ Windows audio service. Those need a snapshot, approval, and administrator rights
   device meter shows one side only.
 - **Muted devices.** Audora's Mute button mutes the default device. If the default changes, Audora now unmutes the
   device it muted.
-- **Event log.** On .NET 8 the reader comes from the System.Diagnostics.EventLog package. Whether a standard user
+- **Event log.** On .NET the reader comes from the System.Diagnostics.EventLog package. Whether a standard user
   can read the System log has to be tested before that check is built.

@@ -8,7 +8,7 @@ updates:
     commit-message:
       prefix: "build(deps)"
     ignore:
-      # Microsoft runtime packages stay on the same major version as the .NET 8 target.
+      # Microsoft runtime packages stay on the same major version as the .NET 10 target.
       - dependency-name: "System.*"
         update-types: ["version-update:semver-major"]
       - dependency-name: "Microsoft.Extensions.*"

@@ -6,8 +6,8 @@ namespace Audora.Tests;
 public class EngineSafetyTests
 {
     [Theory]
-    [InlineData(@"E:\github-projects\Audora\src\Audora.App\bin\Debug\net8.0-windows\Audora.exe", true)]
-    [InlineData(@"E:\x\src\Audora.App\bin\Release\net8.0-windows\Audora.exe", true)]
+    [InlineData(@"E:\github-projects\Audora\src\Audora.App\bin\Debug\net10.0-windows\Audora.exe", true)]
+    [InlineData(@"E:\x\src\Audora.App\bin\Release\net10.0-windows\Audora.exe", true)]
     [InlineData(@"C:\Program Files\dotnet\dotnet.exe", true)]
     [InlineData("", true)]
     [InlineData(@"C:\Users\me\AppData\Local\Programs\Audora\Audora.exe", false)]

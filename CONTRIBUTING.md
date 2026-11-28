@@ -14,7 +14,7 @@ expert: testing on your own devices is one of the most useful things you can do.
 
 ## Set up
 
-You need Windows 10 or 11, Git and the .NET 8 SDK.
+You need Windows 10 or 11, Git and the .NET 10 SDK.
 
 ```bash
 git clone https://github.com/<your-name>/Audora.git
